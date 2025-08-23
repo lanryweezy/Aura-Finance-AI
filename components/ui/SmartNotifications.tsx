@@ -51,10 +51,13 @@ export const SmartNotifications: React.FC<SmartNotificationsProps> = ({ business
   };
 
   const dismissNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    if (notifications.length === 1) {
-      setIsVisible(false);
-    }
+    setNotifications(prev => {
+      const next = prev.filter(n => n.id !== id);
+      if (next.length === 0) {
+        setIsVisible(false);
+      }
+      return next;
+    });
   };
 
   const getNotificationIcon = (type: string) => {

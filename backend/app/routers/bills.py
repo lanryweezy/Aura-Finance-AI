@@ -7,16 +7,17 @@ router = APIRouter(prefix="/bills", tags=["bills"])
 
 @router.get("/", response_model=List[Bill])
 def list_bills():
-	def compute_status(b: Bill) -> Bill:
+	from datetime import datetime
+	
+	def with_computed_status(b: Bill) -> Bill:
 		if b.status == 'Paid':
 			return b
-		from datetime import datetime
-		if datetime.fromisoformat(b.dueDate.replace('Z','')) < datetime.utcnow():
-			b.status = 'Overdue'
-		else:
-			b.status = 'Unpaid'
-		return b
-	return [compute_status(b) for b in sorted(db.bills, key=lambda x: x.dueDate, reverse=True)]
+		
+		# Compute status without mutating original
+		status = 'Overdue' if datetime.fromisoformat(b.dueDate.replace('Z','')) < datetime.utcnow() else 'Unpaid'
+		return Bill(**{**b.model_dump(), "status": status})
+	
+	return [with_computed_status(b) for b in sorted(db.bills, key=lambda x: x.dueDate, reverse=True)]
 
 @router.post("/", response_model=Bill)
 def create_bill(payload: BillCreate):

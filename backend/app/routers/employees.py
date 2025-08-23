@@ -17,12 +17,15 @@ def create_employee(payload: EmployeeCreate):
 
 @router.put("/{employee_id}", response_model=Employee)
 def update_employee(employee_id: str, payload: EmployeeUpdate):
-	for idx, emp in enumerate(db.employees):
-		if emp.id == employee_id:
-			updated = Employee(**payload.model_dump())
-			db.employees[idx] = updated
-			return updated
-	raise HTTPException(status_code=404, detail="Employee not found")
+    for idx, emp in enumerate(db.employees):
+        if emp.id == employee_id:
+            # Preserve the original ID and merge updates
+            updated_data = payload.model_dump(exclude_unset=True)
+            updated_data['id'] = emp.id  # Ensure ID is preserved
+            updated = Employee(**{**emp.model_dump(), **updated_data})
+            db.employees[idx] = updated
+            return updated
+    raise HTTPException(status_code=404, detail="Employee not found")
 
 @router.delete("/{employee_id}")
 def delete_employee(employee_id: str):
