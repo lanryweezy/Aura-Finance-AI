@@ -5,6 +5,8 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { TransactionsView } from './components/TransactionsView';
 import { AIChat } from './components/AIChat';
+import { AISettingsView } from './components/AISettingsView';
+import { AIAutomationDashboard } from './components/AIAutomationDashboard';
 import { PayablesView } from './components/PayablesView';
 import { ReceivablesView } from './components/ReceivablesView';
 import { PayrollView } from './components/PayrollView';
@@ -436,6 +438,10 @@ export default function App(): React.ReactNode {
           return <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />;
       case 'chat':
         return <AIChat transactions={transactions} />;
+      case 'ai-settings':
+        return <AISettingsView />;
+      case 'ai-automation':
+        return <AIAutomationDashboard />;
       default:
         return <Dashboard transactions={transactions} connections={connections} bills={bills} invoices={invoices}/>;
     }

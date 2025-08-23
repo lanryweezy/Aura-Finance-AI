@@ -25,7 +25,9 @@ const getViewTitle = (view: View): string => {
     'estimates': 'Quotes & Estimates',
     'inventory': 'Inventory Management',
     'budgeting': 'Budget Planning',
-    'audit-trail': 'Audit Trail'
+    'audit-trail': 'Audit Trail',
+    'ai-settings': 'AI Automation Settings',
+    'ai-automation': 'AI Automation Dashboard'
   };
   return titles[view] || 'Aura Finance AI';
 };
