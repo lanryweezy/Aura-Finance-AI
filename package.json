@@ -13,11 +13,12 @@
   },
   "scripts": {
     "dev": "vite --host",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview --host",
     "type-check": "tsc --noEmit",
     "lint": "echo 'Linting skipped for now'",
-    "start": "vite preview"
+    "start": "vite preview --host 0.0.0.0 --port ${PORT:-3000}",
+    "postinstall": "npm run type-check"
   },
   "dependencies": {
     "react": "^19.1.0",
