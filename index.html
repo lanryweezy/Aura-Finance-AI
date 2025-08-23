@@ -3,9 +3,33 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="description" content="Aura Finance AI - Smart Business Finance Management for Nigerian Entrepreneurs. VAT, Payroll, Invoicing & Tax Compliance Made Simple." />
+    <meta name="keywords" content="Nigerian business finance, VAT calculator, payroll management, invoice generator, tax compliance, small business accounting" />
+    <meta name="author" content="Aura Finance AI" />
+    
+    <!-- Open Graph for social sharing -->
+    <meta property="og:title" content="Aura Finance AI - Smart Nigerian Business Finance" />
+    <meta property="og:description" content="Manage your Nigerian business finances with AI-powered insights. VAT, WHT, payroll, and compliance in one platform." />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_NG" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Aura Finance AI - Smart Nigerian Business Finance" />
+    <meta name="twitter:description" content="Manage your Nigerian business finances with AI-powered insights." />
+    
+    <!-- Mobile and PWA -->
+    <meta name="theme-color" content="#00F5D4" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Aura Finance" />
+    
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Aura Finance AI</title>
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <title>Aura Finance AI - Smart Business Finance for Nigeria</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -15,23 +39,66 @@
               'brand-cyan': '#00F5D4',
               'brand-purple': '#9B5DE5',
               'brand-pink': '#F15BB5',
+              'brand-green': '#00BF63',
+              'brand-orange': '#FB8500',
               'dark-primary': '#070919',
               'dark-secondary': '#10142C',
               'dark-tertiary': '#1C203F',
               'light-primary': '#F0F2F5',
               'light-secondary': '#FFFFFF',
+              'nigerian-green': '#008751',
+              'nigerian-white': '#FFFFFF',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
+              sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+              'slide-up': 'slideUp 0.3s ease-out',
+              'pulse-glow': 'pulseGlow 2s infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(10px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(100%)' },
+                '100%': { transform: 'translateY(0)' },
+              },
+              pulseGlow: {
+                '0%, 100%': { boxShadow: '0 0 5px rgba(0, 245, 212, 0.5)' },
+                '50%': { boxShadow: '0 0 20px rgba(0, 245, 212, 0.8)' },
+              },
+            },
+            screens: {
+              'xs': '375px',
             },
           },
         },
       }
     </script>
+    
+    <!-- Preload critical fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
-  <script type="importmap">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Custom Nigerian Business Styles -->
+    <link rel="stylesheet" href="/styles.css">
+    
+    <!-- Service Worker for PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => console.log('SW registered'))
+            .catch(error => console.log('SW registration failed'));
+        });
+      }
+    </script>
+    
+    <script type="importmap">
 {
   "imports": {
     "react": "https://esm.sh/react@^19.1.0",
@@ -43,8 +110,38 @@
 }
 </script>
 </head>
-  <body class="bg-dark-primary text-light-primary">
+  <body class="bg-dark-primary text-light-primary overflow-x-hidden">
+    <!-- Loading splash screen -->
+    <div id="loading-splash" class="fixed inset-0 bg-dark-primary flex items-center justify-center z-50">
+      <div class="text-center animate-fade-in">
+        <div class="w-16 h-16 mx-auto mb-4 animate-spin">
+          <svg viewBox="0 0 24 24" class="text-brand-cyan">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none" stroke-dasharray="31.416" stroke-dashoffset="31.416">
+              <animate attributeName="stroke-dasharray" dur="2s" values="0 31.416;15.708 15.708;0 31.416" repeatCount="indefinite"/>
+              <animate attributeName="stroke-dashoffset" dur="2s" values="0;-15.708;-31.416" repeatCount="indefinite"/>
+            </circle>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-brand-cyan mb-2">Aura Finance AI</h2>
+        <p class="text-gray-400">Loading your financial dashboard...</p>
+      </div>
+    </div>
+    
     <div id="root"></div>
+    
+    <!-- Hide splash screen after app loads -->
+    <script>
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          const splash = document.getElementById('loading-splash');
+          if (splash) {
+            splash.style.opacity = '0';
+            setTimeout(() => splash.remove(), 300);
+          }
+        }, 1000);
+      });
+    </script>
+    
     <script type="module" src="/index.tsx"></script>
   </body>
 </html>
