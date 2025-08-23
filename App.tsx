@@ -5,6 +5,8 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { TransactionsView } from './components/TransactionsView';
 import { AIChat } from './components/AIChat';
+import { AISettingsView } from './components/AISettingsView';
+import { AIAutomationDashboard } from './components/AIAutomationDashboard';
 import { PayablesView } from './components/PayablesView';
 import { ReceivablesView } from './components/ReceivablesView';
 import { PayrollView } from './components/PayrollView';
@@ -43,6 +45,7 @@ import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnec
 
 export default function App(): React.ReactNode {
   const [activeView, setActiveView] = useState<View>('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [transactions, setTransactions] = useState<CategorizedTransaction[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [connections, setConnections] = useState<BankConnection[]>([]);
@@ -435,18 +438,32 @@ export default function App(): React.ReactNode {
           return <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />;
       case 'chat':
         return <AIChat transactions={transactions} />;
+      case 'ai-settings':
+        return <AISettingsView />;
+      case 'ai-automation':
+        return <AIAutomationDashboard />;
       default:
         return <Dashboard transactions={transactions} connections={connections} bills={bills} invoices={invoices}/>;
     }
   };
 
   return (
-    <div className="flex h-screen bg-dark-primary font-sans">
-      <Sidebar activeView={activeView} setActiveView={setActiveView} />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-dark-secondary rounded-tl-3xl">
-          {renderContent()}
+    <div className="flex h-screen bg-dark-primary font-sans overflow-hidden">
+      <Sidebar 
+        activeView={activeView} 
+        setActiveView={setActiveView}
+        isMobileMenuOpen={isMobileMenuOpen}
+        setIsMobileMenuOpen={setIsMobileMenuOpen}
+      />
+      <div className="flex-1 flex flex-col min-w-0">
+        <Header 
+          activeView={activeView}
+          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        />
+        <main className="flex-1 overflow-auto bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-primary">
+          <div className="min-h-full">
+            {renderContent()}
+          </div>
         </main>
       </div>
     </div>
