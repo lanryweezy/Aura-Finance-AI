@@ -1,0 +1,89 @@
+
+import React from 'react';
+import { Card } from '../ui/Card';
+import type { BalanceSheetData } from '../../types';
+
+interface BalanceSheetReportProps {
+    data: BalanceSheetData;
+    onDrillDown: (title: string, type: 'credit' | 'debit', categories: string[]) => void;
+}
+
+const formatNaira = (amount: number) => {
+    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+};
+
+const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, className?: string, onDrillDown?: () => void}> = 
+({ label, value, isTotal, isHeader, className, onDrillDown }) => (
+    <tr 
+        className={`${isTotal ? 'section-total' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-dark-secondary' : ''} ${isHeader ? (className ?? '') : ''}`}
+        onClick={onDrillDown}
+    >
+        <td className={`py-2 ${isTotal || isHeader ? 'font-bold' : 'pl-4'}`} colSpan={isHeader ? 2 : 1}>{label}</td>
+        {!isHeader && (
+            <td className={`text-right font-mono ${!isHeader ? (className ?? '') : ''}`}>
+                {typeof value === 'number' && formatNaira(value)}
+            </td>
+        )}
+    </tr>
+);
+
+const RatioIndicator: React.FC<{ratio: number}> = ({ratio}) => {
+    let status = { text: 'Healthy', color: 'text-green-400' };
+    if (ratio === Infinity) {
+        status = { text: 'No Liabilities', color: 'text-blue-400' };
+    } else if (ratio < 1) {
+        status = { text: 'Warning', color: 'text-red-400' };
+    } else if (ratio < 1.5) {
+        status = { text: 'Okay', color: 'text-yellow-400' };
+    }
+    
+    return (
+        <div className="mt-4 p-4 bg-dark-secondary rounded-lg text-center">
+            <h4 className="text-sm font-semibold text-gray-400">Current Ratio</h4>
+            <p className="text-2xl font-bold">{isFinite(ratio) ? ratio.toFixed(2) : '∞'}</p>
+            <p className={`text-sm font-semibold ${status.color}`}>{status.text}</p>
+            <p className="text-xs text-gray-500 mt-1">
+                (Current Assets / Current Liabilities)
+            </p>
+        </div>
+    )
+}
+
+export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, onDrillDown }) => {
+    return (
+        <Card>
+            <h2 className="text-2xl font-semibold text-white mb-4">Balance Sheet</h2>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+                <div className="md:col-span-3">
+                    <table className="w-full text-white">
+                        <tbody>
+                            <ReportRow label="Assets" isHeader />
+                            <ReportRow label="Current Assets" isHeader className="text-base font-semibold" />
+                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-300" onDrillDown={() => alert("Drill-down for cash balance not implemented yet.")} />
+                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-300" onDrillDown={() => alert("Drill-down for receivables not implemented yet.")} />
+                            <ReportRow label="Inventory" value={data.inventory} className="text-gray-300" />
+                            <ReportRow label="Total Current Assets" value={data.totalCurrentAssets} isTotal />
+
+                            <tr className="h-6"><td colSpan={2}></td></tr>
+
+                            <ReportRow label="Liabilities" isHeader />
+                            <ReportRow label="Current Liabilities" isHeader className="text-base font-semibold"/>
+                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-300" onDrillDown={() => alert("Drill-down for payables not implemented yet.")} />
+                            <ReportRow label="Total Current Liabilities" value={data.totalCurrentLiabilities} isTotal />
+                            
+                            <tr className="h-6"><td colSpan={2}></td></tr>
+
+                            <ReportRow label="Equity" isHeader />
+                             <ReportRow label="Retained Earnings / Owner's Equity" value={data.equity} className="text-gray-300" />
+                            <ReportRow label="Total Equity" value={data.equity} isTotal />
+
+                        </tbody>
+                    </table>
+                </div>
+                 <div className="md:col-span-2">
+                    <RatioIndicator ratio={data.currentRatio} />
+                </div>
+            </div>
+        </Card>
+    );
+};
