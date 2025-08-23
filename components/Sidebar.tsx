@@ -89,17 +89,30 @@ const NavMenu: React.FC<{
 }
 
 const ComplianceAlert: React.FC = () => {
-  const getNextDeadline = () => {
+  const getDaysUntil = (targetDay: number): number => {
     const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
     const currentDay = today.getDate();
     
-    if (currentDay <= 10) {
-      return { type: 'PAYE', days: 10 - currentDay, urgent: currentDay > 7 };
-    } else if (currentDay <= 21) {
-      return { type: 'VAT/WHT', days: 21 - currentDay, urgent: currentDay > 18 };
-    } else {
-      return { type: 'PAYE', days: 40 - currentDay, urgent: false };
+    if (currentDay <= targetDay) {
+      return targetDay - currentDay;
     }
+    
+    // Calculate days remaining in current month + targetDay in next month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    return (daysInMonth - currentDay) + targetDay;
+  };
+
+  const getNextDeadline = () => {
+    const daysToPAYE = getDaysUntil(10);
+    const daysToVATWHT = getDaysUntil(21);
+    
+    // Choose the nearer upcoming deadline
+    if (daysToPAYE <= daysToVATWHT) {
+      return { type: 'PAYE', days: daysToPAYE, urgent: daysToPAYE <= 3 };
+    }
+    return { type: 'VAT/WHT', days: daysToVATWHT, urgent: daysToVATWHT <= 3 };
   };
 
   const deadline = getNextDeadline();

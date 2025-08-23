@@ -33,11 +33,17 @@ const getViewTitle = (view: View): string => {
 };
 
 export const Header: React.FC<HeaderProps> = ({ activeView, onMobileMenuToggle }) => {
-  const currentTime = new Date().toLocaleTimeString('en-NG', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    timeZone: 'Africa/Lagos'
-  });
+  const [currentTime, setCurrentTime] = React.useState(() =>
+  new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })
+);
+
+React.useEffect(() => {
+  const updateTime = () => setCurrentTime(
+    new Date().toLocaleTimeString('en-NG', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Lagos' })
+  );
+  const interval = setInterval(updateTime, 60_000); // Update every minute
+  return () => clearInterval(interval);
+}, []);
   
   const formatNaira = (amount: number) => 
     new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);

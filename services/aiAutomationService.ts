@@ -1,5 +1,9 @@
-import { GoogleGenAI, Type } from "@google/genai";
+// SECURE AI SERVICE - All AI calls now happen on the backend
+// No more client-side API key exposure!
 import type { CategorizedTransaction, Invoice, Bill, Employee } from '../types';
+
+// API base URL for backend AI services
+const AI_API_BASE = process.env.VITE_API_URL || 'http://localhost:8000';
 
 // Get settings from localStorage or defaults
 const getAISettings = () => {
@@ -40,9 +44,30 @@ const getAISettings = () => {
   return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
 };
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Secure API client for backend AI calls
+const callAIService = async (endpoint: string, data: any): Promise<any> => {
+  try {
+    const response = await fetch(`${AI_API_BASE}/api/ai/${endpoint}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
 
-// Smart Transaction Categorization with Learning
+    if (!response.ok) {
+      console.warn(`AI service error: ${response.status}`);
+      return { success: false, error: 'AI service unavailable' };
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.warn('AI service call failed:', error);
+    return { success: false, error: 'Network error' };
+  }
+};
+
+// Smart Transaction Categorization with Learning (SECURE)
 export const smartCategorizeTransaction = async (
   transaction: any,
   historicalData: CategorizedTransaction[],
@@ -50,58 +75,42 @@ export const smartCategorizeTransaction = async (
 ): Promise<{ category: string; confidence: number; reasoning: string }> => {
   const settings = getAISettings();
   
-  if (!settings.autoCategorizationEnabled || !process.env.API_KEY) {
+  if (!settings.autoCategorizationEnabled) {
     return { category: 'Uncategorized', confidence: 0, reasoning: 'Auto-categorization disabled' };
   }
 
-  const prompt = `
-    You are an advanced AI assistant specialized in Nigerian business transaction categorization with adaptive learning capabilities.
-    
-    CONTEXT:
-    - Business operates in Nigeria with local payment patterns
-    - Historical transaction patterns: ${JSON.stringify(historicalData.slice(-20))}
-    - User corrections/preferences: ${JSON.stringify(userCorrections.slice(-10))}
-    
-    TRANSACTION TO CATEGORIZE:
-    ${JSON.stringify(transaction)}
-    
-    INSTRUCTIONS:
-    1. Analyze the transaction using Nigerian business context
-    2. Consider historical patterns and user corrections
-    3. Provide category, confidence (0-100), and reasoning
-    4. Only return high confidence if > ${settings.autoCategorizationConfidence}%
-    
-    Return JSON: { "category": "string", "confidence": number, "reasoning": "string" }
-  `;
-
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-      },
+    // Call secure backend AI service - NO MORE CLIENT-SIDE API KEYS!
+    const response = await callAIService('categorize-transaction', {
+      transaction,
+      historical_data: historicalData.slice(-20), // Limit data sent
+      user_preferences: {
+        confidence_threshold: settings.autoCategorizationConfidence,
+        learning_enabled: settings.adaptiveLearning,
+        user_corrections: userCorrections.slice(-10)
+      }
     });
 
-    const result = JSON.parse(response.text);
-    
-    // Store learning data if adaptive learning is enabled
-    if (settings.adaptiveLearning) {
-      const learningData = {
-        transaction,
-        prediction: result,
-        timestamp: new Date().toISOString(),
+    if (!response.success) {
+      return { 
+        category: 'Uncategorized', 
+        confidence: 0, 
+        reasoning: response.error || 'AI service unavailable' 
       };
-      
-      const existing = JSON.parse(localStorage.getItem('aiLearningData') || '[]');
-      existing.push(learningData);
-      localStorage.setItem('aiLearningData', JSON.stringify(existing.slice(-1000))); // Keep last 1000
     }
 
-    return result;
+    const result = response.result;
+    
+    // Return standardized response
+    return {
+      category: result.category || 'Uncategorized',
+      confidence: Math.round((result.confidence || 0) * 100), // Convert to percentage
+      reasoning: result.reasoning || 'AI categorization completed'
+    };
+    
   } catch (error) {
-    console.error('Smart categorization failed:', error);
-    return { category: 'Uncategorized', confidence: 0, reasoning: 'Error in AI processing' };
+    console.error('Transaction categorization failed:', error);
+    return { category: 'Uncategorized', confidence: 0, reasoning: 'AI service error' };
   }
 };
 

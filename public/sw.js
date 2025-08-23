@@ -46,51 +46,44 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache first, then network
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests
-  if (!event.request.url.startsWith(self.location.origin)) {
+  if (event.request.method !== 'GET') return;
+
+  const isSameOrigin = event.request.url.startsWith(self.location.origin);
+
+  // Network-first for navigation requests (ensures updates)
+  if (event.request.mode === 'navigate') {
+    event.respondWith((async () => {
+      try {
+        const netResp = await fetch(event.request);
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, netResp.clone());
+        return netResp;
+      } catch {
+        const cached = await caches.match(event.request);
+        return cached || caches.match('/');
+      }
+    })());
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        if (response) {
-          console.log('Serving from cache:', event.request.url);
-          return response;
-        }
+  if (!isSameOrigin) return;
 
-        console.log('Fetching from network:', event.request.url);
-        return fetch(event.request).then((response) => {
-          // Check if we received a valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-
-          // Clone the response as it's a stream
-          const responseToCache = response.clone();
-
-          caches.open(CACHE_NAME)
-            .then((cache) => {
-              // Cache GET requests only
-              if (event.request.method === 'GET') {
-                cache.put(event.request, responseToCache);
-              }
-            });
-
-          return response;
-        }).catch((error) => {
-          console.log('Network fetch failed:', error);
-          
-          // Return offline page for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
-          }
-          
-          throw error;
-        });
-      })
-  );
+  // Cache-first for other resources
+  event.respondWith((async () => {
+    const cached = await caches.match(event.request);
+    if (cached) return cached;
+    
+    try {
+      const netResp = await fetch(event.request);
+      if (netResp && netResp.status === 200 && netResp.type === 'basic') {
+        const cache = await caches.open(CACHE_NAME);
+        cache.put(event.request, netResp.clone());
+      }
+      return netResp;
+    } catch {
+      return cached;
+    }
+  })());
 });
 
 // Background sync for offline actions
