@@ -73,6 +73,9 @@ Set these in your backend service:
 | `ENVIRONMENT` | Environment type | `production` |
 | `FRONTEND_URL` | Frontend service URL | `https://aura-finance-frontend.onrender.com` |
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:port/db` |
+| `GEMINI_API_KEY` | Google AI API key (server-side only) | `your_secure_api_key` |
+| `PAYSTACK_PUBLIC_KEY` | Paystack public key | `pk_live_xxxxx` |
+| `PAYSTACK_SECRET_KEY` | Paystack secret key | `sk_live_xxxxx` |
 
 ### Frontend Environment Variables
 Set these in your frontend service:
@@ -116,7 +119,15 @@ You can manually trigger deployments from the Render dashboard:
 
 ### Built-in Health Endpoints
 - **Backend**: `https://your-backend-url.onrender.com/health`
+- **Detailed Health**: `https://your-backend-url.onrender.com/api/health/detailed`
 - **Frontend**: `https://your-frontend-url.onrender.com/` (should load the app)
+
+### Enterprise Monitoring Features
+- **Request ID Tracking**: Every request gets a unique ID for tracing
+- **Performance Metrics**: Response times and system resource monitoring
+- **Error Tracking**: Centralized error logging with stack traces
+- **Rate Limiting**: 120 requests per minute per IP
+- **Security Headers**: OWASP-compliant security headers
 
 ### Monitoring
 - View logs in Render Dashboard → Service → Logs
