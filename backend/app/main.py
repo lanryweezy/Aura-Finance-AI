@@ -1,0 +1,30 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .routers import employees, invoices, bills, inventory, purchase_orders, estimates, journal_entries, projects, budgets, connections, transactions
+
+app = FastAPI(title="Aura Finance AI Backend", version="0.1.0")
+
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["*"],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
+)
+
+@app.get("/health")
+def health_check():
+	return {"status": "ok"}
+
+# Include routers with /api prefix
+app.include_router(employees.router, prefix="/api")
+app.include_router(invoices.router, prefix="/api")
+app.include_router(bills.router, prefix="/api")
+app.include_router(inventory.router, prefix="/api")
+app.include_router(purchase_orders.router, prefix="/api")
+app.include_router(estimates.router, prefix="/api")
+app.include_router(journal_entries.router, prefix="/api")
+app.include_router(projects.router, prefix="/api")
+app.include_router(budgets.router, prefix="/api")
+app.include_router(connections.router, prefix="/api")
+app.include_router(transactions.router, prefix="/api")

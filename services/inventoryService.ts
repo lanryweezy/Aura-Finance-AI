@@ -1,5 +1,6 @@
 
 import type { InventoryItem } from '../types';
+import { api } from './api';
 
 let mockInventory: InventoryItem[] = [
     { id: 'inv_item_1', name: 'Web Dev Retainer (Monthly)', sku: 'WD-RETAIN', category: 'Services', type: 'Service', costPrice: 0, salePrice: 500000, quantity: 9999 },
@@ -8,30 +9,40 @@ let mockInventory: InventoryItem[] = [
     { id: 'inv_item_4', name: 'Ergonomic Office Chair', sku: 'HW-CHR-ERGO', category: 'Furniture', type: 'Product', costPrice: 85000, salePrice: 150000, quantity: 12 },
 ];
 
-export const fetchInventoryItems = (): Promise<InventoryItem[]> => {
-    return new Promise(resolve => {
-        setTimeout(() => resolve([...mockInventory]), 400);
-    });
+export const fetchInventoryItems = async (): Promise<InventoryItem[]> => {
+    try {
+        return await api.get<InventoryItem[]>('/inventory/');
+    } catch {
+        return [...mockInventory];
+    }
 };
 
-export const addInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
-    return new Promise(resolve => {
+export const addInventoryItem = async (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
+    try {
+        return await api.post<InventoryItem>('/inventory/', item);
+    } catch {
         const newItem: InventoryItem = { ...item, id: `inv_item_${Date.now()}` };
         mockInventory = [newItem, ...mockInventory];
-        setTimeout(() => resolve(newItem), 300);
-    });
-};
-
-export const updateInventoryItem = (item: InventoryItem): Promise<InventoryItem> => {
-     return new Promise(resolve => {
-        mockInventory = mockInventory.map(i => i.id === item.id ? item : i);
-        setTimeout(() => resolve(item), 300);
-    });
-};
-
-export const updateStock = (itemId: string, quantityChange: number): void => {
-    const itemIndex = mockInventory.findIndex(i => i.id === itemId);
-    if(itemIndex > -1) {
-        mockInventory[itemIndex].quantity += quantityChange;
+        return newItem;
     }
-}
+};
+
+export const updateInventoryItem = async (item: InventoryItem): Promise<InventoryItem> => {
+     try {
+        return await api.put<InventoryItem>(`/inventory/${item.id}`, item);
+     } catch {
+        mockInventory = mockInventory.map(i => i.id === item.id ? item : i);
+        return item;
+    }
+};
+
+export const updateStock = async (itemId: string, quantityChange: number): Promise<void> => {
+    try {
+        await api.post<InventoryItem>(`/inventory/${itemId}/stock-adjust`, { delta: quantityChange });
+    } catch {
+        const itemIndex = mockInventory.findIndex(i => i.id === itemId);
+        if(itemIndex > -1) {
+            mockInventory[itemIndex].quantity += quantityChange;
+        }
+    }
+};
