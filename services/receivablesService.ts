@@ -1,5 +1,6 @@
 
 import type { Invoice } from '../types';
+import { api } from './api';
 
 const today = new Date();
 const oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
@@ -70,30 +71,33 @@ const getStatus = (dueDate: string, currentStatus: Invoice['status']): Invoice['
   return 'Unpaid';
 }
 
-
-export const fetchInvoices = (): Promise<Invoice[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-        const processedInvoices = mockInvoices.map(invoice => ({
-            ...invoice,
-            status: getStatus(invoice.dueDate, invoice.status)
-        })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
-      resolve(processedInvoices);
-    }, 800);
-  });
+export const fetchInvoices = async (): Promise<Invoice[]> => {
+  try {
+    const processed = await api.get<Invoice[]>('/invoices/');
+    return processed.map(invoice => ({
+      ...invoice,
+      status: getStatus(invoice.dueDate, invoice.status)
+    })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  } catch {
+    return mockInvoices.map(invoice => ({
+      ...invoice,
+      status: getStatus(invoice.dueDate, invoice.status)
+    })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+  }
 };
 
-export const addInvoice = (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>): Promise<Invoice> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const newInvoice: Invoice = {
-                id: `inv_${Date.now()}`,
-                status: 'Draft',
-                issueDate: new Date().toISOString(),
-                ...invoiceData,
-            };
-            mockInvoices.unshift(newInvoice);
-            resolve(newInvoice);
-        }, 300);
-    });
+export const addInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>): Promise<Invoice> => {
+  try {
+    const created = await api.post<Invoice>('/invoices/', invoiceData);
+    return created;
+  } catch {
+    const newInvoice: Invoice = {
+      id: `inv_${Date.now()}`,
+      status: 'Draft',
+      issueDate: new Date().toISOString(),
+      ...invoiceData,
+    };
+    mockInvoices.unshift(newInvoice);
+    return newInvoice;
+  }
 };

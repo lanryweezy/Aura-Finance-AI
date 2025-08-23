@@ -1,5 +1,6 @@
 
 import type { PurchaseOrder } from '../types';
+import { api } from './api';
 
 let mockPOs: PurchaseOrder[] = [
     {
@@ -15,14 +16,18 @@ let mockPOs: PurchaseOrder[] = [
     }
 ];
 
-export const fetchPurchaseOrders = (): Promise<PurchaseOrder[]> => {
-    return new Promise(resolve => {
-        setTimeout(() => resolve([...mockPOs]), 500);
-    });
+export const fetchPurchaseOrders = async (): Promise<PurchaseOrder[]> => {
+    try {
+        return await api.get<PurchaseOrder[]>('/purchase-orders/');
+    } catch {
+        return [...mockPOs];
+    }
 };
 
-export const addPurchaseOrder = (poData: Omit<PurchaseOrder, 'id' | 'status' | 'issueDate'>): Promise<PurchaseOrder> => {
-    return new Promise(resolve => {
+export const addPurchaseOrder = async (poData: Omit<PurchaseOrder, 'id' | 'status' | 'issueDate'>): Promise<PurchaseOrder> => {
+    try {
+        return await api.post<PurchaseOrder>('/purchase-orders/', poData);
+    } catch {
         const newPO: PurchaseOrder = {
             ...poData,
             id: `po_${Date.now()}`,
@@ -30,6 +35,6 @@ export const addPurchaseOrder = (poData: Omit<PurchaseOrder, 'id' | 'status' | '
             status: 'Draft',
         };
         mockPOs = [newPO, ...mockPOs];
-        setTimeout(() => resolve(newPO), 300);
-    });
+        return newPO;
+    }
 };
