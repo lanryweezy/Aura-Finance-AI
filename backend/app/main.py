@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import employees, invoices, bills, inventory, purchase_orders, estimates, journal_entries, projects, budgets, connections, transactions
+from .routers import employees, invoices, bills, inventory, purchase_orders, estimates, journal_entries, projects, budgets, connections, transactions, subscriptions
 
 app = FastAPI(title="Aura Finance AI Backend", version="0.1.0")
 
@@ -42,3 +42,4 @@ app.include_router(projects.router, prefix="/api")
 app.include_router(budgets.router, prefix="/api")
 app.include_router(connections.router, prefix="/api")
 app.include_router(transactions.router, prefix="/api")
+app.include_router(subscriptions.router, prefix="/api")

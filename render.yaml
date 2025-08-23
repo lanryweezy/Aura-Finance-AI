@@ -14,6 +14,12 @@ services:
         value: 3.11.0
       - key: PORT
         value: 8000
+      - key: ENVIRONMENT
+        value: production
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: PAYSTACK_SECRET_KEY
+        sync: false  # Set this manually in Render dashboard
     autoDeploy: false
     disk:
       name: backend-disk
@@ -39,6 +45,10 @@ services:
           type: web
           name: aura-finance-backend
           property: host
+      - key: GEMINI_API_KEY
+        sync: false  # Set this manually in Render dashboard
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false  # Set this manually in Render dashboard
     autoDeploy: false
 
 databases:
