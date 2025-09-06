@@ -20,6 +20,11 @@ services:
         sync: false  # Set this manually in Render dashboard
       - key: PAYSTACK_SECRET_KEY
         sync: false  # Set this manually in Render dashboard
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: aura-finance-frontend
+          property: host
     autoDeploy: false
     disk:
       name: backend-disk
