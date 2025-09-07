@@ -16,12 +16,21 @@ interface User {
 }
 
 const CommercialApp: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'payment' | 'contact-sales' | 'app'>('landing');
-  const [user, setUser] = useState<User | null>(null);
+  // --- START QUICK FIX: Bypass landing page and use a dummy user ---
+  const [currentView, setCurrentView] = useState<'landing' | 'payment' | 'contact-sales' | 'app'>('app');
+  const [user, setUser] = useState<User | null>({
+    id: 'dummy-user-123',
+    email: 'test.user@aurafinance.ai',
+    name: 'Test User',
+    plan: 'sme-pro',
+    businessName: 'Test Business Inc.',
+    subscriptionStatus: 'active'
+  });
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Set to false since we are not checking auth
 
-  // Check for existing authentication on app load
+  // Original authentication logic is commented out for the quick fix.
+  /*
   useEffect(() => {
     const checkAuth = () => {
       const storedUser = localStorage.getItem('aura_user');
@@ -40,6 +49,8 @@ const CommercialApp: React.FC = () => {
 
     checkAuth();
   }, []);
+  */
+  // --- END QUICK FIX ---
 
   // Add Paystack script to head
   useEffect(() => {
