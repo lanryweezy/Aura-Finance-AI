@@ -21,6 +21,7 @@ import { EstimatesView } from './components/EstimatesView';
 import { InventoryView } from './components/InventoryView';
 import { BudgetingView } from './components/BudgetingView';
 import { AuditTrailView } from './components/AuditTrailView';
+import { ProjectsView } from './components/ProjectsView';
 
 import { Spinner } from './components/ui/Spinner';
 
@@ -60,6 +61,7 @@ export default function App(): React.ReactNode {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [auditLog, setAuditLog] = useState(auditLogService.getLogs());
+  const [currentProject, setCurrentProject] = useState<Project | undefined>();
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -228,6 +230,11 @@ export default function App(): React.ReactNode {
     setProjects(prev => [...prev, newProject]);
     logAndRefresh(`Created new project: ${newProject.name}`);
   }
+
+  const handleSelectProject = (project: Project) => {
+    setCurrentProject(project);
+    setActiveView('chat');
+  };
 
   const handleAddBill = async (billData: Omit<Bill, 'id'|'status'|'issueDate'>) => {
     const newBill = await apiAddBill(billData);
@@ -435,9 +442,9 @@ export default function App(): React.ReactNode {
       case 'auditTrail':
           return <AuditTrailView logs={auditLog} />;
       case 'projects':
-          return <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />;
+          return <ProjectsView projects={projects} onAddProject={handleAddProject} onSelectProject={handleSelectProject} />;
       case 'chat':
-        return <AIChat transactions={transactions} />;
+        return <AIChat transactions={transactions} currentProject={currentProject} />;
       case 'ai-settings':
         return <AISettingsView />;
       case 'ai-automation':
