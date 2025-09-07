@@ -43,7 +43,10 @@ export default defineConfig(({ mode }) => {
             changeOrigin: true,
             secure: mode === 'production',
           }
-        }
+        },
+        allowedHosts: [
+          '.onrender.com'
+        ]
       }
     };
 });
