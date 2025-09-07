@@ -61,7 +61,7 @@ export const NAV_ITEMS: NavItem[] = [
     ),
     children: [
         { id: 'payables', label: 'Bills & Payables', icon: <></> },
-        { id: 'purchase-orders', label: 'Purchase Orders', icon: <></> },
+        { id: 'purchaseOrders', label: 'Purchase Orders', icon: <></> },
     ],
   },
   {
@@ -92,7 +92,7 @@ export const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: 'tax-filing',
+    id: 'taxFiling',
     label: 'Tax & Compliance',
     icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -127,7 +127,7 @@ export const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    id: 'accounting', // Parent ID
+    id: 'chartOfAccounts', // Parent ID
     label: 'Accounting & Books',
     icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -137,10 +137,10 @@ export const NAV_ITEMS: NavItem[] = [
         </svg>
     ),
     children: [
-        { id: 'chart-of-accounts', label: 'Chart of Accounts', icon: <></> },
-        { id: 'journal-entries', label: 'Journal Entries', icon: <></> },
+        { id: 'chartOfAccounts', label: 'Chart of Accounts', icon: <></> },
+        { id: 'journalEntries', label: 'Journal Entries', icon: <></> },
         { id: 'budgeting', label: 'Budget Planning', icon: <></> },
-        { id: 'audit-trail', label: 'Audit Trail', icon: <></> },
+        { id: 'auditTrail', label: 'Audit Trail', icon: <></> },
     ],
   },
   {

@@ -15,19 +15,20 @@ const getViewTitle = (view: View): string => {
     'receivables': 'Sales & Invoices',
     'payables': 'Bills & Expenses',
     'payroll': 'Payroll Management',
-    'tax-filing': 'Tax & Compliance',
+    'taxFiling': 'Tax & Compliance',
     'reports': 'Financial Reports',
     'connections': 'Bank Connections',
     'integrations': 'App Integrations',
-    'chart-of-accounts': 'Chart of Accounts',
-    'journal-entries': 'Journal Entries',
-    'purchase-orders': 'Purchase Orders',
+    'chartOfAccounts': 'Chart of Accounts',
+    'journalEntries': 'Journal Entries',
+    'purchaseOrders': 'Purchase Orders',
     'estimates': 'Quotes & Estimates',
     'inventory': 'Inventory Management',
     'budgeting': 'Budget Planning',
-    'audit-trail': 'Audit Trail',
+    'auditTrail': 'Audit Trail',
     'ai-settings': 'AI Automation Settings',
-    'ai-automation': 'AI Automation Dashboard'
+    'ai-automation': 'AI Automation Dashboard',
+    'projects': 'Projects'
   };
   return titles[view] || 'Aura Finance AI';
 };
