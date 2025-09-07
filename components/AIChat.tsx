@@ -9,7 +9,7 @@ interface AIChatProps {
   currentProject?: Project;
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const suggestedPrompts = [
     "What was my biggest expense?",
@@ -35,7 +35,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, currentProject }) 
 
     systemInstruction += `\n\nHere is the user's transaction data in JSON format: ${JSON.stringify(transactions)}`;
 
-    if(process.env.API_KEY) {
+    if(import.meta.env.VITE_GEMINI_API_KEY) {
         chatInstance.current = ai.chats.create({
             model: 'gemini-2.5-flash',
             config: { systemInstruction },

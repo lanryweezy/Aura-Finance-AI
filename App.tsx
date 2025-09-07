@@ -75,8 +75,8 @@ export default function App(): React.ReactNode {
     setIsLoading(true);
     setError(null);
     try {
-      if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set.");
+      if (!import.meta.env.VITE_GEMINI_API_KEY) {
+        throw new Error("VITE_GEMINI_API_KEY environment variable not set.");
       }
       
       const [
