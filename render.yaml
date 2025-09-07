@@ -20,8 +20,6 @@ services:
         sync: false  # Set this manually in Render dashboard
       - key: PAYSTACK_SECRET_KEY
         sync: false  # Set this manually in Render dashboard
-      - key: GEMINI_API_KEY
-        sync: false # Set this manually in Render dashboard
     autoDeploy: false
     disk:
       name: backend-disk
@@ -39,7 +37,7 @@ services:
     startCommand: npm run preview -- --port $PORT --host 0.0.0.0
     envVars:
       - key: NODE_VERSION
-        value: 18.17.0
+        value: 20.11.0
       - key: PORT
         value: 3000
       - key: VITE_API_URL
