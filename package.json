@@ -1,52 +1,23 @@
 {
   "name": "aura-finance-ai",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
-  "description": "AI-powered financial management platform designed specifically for Nigerian businesses. Simplify VAT, payroll, invoicing, and tax compliance.",
-  "keywords": ["nigeria", "finance", "business", "ai", "vat", "payroll", "invoicing", "tax", "compliance", "accounting"],
-  "author": "Aura Finance Team",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aura-finance/aura-finance-ai"
-  },
   "scripts": {
-    "dev": "vite --host",
-    "build": "tsc && vite build",
-    "preview": "vite preview --host",
-    "type-check": "tsc --noEmit",
-    "lint": "echo 'Linting skipped for now'",
-    "start": "vite preview --host 0.0.0.0 --port ${PORT:-3000}",
-    "postinstall": "npm run type-check"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "@google/genai": "^1.8.0",
-    "recharts": "^3.0.2",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2"
+    "recharts": "^3.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
-  },
-  "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=8.0.0"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   }
 }

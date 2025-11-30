@@ -3,16 +3,17 @@ import type { AuditLog } from '../types';
 
 let logs: AuditLog[] = [];
 
-const createLog = (action: string, user: string): AuditLog => ({
+const createLog = (action: string, user: string, module?: string): AuditLog => ({
     id: `log_${Date.now()}_${Math.random()}`,
     timestamp: new Date().toISOString(),
     user,
     action,
+    module,
 });
 
 export const auditLogService = {
-    add: (action: string, user: string) => {
-        const newLog = createLog(action, user);
+    add: (action: string, user: string, module?: string) => {
+        const newLog = createLog(action, user, module);
         logs = [newLog, ...logs];
         return newLog;
     },
@@ -25,4 +26,4 @@ export const auditLogService = {
 };
 
 // Initialize with a starting log
-auditLogService.add('System Initialized', 'System');
+auditLogService.add('System Initialized', 'System', 'Core');

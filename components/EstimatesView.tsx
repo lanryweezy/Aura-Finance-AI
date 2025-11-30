@@ -1,6 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
+import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import type { Estimate, LineItem, InventoryItem } from '../types';
 
 interface EstimatesViewProps {
@@ -106,11 +107,19 @@ const NewEstimateModal: React.FC<{
 
 export const EstimatesView: React.FC<EstimatesViewProps> = ({ estimates, onAddEstimate, onConvertToInvoice, inventoryItems }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [previewEstimate, setPreviewEstimate] = useState<Estimate | null>(null);
     const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     return (
         <>
         <NewEstimateModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAdd={onAddEstimate} inventoryItems={inventoryItems} />
+        <DocumentPreviewModal
+            isOpen={!!previewEstimate}
+            onClose={() => setPreviewEstimate(null)}
+            data={previewEstimate}
+            type="estimate"
+        />
+
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <h2 className="text-3xl font-bold text-white">Estimates & Quotes</h2>
@@ -139,9 +148,15 @@ export const EstimatesView: React.FC<EstimatesViewProps> = ({ estimates, onAddEs
                                 <td className="p-4 text-white">{est.customer}</td>
                                 <td className="p-4 font-mono text-white">{formatNaira(est.total)}</td>
                                 <td className="p-4"><EstimateStatusBadge status={est.status} /></td>
-                                <td className="p-4 text-right">
+                                <td className="p-4 text-right space-x-2">
+                                     <button
+                                        onClick={() => setPreviewEstimate(est)}
+                                        className="text-sm py-1 px-3 rounded-md border text-gray-300 border-gray-600 hover:bg-gray-700 hover:text-white transition-colors"
+                                    >
+                                        View / Print
+                                    </button>
                                     {est.status === 'Sent' && (
-                                        <button onClick={() => onConvertToInvoice(est)} className="text-sm py-1 px-3 rounded-md border border-brand-cyan text-brand-cyan hover:bg-brand-cyan/20">Convert to Invoice</button>
+                                        <button onClick={() => onConvertToInvoice(est)} className="text-sm py-1 px-3 rounded-md border border-brand-cyan text-brand-cyan hover:bg-brand-cyan/20">Convert</button>
                                     )}
                                 </td>
                             </tr>

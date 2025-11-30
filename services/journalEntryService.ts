@@ -1,6 +1,5 @@
 
 import type { JournalEntry } from '../types';
-import { api } from './api';
 
 let mockJournalEntries: JournalEntry[] = [
     {
@@ -14,25 +13,20 @@ let mockJournalEntries: JournalEntry[] = [
     }
 ];
 
-export const fetchJournalEntries = async (): Promise<JournalEntry[]> => {
-    try {
-        return await api.get<JournalEntry[]>('/journal-entries/');
-    } catch {
-        return [...mockJournalEntries];
-    }
+export const fetchJournalEntries = (): Promise<JournalEntry[]> => {
+    return new Promise(resolve => {
+        setTimeout(() => resolve([...mockJournalEntries]), 600);
+    });
 };
 
-export const addJournalEntry = async (entryData: Omit<JournalEntry, 'id' | 'date'>): Promise<JournalEntry> => {
-    try {
-        const created = await api.post<JournalEntry>('/journal-entries/', entryData);
-        return created;
-    } catch {
+export const addJournalEntry = (entryData: Omit<JournalEntry, 'id' | 'date'>): Promise<JournalEntry> => {
+    return new Promise(resolve => {
         const newEntry: JournalEntry = {
             ...entryData,
             id: `je_${Date.now()}`,
             date: new Date().toISOString(),
         };
         mockJournalEntries = [newEntry, ...mockJournalEntries];
-        return newEntry;
-    }
+        setTimeout(() => resolve(newEntry), 300);
+    });
 };

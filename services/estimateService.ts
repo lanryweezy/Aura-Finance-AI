@@ -1,6 +1,5 @@
 
 import type { Estimate } from '../types';
-import { api } from './api';
 
 let mockEstimates: Estimate[] = [
     {
@@ -17,18 +16,14 @@ let mockEstimates: Estimate[] = [
     }
 ];
 
-export const fetchEstimates = async (): Promise<Estimate[]> => {
-    try {
-        return await api.get<Estimate[]>('/estimates/');
-    } catch {
-        return [...mockEstimates];
-    }
+export const fetchEstimates = (): Promise<Estimate[]> => {
+    return new Promise(resolve => {
+        setTimeout(() => resolve([...mockEstimates]), 500);
+    });
 };
 
-export const addEstimate = async (estData: Omit<Estimate, 'id' | 'status' | 'issueDate'>): Promise<Estimate> => {
-    try {
-        return await api.post<Estimate>('/estimates/', estData);
-    } catch {
+export const addEstimate = (estData: Omit<Estimate, 'id' | 'status' | 'issueDate'>): Promise<Estimate> => {
+    return new Promise(resolve => {
         const newEst: Estimate = {
             ...estData,
             id: `est_${Date.now()}`,
@@ -36,6 +31,6 @@ export const addEstimate = async (estData: Omit<Estimate, 'id' | 'status' | 'iss
             status: 'Draft',
         };
         mockEstimates = [newEst, ...mockEstimates];
-        return newEst;
-    }
+        setTimeout(() => resolve(newEst), 300);
+    });
 };

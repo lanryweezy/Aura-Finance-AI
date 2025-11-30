@@ -6,10 +6,9 @@ import { GoogleGenAI, Chat } from "@google/genai";
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
-  currentProject?: Project;
 }
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const suggestedPrompts = [
     "What was my biggest expense?",
@@ -18,7 +17,7 @@ const suggestedPrompts = [
     "How much did I spend on software?",
 ];
 
-export const AIChat: React.FC<AIChatProps> = ({ transactions, currentProject }) => {
+export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,16 +25,11 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, currentProject }) 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let systemInstruction = `You are O-Heidi, a friendly and expert financial AI assistant for Nigerian small business owners.
-    Analyze the user's financial data to answer their questions. Be concise, helpful, and use Nigerian Naira (NGN) for currency.`;
+    const systemInstruction = `You are O-Heidi, a friendly and expert financial AI assistant for Nigerian small business owners. 
+    Analyze the user's financial data to answer their questions. Be concise, helpful, and use Nigerian Naira (NGN) for currency.
+    Here is the user's transaction data in JSON format: ${JSON.stringify(transactions)}`;
 
-    if (currentProject) {
-      systemInstruction += `\n\nThe user is currently focused on the project: "${currentProject.name}".\nProject Description: ${currentProject.description}`;
-    }
-
-    systemInstruction += `\n\nHere is the user's transaction data in JSON format: ${JSON.stringify(transactions)}`;
-
-    if(import.meta.env.VITE_GEMINI_API_KEY) {
+    if(process.env.API_KEY) {
         chatInstance.current = ai.chats.create({
             model: 'gemini-2.5-flash',
             config: { systemInstruction },
@@ -57,7 +51,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, currentProject }) 
     }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions, currentProject]);
+  }, [transactions]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

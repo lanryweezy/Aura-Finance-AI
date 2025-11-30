@@ -1,38 +1,39 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card } from './ui/Card';
+import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import type { CategorizedTransaction, Project, Account } from '../types';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
-  'Sales Revenue': 'bg-green-500/10 text-green-400',
-  'Service Revenue': 'bg-green-500/10 text-green-400',
-  'Interest Income': 'bg-green-500/10 text-green-400',
-  'Capital Injection': 'bg-teal-500/10 text-teal-400',
-  'Other Income': 'bg-green-500/10 text-green-400',
+  'Sales Revenue': 'bg-green-500/10 text-green-400 border-green-500/20',
+  'Service Revenue': 'bg-green-500/10 text-green-400 border-green-500/20',
+  'Interest Income': 'bg-green-500/10 text-green-400 border-green-500/20',
+  'Capital Injection': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
+  'Other Income': 'bg-green-500/10 text-green-400 border-green-500/20',
   // Expenses
-  'Salaries & Wages': 'bg-red-500/10 text-red-400',
-  'Utilities': 'bg-blue-500/10 text-blue-400',
-  'Software & Subscriptions': 'bg-indigo-500/10 text-indigo-400',
-  'Marketing & Advertising': 'bg-purple-500/10 text-purple-400',
-  'Rent & Leases': 'bg-rose-500/10 text-rose-400',
-  'Travel': 'bg-amber-500/10 text-amber-400',
-  'Meals & Entertainment': 'bg-pink-500/10 text-pink-400',
-  'Hardware': 'bg-cyan-500/10 text-cyan-400',
-  'Bank Charges & Fees': 'bg-yellow-500/10 text-yellow-400',
-  'Professional Fees': 'bg-lime-500/10 text-lime-400',
-  'Legal Fees': 'bg-lime-500/10 text-lime-400',
-  'Insurance': 'bg-sky-500/10 text-sky-400',
-  'Repairs & Maintenance': 'bg-orange-500/10 text-orange-400',
-  'Cost of Sales': 'bg-fuchsia-500/10 text-fuchsia-400',
-  'COGS - Raw Materials': 'bg-fuchsia-500/10 text-fuchsia-400',
-  'COGS - Direct Labor': 'bg-fuchsia-500/10 text-fuchsia-400',
-  'Taxes - Corporate': 'bg-red-700/20 text-red-400',
+  'Salaries & Wages': 'bg-red-500/10 text-red-400 border-red-500/20',
+  'Utilities': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'Software & Subscriptions': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'Marketing & Advertising': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  'Rent & Leases': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  'Travel': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  'Meals & Entertainment': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  'Hardware': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  'Bank Charges & Fees': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  'Professional Fees': 'bg-lime-500/10 text-lime-400 border-lime-500/20',
+  'Legal Fees': 'bg-lime-500/10 text-lime-400 border-lime-500/20',
+  'Insurance': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  'Repairs & Maintenance': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  'Cost of Sales': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+  'COGS - Raw Materials': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+  'COGS - Direct Labor': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
+  'Taxes - Corporate': 'bg-red-700/20 text-red-400 border-red-500/20',
    // Other
-  'Inter-account Transfer': 'bg-gray-500/10 text-gray-400',
-  "Owner's Draw": 'bg-gray-500/10 text-gray-400',
-  'Miscellaneous': 'bg-stone-500/10 text-stone-400',
-  'Uncategorized': 'bg-gray-600/20 text-gray-300'
+  'Inter-account Transfer': 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  "Owner's Draw": 'bg-gray-500/10 text-gray-400 border-gray-500/20',
+  'Miscellaneous': 'bg-stone-500/10 text-stone-400 border-stone-500/20',
+  'Uncategorized': 'bg-gray-600/20 text-gray-300 border-gray-500/20'
 };
 
 export const DEFAULT_CATEGORIES: Account[] = [
@@ -77,13 +78,13 @@ interface TransactionsViewProps {
 }
 
 const CategoryBadge: React.FC<{ category: string; onClick?: () => void; isInteractive?: boolean }> = ({ category, onClick, isInteractive = false }) => {
-  const colorClasses = CATEGORY_COLOR_MAP[category] || 'bg-brand-cyan/10 text-brand-cyan';
+  const colorClasses = CATEGORY_COLOR_MAP[category] || 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20';
   const buttonClasses = isInteractive ? "cursor-pointer hover:opacity-80 transition-opacity" : "";
 
   return (
-    <button onClick={onClick} disabled={!isInteractive} className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClasses} ${buttonClasses} flex items-center gap-1`}>
+    <button onClick={onClick} disabled={!isInteractive} className={`px-2.5 py-1 text-[11px] font-semibold rounded-md border ${colorClasses} ${buttonClasses} flex items-center gap-1.5 whitespace-nowrap`}>
       {category}
-      {isInteractive && <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+      {isInteractive && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>}
     </button>
   );
 };
@@ -121,40 +122,43 @@ const CategoryEditor: React.FC<{
     };
 
     return (
-        <div ref={editorRef} className="absolute z-20 w-80 bg-dark-primary border border-gray-700 rounded-lg shadow-xl mt-2 p-3 flex flex-col gap-3">
+        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+            <h4 className="text-white font-bold text-sm">Edit Transaction Details</h4>
             <input
                 type="text"
                 placeholder="Search category..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 autoFocus
-                className="w-full bg-dark-secondary border border-gray-600 rounded-md p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
             />
-            <div className="max-h-36 overflow-y-auto flex-grow border-y border-gray-700 py-1">
+            <div className="max-h-36 overflow-y-auto flex-grow border-y border-gray-700 py-1 scrollbar-thin">
                 {filteredCategories.map(cat => (
                     <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`block w-full text-left px-3 py-1.5 text-sm rounded-md ${selectedCategory === cat ? 'bg-brand-cyan/20 text-brand-cyan' : 'text-white hover:bg-brand-cyan/10'}`}
+                        className={`block w-full text-left px-3 py-1.5 text-xs rounded-md mb-0.5 ${selectedCategory === cat ? 'bg-brand-cyan/20 text-brand-cyan font-bold' : 'text-gray-300 hover:bg-white/5'}`}
                     >
                         {cat}
                     </button>
                 ))}
             </div>
-            <select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan text-sm">
-                <option value="">No Project</option>
-                {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-            </select>
-            <input
-                type="text"
-                placeholder="Receipt URL (optional)"
-                value={receiptUrl}
-                onChange={e => setReceiptUrl(e.target.value)}
-                className="w-full bg-dark-secondary border border-gray-600 rounded-md p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-            />
-            <div className="flex justify-end gap-2 mt-2">
-                <button onClick={onClose} className="px-3 py-1 text-xs rounded-md text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                <button onClick={handleSave} className="px-3 py-1 text-xs rounded-md bg-brand-cyan text-black font-bold">Save</button>
+            <div className="space-y-2">
+                <select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan text-sm">
+                    <option value="">No Project</option>
+                    {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
+                </select>
+                <input
+                    type="text"
+                    placeholder="Receipt URL (optional)"
+                    value={receiptUrl}
+                    onChange={e => setReceiptUrl(e.target.value)}
+                    className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                />
+            </div>
+            <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-700">
+                <button onClick={onClose} className="px-3 py-1.5 text-xs rounded-md text-gray-300 hover:bg-dark-secondary">Cancel</button>
+                <button onClick={handleSave} className="px-3 py-1.5 text-xs rounded-md bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90">Save Changes</button>
             </div>
         </div>
     );
@@ -209,8 +213,8 @@ const AddTransactionModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-white mb-6">Add New Transaction</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -221,8 +225,8 @@ const AddTransactionModal: React.FC<{
                     <input type="number" placeholder="Amount (NGN)" value={amount} onChange={e => setAmount(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
 
                     <div className="flex gap-2 bg-dark-secondary p-1 rounded-lg">
-                        <button type="button" onClick={() => setType('debit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'debit' ? 'bg-brand-pink text-white' : 'text-gray-400 hover:bg-dark-primary'}`}>Debit (Money Out)</button>
-                        <button type="button" onClick={() => setType('credit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'credit' ? 'bg-brand-cyan text-black' : 'text-gray-400 hover:bg-dark-primary'}`}>Credit (Money In)</button>
+                        <button type="button" onClick={() => setType('debit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'debit' ? 'bg-brand-pink text-white shadow' : 'text-gray-400 hover:text-white'}`}>Debit (Out)</button>
+                        <button type="button" onClick={() => setType('credit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'credit' ? 'bg-brand-cyan text-black shadow' : 'text-gray-400 hover:text-white'}`}>Credit (In)</button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -256,6 +260,7 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions
   const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   
   const formatNaira = (amount: number) => {
     return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
@@ -309,101 +314,122 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions
       categories={allAvailableCategories}
       projects={projects}
     />
-    <Card className="h-full overflow-hidden flex flex-col">
-       <div className="flex justify-between items-start md:items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-white">Transactions Ledger</h2>
-          <p className="text-gray-400 mt-1">Search, filter, and modify your financial data.</p>
-        </div>
-        <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors flex-shrink-0">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-          Add Transaction
-        </button>
-      </div>
-      
-       {/* Filter controls */}
-       <div className="flex flex-col gap-4 mb-6">
-         <input
-           type="text"
-           placeholder="Search narration..."
-           value={searchTerm}
-           onChange={e => setSearchTerm(e.target.value)}
-           className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-           aria-label="Search by narration"
-         />
-         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-             <select
-               value={typeFilter}
-               onChange={e => setTypeFilter(e.target.value as any)}
-               className="bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-               aria-label="Filter by transaction type"
-             >
-               <option value="all">All Types</option>
-               <option value="credit">Credit</option>
-               <option value="debit">Debit</option>
-             </select>
-             <select
-               value={categoryFilter}
-               onChange={e => setCategoryFilter(e.target.value)}
-               className="bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-               aria-label="Filter by category"
-             >
-               {categoriesForFilter.map(cat => (
-                 <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
-               ))}
-             </select>
-             <select
-               value={projectFilter}
-               onChange={e => setProjectFilter(e.target.value)}
-               className="bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-               aria-label="Filter by project"
-             >
-                <option value="all">All Projects</option>
-                {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-             </select>
-            <input
-              type="date"
-              value={dateFilter.start}
-              onChange={e => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-              className="bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-              aria-label="Start date filter"
-            />
-            <input
-              type="date"
-              value={dateFilter.end}
-              onChange={e => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-              className="bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-              aria-label="End date filter"
-            />
-         </div>
+    <ReceiptScannerModal
+      isOpen={isScannerOpen}
+      onClose={() => setIsScannerOpen(false)}
+      onSave={onAddTransaction}
+    />
+    
+    <Card className="h-full overflow-hidden flex flex-col p-0">
+       <div className="p-6 pb-4 border-b border-gray-800">
+           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-white">Transactions Ledger</h2>
+              <p className="text-gray-400 mt-1 text-sm">Manage your financial records.</p>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setIsScannerOpen(true)} className="bg-dark-tertiary hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-gray-700">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><line x1="21" y1="5" x2="10" y2="5"/><line x1="21" y1="2" x2="21" y2="8"/><line x1="24" y1="5" x2="18" y2="5"/></svg>
+                 Scan Receipt
+              </button>
+              <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors flex-shrink-0 shadow-[0_0_10px_rgba(0,245,212,0.3)]">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                Add Transaction
+              </button>
+            </div>
+          </div>
+          
+           {/* Filter controls as a toolbar */}
+           <div className="flex flex-col gap-3 p-1">
+             <div className="flex items-center gap-3 bg-dark-secondary border border-gray-700 p-2 rounded-xl">
+                 <div className="flex-grow relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input
+                    type="text"
+                    placeholder="Search narration..."
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                    className="w-full bg-transparent border-none pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:ring-0 text-sm"
+                    aria-label="Search by narration"
+                    />
+                 </div>
+                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
+                 <select
+                   value={typeFilter}
+                   onChange={e => setTypeFilter(e.target.value as any)}
+                   className="bg-transparent text-gray-300 text-sm focus:outline-none focus:text-white cursor-pointer"
+                   aria-label="Filter by transaction type"
+                 >
+                   <option value="all">All Types</option>
+                   <option value="credit">Income (Credit)</option>
+                   <option value="debit">Expense (Debit)</option>
+                 </select>
+            </div>
+            
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                 <select
+                   value={categoryFilter}
+                   onChange={e => setCategoryFilter(e.target.value)}
+                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                   aria-label="Filter by category"
+                 >
+                   {categoriesForFilter.map(cat => (
+                     <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
+                   ))}
+                 </select>
+                 <select
+                   value={projectFilter}
+                   onChange={e => setProjectFilter(e.target.value)}
+                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                   aria-label="Filter by project"
+                 >
+                    <option value="all">All Projects</option>
+                    {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
+                 </select>
+                <input
+                  type="date"
+                  value={dateFilter.start}
+                  onChange={e => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
+                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                  aria-label="Start date filter"
+                />
+                <input
+                  type="date"
+                  value={dateFilter.end}
+                  onChange={e => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
+                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                  aria-label="End date filter"
+                />
+             </div>
+           </div>
        </div>
 
-      <div className="overflow-y-auto flex-grow">
-        <table className="w-full text-left">
-          <thead className="sticky top-0 bg-dark-tertiary z-10">
+      <div className="overflow-y-auto flex-grow relative">
+        <table className="w-full text-left border-collapse">
+          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
             <tr>
-              <th className="p-4 text-sm font-semibold text-gray-400">Date</th>
-              <th className="p-4 text-sm font-semibold text-gray-400">Narration</th>
-              <th className="p-4 text-sm font-semibold text-gray-400">Amount</th>
-              <th className="p-4 text-sm font-semibold text-gray-400">Category</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Date</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Narration</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Amount</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Category</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800">
+          <tbody className="divide-y divide-gray-800/50">
             {filteredTransactions.map((t) => (
-              <tr key={t.id} className="hover:bg-dark-secondary/50">
-                <td className="p-4 whitespace-nowrap text-gray-300">{new Date(t.date).toLocaleDateString()}</td>
-                <td className="p-4 max-w-sm text-white">
+              <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
+                <td className="p-4 whitespace-nowrap text-gray-400 text-sm font-mono">{new Date(t.date).toLocaleDateString()}</td>
+                <td className="p-4 max-w-sm text-gray-200">
                     <div className="flex flex-col">
-                        <span className="truncate" title={t.narration}>{t.narration}</span>
-                        {t.projectId && <span className="text-xs text-brand-purple">{getProjectName(t.projectId)}</span>}
+                        <span className="truncate font-medium" title={t.narration}>{t.narration}</span>
+                        {t.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(t.projectId)}</span>}
                     </div>
                 </td>
-                <td className={`p-4 font-mono ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
-                  {t.type === 'credit' ? '+' : '-'} {formatNaira(t.amount)}
+                <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
+                  {t.type === 'credit' ? '+' : ''} {formatNaira(t.amount)}
                 </td>
                 <td className="p-4 relative">
                     <div className="flex items-center gap-2">
-                        {t.receiptUrl && <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-400 hover:text-white"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.59a2 2 0 0 1-2.83-2.83l.79-.79"/></svg></a>}
+                        {t.receiptUrl && <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg></a>}
                         <CategoryBadge category={t.category} onClick={() => setEditingId(t.id)} isInteractive={true} />
                     </div>
                   {editingId === t.id && (
@@ -421,8 +447,12 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions
           </tbody>
         </table>
          {filteredTransactions.length === 0 && (
-          <div className="text-center py-10 text-gray-500">
-              <p>No transactions match your filters.</p>
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="bg-dark-secondary p-4 rounded-full mb-3">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </div>
+              <h3 className="text-white font-medium mb-1">No transactions found</h3>
+              <p className="text-gray-500 text-sm">Try adjusting your filters or search term.</p>
           </div>
         )}
       </div>

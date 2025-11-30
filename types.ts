@@ -14,6 +14,14 @@ export interface CategorizedTransaction extends RawTransaction {
   receiptUrl?: string;
 }
 
+export interface ReceiptData {
+    merchantName: string;
+    date: string;
+    totalAmount: number;
+    category: string;
+    description: string;
+}
+
 export interface FinancialInsight {
   title: string;
   description: string;
@@ -153,6 +161,7 @@ export interface JournalEntry {
 export interface Project {
     id: string;
     name: string;
+    description?: string;
 }
 
 export interface AuditLog {
@@ -160,6 +169,7 @@ export interface AuditLog {
     timestamp: string;
     user: string;
     action: string;
+    module?: string;
 }
 
 export interface Budget {
@@ -201,15 +211,50 @@ export interface InventoryItem {
     quantity: number; // For products
 }
 
+// ============== CRM TYPES ==============
+export interface Contact {
+    id: string;
+    type: 'Customer' | 'Vendor';
+    name: string;
+    companyName?: string;
+    email: string;
+    phone?: string;
+    address?: string;
+    tin?: string; // Tax Identification Number
+}
+
+// ============== SAAS & AUTH TYPES ==============
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    role: 'Owner' | 'Admin' | 'Viewer';
+    organizationId: string;
+    avatarUrl?: string;
+}
+
+export interface Organization {
+    id: string;
+    name: string;
+    plan: 'Free' | 'Growth' | 'Enterprise';
+    tin?: string;
+}
+
+export interface SubscriptionTier {
+    id: 'Free' | 'Growth' | 'Enterprise';
+    name: string;
+    price: number;
+    features: string[];
+    highlighted?: boolean;
+}
+
 
 export type View = 
     'dashboard' | 'transactions' | 'chat' | 'connections' | 'integrations' | 'taxFiling' | 'reports' |
     'receivables' | 'payables' | 'payroll' |
     // New Views
     'chartOfAccounts' | 'journalEntries' | 'purchaseOrders' | 'estimates' | 'inventory' |
-    'budgeting' | 'auditTrail' | 'projects' |
-    // AI Features
-    'ai-settings' | 'ai-automation';
+    'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts';
 
 // Financial Report Types
 export interface ReportPeriod {

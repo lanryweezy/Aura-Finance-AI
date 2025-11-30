@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
+import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 
 interface ReceivablesViewProps {
@@ -38,6 +39,10 @@ const NewInvoiceModal: React.FC<{
     const [applyWht, setApplyWht] = useState(false);
     const [lineItems, setLineItems] = useState<Partial<LineItem>[]>([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
 
+    const formatNaira = (amount: number) => {
+        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+    };
+
     const handleLineItemChange = (index: number, field: keyof LineItem, value: any) => {
         const updatedLineItems = [...lineItems];
         (updatedLineItems[index] as any)[field] = value;
@@ -59,6 +64,11 @@ const NewInvoiceModal: React.FC<{
     const removeLineItem = (index: number) => {
         setLineItems(lineItems.filter((_, i) => i !== index));
     };
+
+    // Real-time calculations for the summary view
+    const calculatedSubtotal = lineItems.reduce((sum, item) => sum + ((Number(item.quantity) || 0) * (Number(item.unitPrice) || 0)), 0);
+    const calculatedVat = applyVat ? calculatedSubtotal * 0.075 : 0;
+    const calculatedTotal = calculatedSubtotal + calculatedVat;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -116,36 +126,59 @@ const NewInvoiceModal: React.FC<{
                         <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
                     </div>
                     
-                    <div className="space-y-2">
+                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                         <label className="text-sm text-gray-400">Line Items</label>
                         {lineItems.map((item, index) => (
                              <div key={index} className="flex items-center gap-2">
-                                <select value={item.inventoryItemId} onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)} className="w-full bg-dark-secondary border border-gray-600 rounded p-2 text-sm">
+                                <select value={item.inventoryItemId} onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)} className="w-full bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan">
                                     <option value="">Select Item</option>
                                     {inventoryItems.map(invItem => <option key={invItem.id} value={invItem.id}>{invItem.name}</option>)}
                                 </select>
-                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-dark-secondary border border-gray-600 rounded p-2 text-sm" />
-                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-24 bg-dark-secondary border border-gray-600 rounded p-2 text-sm" />
+                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan" />
+                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-24 bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan" />
                                 <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:text-red-400 p-1">&times;</button>
                             </div>
                         ))}
-                        <button type="button" onClick={addLineItem} className="text-xs text-brand-cyan hover:text-white">+ Add Line</button>
+                        <button type="button" onClick={addLineItem} className="text-xs text-brand-cyan hover:text-white mt-1">+ Add Line</button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 bg-dark-secondary p-3 rounded-lg">
-                        <label htmlFor="vat-checkbox" className="flex items-center gap-2 cursor-pointer text-white">
-                           <input id="vat-checkbox" type="checkbox" checked={applyVat} onChange={() => setApplyVat(!applyVat)} className="w-5 h-5 rounded bg-dark-tertiary border-gray-600 text-brand-cyan focus:ring-brand-cyan"/>
+                    <div className="flex items-center justify-between gap-4 bg-dark-secondary/50 border border-gray-700 p-3 rounded-lg">
+                        <label htmlFor="vat-checkbox" className="flex items-center gap-2 cursor-pointer text-white text-sm select-none">
+                           <input id="vat-checkbox" type="checkbox" checked={applyVat} onChange={() => setApplyVat(!applyVat)} className="w-4 h-4 rounded bg-dark-tertiary border-gray-600 text-brand-cyan focus:ring-brand-cyan"/>
                            Apply VAT (7.5%)
                         </label>
-                         <label htmlFor="wht-checkbox" className="flex items-center gap-2 cursor-pointer text-white">
-                           <input id="wht-checkbox" type="checkbox" checked={applyWht} onChange={() => setApplyWht(!applyWht)} className="w-5 h-5 rounded bg-dark-tertiary border-gray-600 text-brand-purple focus:ring-brand-purple"/>
+                         <label htmlFor="wht-checkbox" className="flex items-center gap-2 cursor-pointer text-white text-sm select-none">
+                           <input id="wht-checkbox" type="checkbox" checked={applyWht} onChange={() => setApplyWht(!applyWht)} className="w-4 h-4 rounded bg-dark-tertiary border-gray-600 text-brand-purple focus:ring-brand-purple"/>
                            WHT applies
                         </label>
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Save Invoice</button>
+                    {/* Summary Section */}
+                    <div className="bg-dark-secondary/30 p-4 rounded-lg space-y-2 border border-gray-700/50 mt-2">
+                        <div className="flex justify-between text-sm text-gray-400">
+                            <span>Subtotal</span>
+                            <span>{formatNaira(calculatedSubtotal)}</span>
+                        </div>
+                        {applyVat && (
+                            <div className="flex justify-between text-sm text-brand-cyan">
+                                <span>VAT (7.5%)</span>
+                                <span>{formatNaira(calculatedVat)}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700/50">
+                            <span>Total</span>
+                            <span>{formatNaira(calculatedTotal)}</span>
+                        </div>
+                        {applyWht && (
+                             <div className="flex justify-between text-xs text-brand-purple pt-1 italic">
+                                <span>* Withholding Tax (5%) Applicable: {formatNaira(calculatedSubtotal * 0.05)}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end gap-4 pt-2">
+                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary transition-colors">Cancel</button>
+                        <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80 transition-colors shadow-[0_0_15px_rgba(0,245,212,0.3)]">Save Invoice</button>
                     </div>
                 </form>
             </div>
@@ -184,6 +217,9 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [reminderText, setReminderText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   
+  // Document Preview State
+  const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
+
   const handleOpenReminder = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setIsReminderModalOpen(true);
@@ -241,11 +277,18 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
     <>
     <NewInvoiceModal isOpen={isNewInvoiceModalOpen} onClose={() => setIsNewInvoiceModalOpen(false)} onAddInvoice={onAddInvoice} inventoryItems={inventoryItems} />
     <ReminderModal isOpen={isReminderModalOpen} onClose={() => setIsReminderModalOpen(false)} invoice={selectedInvoice} reminderText={reminderText} isLoading={isGenerating} />
+    
+    <DocumentPreviewModal 
+        isOpen={!!previewInvoice} 
+        onClose={() => setPreviewInvoice(null)} 
+        data={previewInvoice} 
+        type="invoice" 
+    />
 
     <div className="space-y-8">
         <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold text-white">Accounts Receivable</h2>
-            <button onClick={() => setIsNewInvoiceModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
+            <button onClick={() => setIsNewInvoiceModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(0,245,212,0.2)]">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 Create New Invoice
             </button>
@@ -283,30 +326,46 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
             </thead>
             <tbody className="divide-y divide-gray-800">
               {invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-dark-secondary/50">
+                <tr key={invoice.id} className="hover:bg-dark-secondary/50 transition-colors">
                   <td className="p-4 text-white font-medium">{invoice.customer}</td>
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                   <td className="p-4 font-mono text-white">
-                    <div className="flex items-center gap-2">
-                      <span>{formatNaira(invoice.total)}</span>
-                      {invoice.vat > 0 && <span className="text-xs bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded-md">VAT</span>}
-                      {invoice.whtApplied && <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-md">WHT</span>}
+                     <div className="flex flex-col gap-1">
+                        <span className="font-bold">{formatNaira(invoice.total)}</span>
+                        <div className="flex flex-wrap gap-1">
+                            {invoice.vat > 0 && (
+                                <span className="text-[10px] font-medium bg-blue-500/10 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/20" title={`VAT: ${formatNaira(invoice.vat)}`}>
+                                    VAT
+                                </span>
+                            )}
+                            {invoice.whtApplied && (
+                                <span className="text-[10px] font-medium bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20" title="Withholding Tax (5%)">
+                                    WHT: {formatNaira(invoice.amount * 0.05)}
+                                </span>
+                            )}
+                        </div>
                     </div>
                   </td>
                   <td className="p-4"><InvoiceStatusBadge status={invoice.status} /></td>
                   <td className="p-4 text-right space-x-2">
+                    <button
+                        onClick={() => setPreviewInvoice(invoice)}
+                        className="text-sm py-1 px-3 rounded-md border text-gray-300 border-gray-600 hover:bg-gray-700 hover:text-white transition-colors"
+                    >
+                        View / Print
+                    </button>
                     {(invoice.status === 'Unpaid' || invoice.status === 'Overdue') && (
                         <>
                             <button
                                 onClick={() => handleOpenReminder(invoice)}
-                                className="text-sm py-1 px-3 rounded-md border text-purple-300 border-purple-400/50 hover:bg-purple-400/20"
+                                className="text-sm py-1 px-3 rounded-md border text-purple-300 border-purple-400/50 hover:bg-purple-400/20 transition-colors"
                             >
                                 AI Reminder
                             </button>
                             <button 
                                 onClick={() => onRecordPayment(invoice.id)}
                                 className="text-brand-cyan hover:text-white font-semibold transition-colors text-sm py-1 px-3 rounded-md border border-brand-cyan hover:bg-brand-cyan/20">
-                                Record Payment
+                                Pay
                             </button>
                         </>
                     )}

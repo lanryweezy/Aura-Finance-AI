@@ -1,6 +1,5 @@
 
 import type { Employee } from '../types';
-import { api } from './api';
 
 let mockEmployees: Employee[] = [
   {
@@ -45,47 +44,46 @@ let mockEmployees: Employee[] = [
   }
 ];
 
-export const fetchEmployees = async (): Promise<Employee[]> => {
-  try {
-    const employees = await api.get<Employee[]>('/employees/');
-    return employees.sort((a, b) => a.name.localeCompare(b.name));
-  } catch {
-    return [...mockEmployees].sort((a, b) => a.name.localeCompare(b.name));
-  }
+export const fetchEmployees = (): Promise<Employee[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve([...mockEmployees].sort((a, b) => a.name.localeCompare(b.name)));
+    }, 500);
+  });
 };
 
-export const addEmployee = async (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
-  try {
-    const created = await api.post<Employee>('/employees/', employeeData);
-    return created;
-  } catch {
-    const newEmployee: Employee = {
-      id: `emp_${Date.now()}`,
-      ...employeeData
-    };
-    mockEmployees.push(newEmployee);
-    return newEmployee;
-  }
+export const addEmployee = (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            const newEmployee: Employee = {
+                id: `emp_${Date.now()}`,
+                ...employeeData
+            };
+            mockEmployees.push(newEmployee);
+            resolve(newEmployee);
+        }, 300);
+    });
 };
 
-export const updateEmployee = async (employeeData: Employee): Promise<Employee> => {
-  try {
-    const updated = await api.put<Employee>(`/employees/${employeeData.id}`, employeeData);
-    return updated;
-  } catch {
-    const index = mockEmployees.findIndex(e => e.id === employeeData.id);
-    if(index !== -1){
-      mockEmployees[index] = employeeData;
-      return employeeData;
-    }
-    throw new Error('Employee not found');
-  }
+export const updateEmployee = (employeeData: Employee): Promise<Employee> => {
+    return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            const index = mockEmployees.findIndex(e => e.id === employeeData.id);
+            if(index !== -1){
+                mockEmployees[index] = employeeData;
+                resolve(employeeData);
+            } else {
+                reject(new Error("Employee not found"));
+            }
+        }, 300);
+    });
 };
 
-export const removeEmployee = async (employeeId: string): Promise<void> => {
-  try {
-    await api.delete(`/employees/${employeeId}`);
-  } catch {
-    mockEmployees = mockEmployees.filter(emp => emp.id !== employeeId);
-  }
+export const removeEmployee = (employeeId: string): Promise<void> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            mockEmployees = mockEmployees.filter(emp => emp.id !== employeeId);
+            resolve();
+        }, 300);
+    });
 };

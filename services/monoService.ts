@@ -1,6 +1,5 @@
 
 import type { RawTransaction } from '../types';
-import { api } from './api';
 
 const mockData: RawTransaction[] = [
   {
@@ -85,10 +84,10 @@ const mockData: RawTransaction[] = [
   }
 ];
 
-export const fetchTransactions = async (): Promise<RawTransaction[]> => {
-  try {
-    return await api.get<RawTransaction[]>('/transactions/');
-  } catch {
-    return mockData;
-  }
+export const fetchTransactions = (): Promise<RawTransaction[]> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(mockData);
+    }, 1500); // Simulate network delay
+  });
 };

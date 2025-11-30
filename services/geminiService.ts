@@ -34,31 +34,18 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
   };
 
   const prompt = `
-    You are an expert Nigerian business accountant with deep knowledge of local business practices, payment systems, and regulatory requirements. Analyze the following bank transactions and categorize them accurately for Nigerian business accounting standards.
+    You are an expert accountant for Nigerian businesses. Analyze the following list of bank transactions. Your task is to accurately categorize each transaction into ONE of the specified categories.
+    The 'balance' field is the running balance after the transaction and might not be present. Do not use it for categorization.
+    Prioritize accuracy. If a transaction cannot be clearly categorized, assign it to 'Uncategorized'.
+    The 'narration' field contains the most context for categorization. Infer based on common Nigerian payment descriptions (e.g., NIP, PAYSTACK, JUMIA, IKEDC, BOLT, SALARY).
 
-    NIGERIAN BUSINESS CONTEXT:
-    - Common payment platforms: Paystack, Flutterwave, Interswitch, Remita, Opay, PalmPay, Kuda
-    - Utilities: IKEDC, EKEDC, NEPA, DISCOs (electricity), LAWMA (waste), telecom (MTN, Airtel, Glo, 9Mobile)
-    - Transportation: Bolt, Uber, Lagos BRT, Keke, Okada payments
-    - E-commerce: Jumia, Konga, Jiji, local marketplace payments
-    - Government: FIRS, CAC, NIMC, state IGR payments
-    - Banking: GTBank, Access, Zenith, First Bank, UBA, etc.
-    
-    CATEGORIZATION RULES:
-    - Salary/wage payments usually contain "SALARY", "WAGE", employee names, or regular monthly amounts
-    - Office rent often shows landlord names or "RENT" descriptions
-    - Utility bills: IKEDC, EKEDC, telecom names, internet providers
-    - Professional services: legal, accounting, consulting fees
-    - Bank charges: COT, SMS alerts, maintenance fees
-    - Government payments: tax codes, FIRS, CAC, permits
-    - Transportation: ride-hailing, fuel, vehicle maintenance
-    
-    Categories available: ${categoryList.join(', ')}
-    
-    Transaction data:
+    Here are the ONLY allowed categories:
+    ${categoryList.join(', ')}
+
+    Here is the transaction list:
     ${JSON.stringify(transactions, null, 2)}
 
-    Return categorized transactions as JSON array. Be conservative - use 'Uncategorized' if uncertain.
+    Return a JSON array matching the provided schema. For transactions that look like salary payments, use the 'Salaries & Wages' category.
   `;
 
   try {
@@ -103,27 +90,9 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
   }
   
   const prompt = `
-    You are a Nigerian business financial advisor with expertise in local business challenges, tax obligations, and growth opportunities. Analyze these transactions for a Nigerian SME and provide 3 actionable insights.
-
-    NIGERIAN BUSINESS CONSIDERATIONS:
-    - VAT obligations (7.5% for VATable goods/services)
-    - Withholding tax requirements (5% professional services, 10% rent)
-    - Company Income Tax implications (20% small companies, 30% large)
-    - PAYE obligations for employees
-    - Quarterly and annual filing requirements
-    - Cash flow challenges common in Nigerian businesses
-    - Foreign exchange considerations for imports/exports
-    - Local supplier vs international vendor cost analysis
-    - Seasonal business patterns (rainy season, festive periods)
-    
-    FOCUS AREAS:
-    1. Tax compliance and optimization opportunities
-    2. Cash flow management and working capital efficiency
-    3. Cost reduction in Nigerian business context (utilities, transportation, etc.)
-    4. Revenue diversification and growth opportunities
-    5. Risk management (forex, supplier concentration, etc.)
-    
-    Generate practical, Nigeria-specific insights with clear action items. Prioritize based on financial impact and regulatory importance.
+    Based on the following financial transactions for a Nigerian small business, generate 3 concise and actionable insights.
+    Focus on spending patterns, income sources, potential savings, and financial health warnings.
+    Format the output as a JSON array according to the provided schema.
 
     Transactions:
     ${JSON.stringify(transactions, null, 2)}

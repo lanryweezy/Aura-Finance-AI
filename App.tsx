@@ -5,8 +5,6 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { TransactionsView } from './components/TransactionsView';
 import { AIChat } from './components/AIChat';
-import { AISettingsView } from './components/AISettingsView';
-import { AIAutomationDashboard } from './components/AIAutomationDashboard';
 import { PayablesView } from './components/PayablesView';
 import { ReceivablesView } from './components/ReceivablesView';
 import { PayrollView } from './components/PayrollView';
@@ -22,6 +20,10 @@ import { InventoryView } from './components/InventoryView';
 import { BudgetingView } from './components/BudgetingView';
 import { AuditTrailView } from './components/AuditTrailView';
 import { ProjectsView } from './components/ProjectsView';
+import { SettingsView } from './components/SettingsView';
+import { AuthView } from './components/AuthView';
+import { SubscriptionView } from './components/SubscriptionView';
+import { ContactsView } from './components/ContactsView';
 
 import { Spinner } from './components/ui/Spinner';
 
@@ -39,14 +41,19 @@ import { fetchPurchaseOrders, addPurchaseOrder as apiAddPurchaseOrder } from './
 import { fetchEstimates, addEstimate as apiAddEstimate } from './services/estimateService';
 import { fetchJournalEntries, addJournalEntry as apiAddJournalEntry } from './services/journalEntryService';
 import { fetchBudgets, saveBudgets as apiSaveBudgets } from './services/budgetService';
+import { authService } from './services/authService';
+import { fetchContacts, addContact as apiAddContact, updateContact as apiUpdateContact } from './services/contactService';
+
 import { DEFAULT_CATEGORIES } from './components/TransactionsView';
 
 
-import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnection, Bill, Invoice, PayrollRun, PayrollPayslip, PayrollAdjustment, Account, JournalEntry, Project, InventoryItem, PurchaseOrder, Estimate, Budget } from './types';
+import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnection, Bill, Invoice, PayrollRun, PayrollPayslip, PayrollAdjustment, Account, JournalEntry, Project, InventoryItem, PurchaseOrder, Estimate, Budget, User, Organization, Contact } from './types';
 
 export default function App(): React.ReactNode {
+  const [user, setUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState<View>('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  // App Data States
   const [transactions, setTransactions] = useState<CategorizedTransaction[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [connections, setConnections] = useState<BankConnection[]>([]);
@@ -60,33 +67,58 @@ export default function App(): React.ReactNode {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [auditLog, setAuditLog] = useState(auditLogService.getLogs());
-  const [currentProject, setCurrentProject] = useState<Project | undefined>();
   
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   
-  const logAndRefresh = (log: string) => {
-    auditLogService.add(log, "Tunde O.");
+  // Check for existing session on mount
+  useEffect(() => {
+    const session = authService.getCurrentUser();
+    if (session) {
+        setUser(session.user);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLogin = (loggedInUser: User, org: Organization) => {
+      setUser(loggedInUser);
+      loadInitialData();
+  };
+
+  const handleLogout = async () => {
+      await authService.logout();
+      setUser(null);
+      // Optional: Clear sensitive state here if needed
+  };
+
+  const logAndRefresh = (log: string, module: string = 'General') => {
+    auditLogService.add(log, user?.name || "System", module);
     setAuditLog(auditLogService.getLogs());
   };
 
   const loadInitialData = useCallback(async () => {
+    if (!user) {
+        setIsLoading(false);
+        return;
+    }
+
     setIsLoading(true);
     setError(null);
     try {
-      if (!import.meta.env.VITE_GEMINI_API_KEY) {
-        throw new Error("VITE_GEMINI_API_KEY environment variable not set.");
+      if (!process.env.API_KEY) {
+        throw new Error("API_KEY environment variable not set.");
       }
       
       const [
           fetchedConnections, fetchedEmployees, fetchedBills, fetchedInvoices, 
           fetchedProjects, fetchedInventory, fetchedPOs, fetchedEstimates,
-          fetchedJEs, fetchedBudgets
+          fetchedJEs, fetchedBudgets, fetchedContacts
         ] = await Promise.all([
         fetchConnections(), fetchEmployees(), fetchBills(), fetchInvoices(),
         fetchProjects(), fetchInventoryItems(), fetchPurchaseOrders(), fetchEstimates(),
-        fetchJournalEntries(), fetchBudgets()
+        fetchJournalEntries(), fetchBudgets(), fetchContacts()
       ]);
 
       setConnections(fetchedConnections);
@@ -99,6 +131,7 @@ export default function App(): React.ReactNode {
       setEstimates(fetchedEstimates);
       setJournalEntries(fetchedJEs);
       setBudgets(fetchedBudgets);
+      setContacts(fetchedContacts);
 
       if (fetchedConnections.length > 0) {
         const rawTransactions = await mockFetchTransactions();
@@ -114,11 +147,13 @@ export default function App(): React.ReactNode {
     } finally {
       setIsLoading(false);
     }
-  }, [chartOfAccounts]);
+  }, [chartOfAccounts, user]);
 
   useEffect(() => {
-    loadInitialData();
-  }, [loadInitialData]);
+    if (user) {
+        loadInitialData();
+    }
+  }, [loadInitialData, user]);
   
   const payrollSummary: PayrollSummary = useMemo(() => {
     return employees.reduce((acc, emp) => {
@@ -135,13 +170,13 @@ export default function App(): React.ReactNode {
   const handleAddEmployee = async (employeeData: Omit<Employee, 'id'>) => {
     const newEmployee = await addEmployee(employeeData);
     setEmployees(prev => [...prev, newEmployee]);
-    logAndRefresh(`Added new employee: ${newEmployee.name}`);
+    logAndRefresh(`Added new employee: ${newEmployee.name}`, 'Payroll');
   };
     
   const handleUpdateEmployee = async (employeeData: Employee) => {
       const updatedEmployee = await updateEmployee(employeeData);
       setEmployees(prev => prev.map(e => e.id === updatedEmployee.id ? updatedEmployee : e));
-      logAndRefresh(`Updated employee details for: ${updatedEmployee.name}`);
+      logAndRefresh(`Updated employee details for: ${updatedEmployee.name}`, 'Payroll');
       return updatedEmployee;
   };
     
@@ -151,7 +186,7 @@ export default function App(): React.ReactNode {
         await removeEmployee(id);
         setEmployees(prev => prev.filter(emp => emp.id !== id));
         if (employeeToRemove) {
-          logAndRefresh(`Removed employee: ${employeeToRemove.name}`);
+          logAndRefresh(`Removed employee: ${employeeToRemove.name}`, 'Payroll');
         }
     }
   };
@@ -195,14 +230,14 @@ export default function App(): React.ReactNode {
     };
 
     setPayrollHistory(prev => [newRun, ...prev]);
-    logAndRefresh(`Ran payroll for ${period}`);
+    logAndRefresh(`Ran payroll for ${period}`, 'Payroll');
   };
 
   const handleUpdateTransaction = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
     setTransactions(prevTransactions =>
       prevTransactions.map(t => {
         if (t.id === transactionId) {
-            logAndRefresh(`Updated transaction #${t.id.slice(-4)}`);
+            logAndRefresh(`Updated transaction #${t.id.slice(-4)}`, 'Transactions');
             return { ...t, category: newCategory, projectId: newProjectId, receiptUrl: newReceiptUrl };
         }
         return t;
@@ -218,7 +253,7 @@ export default function App(): React.ReactNode {
     setTransactions(prev => 
         [...prev, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     );
-    logAndRefresh(`Manually added transaction: ${newTransaction.narration} for ${newTransaction.amount}`);
+    logAndRefresh(`Added transaction: ${newTransaction.narration} for ${newTransaction.amount}`, 'Transactions');
   };
 
   const handleConnectionsUpdated = () => {
@@ -228,18 +263,13 @@ export default function App(): React.ReactNode {
   const handleAddProject = async (projectName: string) => {
     const newProject = await apiAddProject(projectName);
     setProjects(prev => [...prev, newProject]);
-    logAndRefresh(`Created new project: ${newProject.name}`);
+    logAndRefresh(`Created new project: ${newProject.name}`, 'Projects');
   }
-
-  const handleSelectProject = (project: Project) => {
-    setCurrentProject(project);
-    setActiveView('chat');
-  };
 
   const handleAddBill = async (billData: Omit<Bill, 'id'|'status'|'issueDate'>) => {
     const newBill = await apiAddBill(billData);
     setBills(prev => [newBill, ...prev]);
-    logAndRefresh(`Added new bill from ${newBill.vendor}`);
+    logAndRefresh(`Added new bill from ${newBill.vendor}`, 'Payables');
   }
 
   const handlePayBill = (billId: string) => {
@@ -256,13 +286,13 @@ export default function App(): React.ReactNode {
     });
 
     setBills(prev => prev.map(b => b.id === billId ? {...b, status: 'Paid'} : b));
-    logAndRefresh(`Paid bill #${bill.id.slice(-4)} from ${bill.vendor}`);
+    logAndRefresh(`Paid bill #${bill.id.slice(-4)} from ${bill.vendor}`, 'Payables');
   };
 
   const handleAddInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>) => {
     const newInvoice = await apiAddInvoice(invoiceData);
     setInvoices(prev => [newInvoice, ...prev]);
-    logAndRefresh(`Added new invoice for ${newInvoice.customer}`);
+    logAndRefresh(`Added new invoice for ${newInvoice.customer}`, 'Receivables');
   };
 
   const handleRecordInvoicePayment = (invoiceId: string) => {
@@ -289,31 +319,31 @@ export default function App(): React.ReactNode {
     fetchInventoryItems().then(setInventory);
 
     setInvoices(prev => prev.map(i => i.id === invoiceId ? {...i, status: 'Paid'} : i));
-    logAndRefresh(`Recorded payment for invoice #${invoice.id.slice(-4)} from ${invoice.customer}`);
+    logAndRefresh(`Recorded payment for invoice #${invoice.id.slice(-4)} from ${invoice.customer}`, 'Receivables');
   }
   
   const handleAddJournalEntry = async (entry: Omit<JournalEntry, 'id'|'date'>) => {
     const newEntry = await apiAddJournalEntry(entry);
     setJournalEntries(prev => [newEntry, ...prev]);
-    logAndRefresh(`Created journal entry #${newEntry.id.slice(-4)}`);
+    logAndRefresh(`Created journal entry #${newEntry.id.slice(-4)}`, 'Accounting');
   }
 
   const handleAddInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
     const newItem = await apiAddInventoryItem(item);
     setInventory(prev => [newItem, ...prev]);
-    logAndRefresh(`Added new inventory item: ${newItem.name}`);
+    logAndRefresh(`Added new inventory item: ${newItem.name}`, 'Inventory');
   };
 
   const handleUpdateInventoryItem = async (item: InventoryItem) => {
     const updatedItem = await apiUpdateInventoryItem(item);
     setInventory(prev => prev.map(i => i.id === updatedItem.id ? updatedItem : i));
-    logAndRefresh(`Updated inventory item: ${updatedItem.name}`);
+    logAndRefresh(`Updated inventory item: ${updatedItem.name}`, 'Inventory');
   };
 
   const handleAddPurchaseOrder = async (po: Omit<PurchaseOrder, 'id'|'status'|'issueDate'>) => {
     const newPO = await apiAddPurchaseOrder(po);
     setPurchaseOrders(prev => [newPO, ...prev]);
-    logAndRefresh(`Created Purchase Order #${newPO.id.slice(-4)} for ${newPO.vendor}`);
+    logAndRefresh(`Created Purchase Order #${newPO.id.slice(-4)} for ${newPO.vendor}`, 'Purchases');
   };
 
   const handleConvertToBill = (po: PurchaseOrder) => {
@@ -328,13 +358,13 @@ export default function App(): React.ReactNode {
     };
     handleAddBill(billData);
     setPurchaseOrders(prev => prev.map(p => p.id === po.id ? {...p, status: 'Completed'} : p));
-    logAndRefresh(`Converted PO #${po.id.slice(-4)} to a bill.`);
+    logAndRefresh(`Converted PO #${po.id.slice(-4)} to a bill.`, 'Purchases');
   };
 
   const handleAddEstimate = async (est: Omit<Estimate, 'id'|'status'|'issueDate'>) => {
       const newEst = await apiAddEstimate(est);
       setEstimates(prev => [newEst, ...prev]);
-      logAndRefresh(`Created Estimate #${newEst.id.slice(-4)} for ${newEst.customer}`);
+      logAndRefresh(`Created Estimate #${newEst.id.slice(-4)} for ${newEst.customer}`, 'Sales');
   };
 
   const handleConvertToInvoice = (est: Estimate) => {
@@ -356,13 +386,25 @@ export default function App(): React.ReactNode {
 
       handleAddInvoice(invoiceData);
       setEstimates(prev => prev.map(e => e.id === est.id ? {...e, status: 'Accepted'} : e));
-      logAndRefresh(`Converted Estimate #${est.id.slice(-4)} to an invoice.`);
+      logAndRefresh(`Converted Estimate #${est.id.slice(-4)} to an invoice.`, 'Sales');
   };
 
   const handleSaveBudgets = async (updatedBudgets: Budget[]) => {
       await apiSaveBudgets(updatedBudgets);
       setBudgets(updatedBudgets);
-      logAndRefresh('Updated monthly budgets.');
+      logAndRefresh('Updated monthly budgets.', 'Budgeting');
+  };
+
+  const handleAddContact = async (contactData: Omit<Contact, 'id'>) => {
+      const newContact = await apiAddContact(contactData);
+      setContacts(prev => [...prev, newContact]);
+      logAndRefresh(`Added new ${contactData.type}: ${newContact.name}`, 'Contacts');
+  };
+
+  const handleUpdateContact = async (contact: Contact) => {
+      const updated = await apiUpdateContact(contact);
+      setContacts(prev => prev.map(c => c.id === updated.id ? updated : c));
+      logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts');
   }
 
   const renderContent = () => {
@@ -396,7 +438,14 @@ export default function App(): React.ReactNode {
 
     switch (activeView) {
       case 'dashboard':
-        return <Dashboard transactions={transactions} connections={connections} bills={bills} invoices={invoices} />;
+        return <Dashboard 
+                  transactions={transactions} 
+                  connections={connections} 
+                  bills={bills} 
+                  invoices={invoices} 
+                  onQuickAction={setActiveView}
+                  onAddTransaction={handleAddNewTransaction}
+               />;
       case 'transactions':
         return <TransactionsView 
                     transactions={transactions} 
@@ -427,6 +476,8 @@ export default function App(): React.ReactNode {
                 />;
       case 'inventory':
         return <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />;
+      case 'contacts':
+        return <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />;
       case 'taxFiling':
         return <TaxFilingView transactions={transactions} />;
       case 'connections':
@@ -442,35 +493,40 @@ export default function App(): React.ReactNode {
       case 'auditTrail':
           return <AuditTrailView logs={auditLog} />;
       case 'projects':
-          return <ProjectsView projects={projects} onAddProject={handleAddProject} onSelectProject={handleSelectProject} />;
+          return <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />;
+      case 'settings':
+          return <SettingsView />;
+      case 'subscription':
+          return <SubscriptionView />;
       case 'chat':
-        return <AIChat transactions={transactions} currentProject={currentProject} />;
-      case 'ai-settings':
-        return <AISettingsView />;
-      case 'ai-automation':
-        return <AIAutomationDashboard />;
+        return <AIChat transactions={transactions} />;
       default:
-        return <Dashboard transactions={transactions} connections={connections} bills={bills} invoices={invoices}/>;
+        return <Dashboard 
+                  transactions={transactions} 
+                  connections={connections} 
+                  bills={bills} 
+                  invoices={invoices} 
+                  onQuickAction={setActiveView}
+                  onAddTransaction={handleAddNewTransaction}
+                />;
     }
   };
 
+  if (!user) {
+    return <AuthView onLogin={handleLogin} />;
+  }
+
   return (
-    <div className="flex h-screen bg-dark-primary font-sans overflow-hidden">
-      <Sidebar 
-        activeView={activeView} 
-        setActiveView={setActiveView}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
-      />
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header 
-          activeView={activeView}
-          onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        />
-        <main className="flex-1 overflow-auto bg-gradient-to-br from-dark-primary via-dark-secondary to-dark-primary">
-          <div className="min-h-full">
-            {renderContent()}
-          </div>
+    <div className="flex h-screen bg-dark-primary font-sans text-white">
+      <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
+      <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+        <Header user={user} />
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl bg-dark-secondary/30 backdrop-blur-sm border-t border-l border-white/5 shadow-2xl relative">
+           {/* Rich gradient background for world-class depth */}
+           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/10 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-dark-primary/60 pointer-events-none -z-10"></div>
+          {renderContent()}
         </main>
       </div>
     </div>

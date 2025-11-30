@@ -34,8 +34,8 @@ const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isH
 export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, onDrillDown }) => {
     
     const expenseChartData = Object.entries(data.expensesByCategory)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a,b) => b.value - a.value);
+        .map(([name, value]) => ({ name, value: Number(value) }))
+        .sort((a,b) => (b.value as number) - (a.value as number));
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9B5DE5', '#F15BB5', '#4ade80', '#fb923c'];
 

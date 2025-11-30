@@ -1,176 +1,99 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { getFinancialInsights } from '../services/geminiService';
-import { NIGERIAN_TAX_RATES, COMPLIANCE_DEADLINES } from '../constants';
-import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection } from '../types';
+import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
   transactions: CategorizedTransaction[];
   connections: BankConnection[];
   bills: Bill[];
   invoices: Invoice[];
+  onQuickAction?: (view: View) => void;
+  onAddTransaction?: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
 }
 
 const InsightCard: React.FC<{ insight: FinancialInsight }> = ({ insight }) => {
-    const priorityConfig = {
-        High: { color: 'border-red-500', bg: 'bg-red-500/10', text: 'text-red-400' },
-        Medium: { color: 'border-yellow-500', bg: 'bg-yellow-500/10', text: 'text-yellow-400' },
-        Low: { color: 'border-brand-cyan', bg: 'bg-brand-cyan/10', text: 'text-brand-cyan' }
+    const priorityColor = {
+        High: 'border-red-500 from-red-500/10 to-transparent',
+        Medium: 'border-yellow-500 from-yellow-500/10 to-transparent',
+        Low: 'border-blue-500 from-blue-500/10 to-transparent'
     };
 
-    const config = priorityConfig[insight.priority];
-
     return (
-        <div className={`${config.bg} p-4 rounded-xl border-l-4 ${config.color} transition-all duration-200 hover:shadow-lg hover:scale-105`}>
-            <div className="flex items-start gap-3">
-                <div className={`w-2 h-2 rounded-full ${config.color.replace('border-', 'bg-')} mt-2 flex-shrink-0`}></div>
-                <div className="flex-1">
-                    <h4 className="font-bold text-white text-sm mb-1">{insight.title}</h4>
-                    <p className="text-xs text-gray-300 leading-relaxed">{insight.description}</p>
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mt-2 ${config.bg} ${config.text}`}>
-                        {insight.priority} Priority
-                    </span>
-                </div>
+        <div className={`bg-gradient-to-r ${priorityColor[insight.priority]} p-4 rounded-xl border-l-4 mb-3 last:mb-0 backdrop-blur-sm`}>
+            <div className="flex justify-between items-start">
+                <h4 className="font-bold text-white text-sm">{insight.title}</h4>
+                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
+                    insight.priority === 'High' ? 'border-red-500 text-red-500' : 
+                    insight.priority === 'Medium' ? 'border-yellow-500 text-yellow-500' : 
+                    'border-blue-500 text-blue-500'
+                }`}>{insight.priority}</span>
             </div>
+            <p className="text-xs text-gray-300 mt-1 leading-relaxed">{insight.description}</p>
         </div>
-    );
-};
+    )
+}
 
-const ComplianceWidget: React.FC = () => {
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-    
-    const getNextDeadline = () => {
-        const today = new Date();
-        const currentDay = today.getDate();
-        const currentMonth = today.getMonth();
-        
-        // Calculate next VAT/WHT deadline (21st of following month)
-        let nextDeadline = new Date(today.getFullYear(), currentMonth + 1, 21);
-        if (currentDay > 21) {
-            nextDeadline = new Date(today.getFullYear(), currentMonth + 2, 21);
-        }
-        
-        const daysUntil = Math.ceil((nextDeadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-        return { date: nextDeadline, daysUntil };
-    };
+const QuickActionCard: React.FC<{ 
+    title: string; 
+    icon: React.ReactNode; 
+    color: string;
+    onClick: () => void 
+}> = ({ title, icon, color, onClick }) => (
+    <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-dark-tertiary/40 backdrop-blur-md border border-white/5 rounded-2xl hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-lg">
+        <div className={`p-3 rounded-full bg-opacity-20 mb-3 ${color} group-hover:scale-110 transition-transform duration-300`}>
+            {icon}
+        </div>
+        <span className="text-xs font-semibold text-gray-300 group-hover:text-white">{title}</span>
+    </button>
+)
 
-    const { date, daysUntil } = getNextDeadline();
-    const isUrgent = daysUntil <= 7;
-
-    return (
-        <Card className="bg-gradient-to-br from-nigerian-green/20 to-brand-cyan/20 border-nigerian-green/30">
-            <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 bg-nigerian-green/20 rounded-lg flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-nigerian-green">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                        <path d="M9 12l2 2 4-4" />
-                    </svg>
-                </div>
-                <h3 className="text-lg font-bold text-white">Tax Compliance</h3>
-            </div>
-            
-            <div className={`p-3 rounded-lg mb-3 ${isUrgent ? 'bg-red-500/20 border border-red-500/30' : 'bg-dark-secondary'}`}>
-                <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-300">Next VAT/WHT Filing</span>
-                    <span className={`text-sm font-medium ${isUrgent ? 'text-red-400' : 'text-brand-cyan'}`}>
-                        {daysUntil} days
-                    </span>
-                </div>
-                <p className="text-xs text-gray-400 mt-1">
-                    Due: {date.toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
-            </div>
-
-            <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-300">VAT Rate (Current)</span>
-                    <span className="text-white font-medium">{(NIGERIAN_TAX_RATES.VAT * 100).toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-300">WHT (Professional)</span>
-                    <span className="text-white font-medium">{(NIGERIAN_TAX_RATES.WHT_SERVICES * 100)}%</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                    <span className="text-gray-300">Company Tax</span>
-                    <span className="text-white font-medium">{(NIGERIAN_TAX_RATES.COMPANY_INCOME_TAX * 100)}%</span>
-                </div>
-            </div>
-        </Card>
-    );
-};
-
-const QuickStatsGrid: React.FC<{ transactions: CategorizedTransaction[], bills: Bill[], invoices: Invoice[] }> = ({ transactions, bills, invoices }) => {
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0 }).format(amount);
-    
-    const stats = useMemo(() => {
-        const totalIncome = transactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpenses = transactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0);
-        const pendingBills = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue').reduce((sum, b) => sum + b.amount, 0);
-        const pendingInvoices = invoices.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + i.total, 0);
-        const vatCollected = totalIncome * NIGERIAN_TAX_RATES.VAT;
-        
-        return {
-            netIncome: totalIncome - totalExpenses,
-            totalIncome,
-            totalExpenses,
-            pendingBills,
-            pendingInvoices,
-            vatCollected,
-            cashFlow: totalIncome - totalExpenses - pendingBills
-        };
-    }, [transactions, bills, invoices]);
-
-    const statCards = [
-        {
-            title: 'Net Income',
-            value: stats.netIncome,
-            icon: <path d="M12 3v18" />,
-            color: stats.netIncome >= 0 ? 'text-green-400' : 'text-red-400',
-            bgColor: stats.netIncome >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'
-        },
-        {
-            title: 'Total Income',
-            value: stats.totalIncome,
-            icon: <path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/>,
-            color: 'text-brand-cyan',
-            bgColor: 'bg-brand-cyan/10'
-        },
-        {
-            title: 'Pending Invoices',
-            value: stats.pendingInvoices,
-            icon: <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />,
-            color: 'text-yellow-400',
-            bgColor: 'bg-yellow-500/10'
-        },
-        {
-            title: 'VAT Collected',
-            value: stats.vatCollected,
-            icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-            color: 'text-nigerian-green',
-            bgColor: 'bg-nigerian-green/10'
-        }
+const OnboardingWidget: React.FC<{ connections: BankConnection[], invoices: Invoice[] }> = ({ connections, invoices }) => {
+    const steps = [
+        { id: 1, label: 'Create Account', completed: true },
+        { id: 2, label: 'Link Bank Account', completed: connections.length > 0 },
+        { id: 3, label: 'Send First Invoice', completed: invoices.some(i => i.status !== 'Draft') },
+        { id: 4, label: 'Complete Profile', completed: false }, // Mocked
     ];
 
+    const completedCount = steps.filter(s => s.completed).length;
+    const progress = (completedCount / steps.length) * 100;
+
+    if (progress === 100) return null;
+
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {statCards.map((stat, index) => (
-                <Card key={stat.title} className={`${stat.bgColor} border-none hover:scale-105 transition-all duration-200`}>
-                    <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={stat.color}>
-                                {stat.icon}
-                            </svg>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs text-gray-400 uppercase tracking-wide">{stat.title}</p>
-                            <p className={`text-lg font-bold ${stat.color} truncate`}>{formatNaira(stat.value)}</p>
-                        </div>
+        <div className="bg-gradient-to-r from-brand-purple/20 to-brand-cyan/10 rounded-2xl p-6 border border-white/10 mb-8 relative overflow-hidden">
+            <div className="absolute right-0 top-0 p-4 opacity-10">
+                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </div>
+            <div className="relative z-10">
+                <div className="flex justify-between items-center mb-4">
+                    <div>
+                        <h3 className="text-xl font-bold text-white">Get Started with Aura</h3>
+                        <p className="text-gray-400 text-sm">Complete these steps to fully automate your finances.</p>
                     </div>
-                </Card>
-            ))}
+                    <span className="text-2xl font-bold text-brand-cyan">{Math.round(progress)}%</span>
+                </div>
+                
+                <div className="w-full bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
+                    <div className="bg-gradient-to-r from-brand-purple to-brand-cyan h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {steps.map((step, idx) => (
+                        <div key={step.id} className={`flex items-center gap-3 p-3 rounded-xl border ${step.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-dark-secondary/50 border-gray-700'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-500 text-black' : 'bg-gray-700 text-gray-400'}`}>
+                                {step.completed ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : <span className="text-xs font-bold">{idx + 1}</span>}
+                            </div>
+                            <span className={`text-xs font-medium ${step.completed ? 'text-green-300' : 'text-gray-300'}`}>{step.label}</span>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 };
@@ -179,123 +102,80 @@ const RecentActivity: React.FC<{ transactions: CategorizedTransaction[], bills: 
     const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     const combinedActivity = useMemo(() => {
-        const transactionActivity = transactions.slice(0, 3).map(t => ({
+        const transactionActivity = transactions.map(t => ({
             id: t.id,
             type: 'transaction',
             date: new Date(t.date),
-            description: t.narration || 'Bank Transaction',
+            description: t.narration,
             amount: t.amount,
-            isCredit: t.type === 'credit',
-            category: t.category
+            isCredit: t.type === 'credit'
         }));
-        
-        const billActivity = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue').slice(0, 2).map(b => ({
+        const billActivity = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue').map(b => ({
             id: b.id,
             type: 'bill',
             date: new Date(b.issueDate),
             description: `Bill from ${b.vendor}`,
             amount: b.amount,
-            isCredit: false,
-            status: b.status
+            isCredit: false
         }));
-        
-        const invoiceActivity = invoices.filter(i => i.status !== 'Paid').slice(0, 2).map(i => ({
+        const invoiceActivity = invoices.filter(i => i.status !== 'Paid').map(i => ({
             id: i.id,
             type: 'invoice',
             date: new Date(i.issueDate),
             description: `Invoice to ${i.customer}`,
             amount: i.total,
-            isCredit: true,
-            status: i.status
+            isCredit: true
         }));
 
         return [...transactionActivity, ...billActivity, ...invoiceActivity]
             .sort((a, b) => b.date.getTime() - a.date.getTime())
-            .slice(0, 8);
+            .slice(0, 6);
     }, [transactions, bills, invoices]);
 
     const iconMap: { [key: string]: React.ReactNode } = {
-        transaction: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M7 21h10" />
-                <path d="M10 21v-8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v8" />
-            </svg>
-        ),
-        bill: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M2 17a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2Z"/>
-            </svg>
-        ),
-        invoice: (
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/>
-            </svg>
-        ),
+        transaction: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18" /><path d="M17 8l-5 5-5-5" /><path d="M7 16l5-5 5 5" /></svg>,
+        bill: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 17a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2Z"/><path d="M12 4v7"/><path d="m15 8-3-3-3 3"/></svg>,
+        invoice: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/><path d="M12 11v7"/><path d="m15 15-3 3-3-3"/></svg>,
     };
 
     const colorMap: { [key: string]: string } = {
-        transaction: 'text-gray-400',
-        bill: 'text-red-400',
-        invoice: 'text-green-400',
-    };
+        transaction: 'bg-gray-500/20 text-gray-300',
+        bill: 'bg-red-500/20 text-red-400',
+        invoice: 'bg-green-500/20 text-green-400',
+    }
 
     return (
         <Card className="lg:col-span-2">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-bold text-white">Recent Activity</h3>
-                <div className="w-2 h-2 bg-brand-cyan rounded-full animate-pulse"></div>
+                <button className="text-xs text-brand-cyan hover:underline">View All</button>
             </div>
-            
-            <div className="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
-                {combinedActivity.length > 0 ? combinedActivity.map((item, index) => (
-                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-3 p-3 bg-dark-secondary/50 rounded-lg hover:bg-dark-secondary transition-colors">
-                        <div className={`p-2 bg-dark-tertiary rounded-lg ${colorMap[item.type]} flex-shrink-0`}>
+            <div className="space-y-4">
+                {combinedActivity.length > 0 ? combinedActivity.map(item => (
+                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
+                        <div className={`p-2.5 rounded-full ${colorMap[item.type]}`}>
                             {iconMap[item.type]}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <p className="text-white font-medium text-sm truncate" title={item.description}>
-                                {item.description}
-                            </p>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className="text-xs text-gray-500">
-                                    {item.date.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}
-                                </p>
-                                {('category' in item) && item.category && (
-                                    <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded-full">
-                                        {item.category}
-                                    </span>
-                                )}
-                                {('status' in item) && item.status && (
-                                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                        item.status === 'Overdue' ? 'bg-red-500/20 text-red-400' :
-                                        item.status === 'Unpaid' ? 'bg-yellow-500/20 text-yellow-400' :
-                                        'bg-green-500/20 text-green-400'
-                                    }`}>
-                                        {item.status}
-                                    </span>
-                                )}
-                            </div>
+                            <p className="text-white font-medium truncate text-sm" title={item.description}>{item.description}</p>
+                            <p className="text-xs text-gray-500">{item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
                         </div>
-                        <div className={`font-mono text-sm font-medium ${item.isCredit ? 'text-green-400' : 'text-red-400'} flex-shrink-0`}>
+                        <div className={`font-mono text-sm font-semibold ${item.isCredit ? 'text-green-400' : 'text-red-400'}`}>
                             {item.isCredit ? '+' : '-'}{formatNaira(item.amount)}
                         </div>
                     </div>
                 )) : (
-                    <div className="flex flex-col items-center justify-center h-32 text-center">
-                        <div className="w-12 h-12 bg-dark-secondary rounded-full flex items-center justify-center mb-3">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500">
-                                <path d="M3 3v18h18" />
-                                <path d="m19 9-5 5-4-4-3 3" />
-                            </svg>
+                    <div className="flex flex-col items-center justify-center h-48 text-center">
+                        <div className="bg-dark-secondary p-4 rounded-full mb-3">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
-                        <p className="text-gray-400 text-sm">No recent activity</p>
-                        <p className="text-gray-500 text-xs mt-1">Start by connecting your bank or adding transactions</p>
+                        <p className="text-gray-400">No recent activity.</p>
                     </div>
                 )}
             </div>
         </Card>
-    );
-};
+    )
+}
 
 const TaxLiabilityEstimator: React.FC<{ transactions: CategorizedTransaction[], invoices: Invoice[] }> = ({ transactions, invoices }) => {
     const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -347,53 +227,50 @@ const TaxLiabilityEstimator: React.FC<{ transactions: CategorizedTransaction[], 
 
     if(transactions.length === 0){
         return (
-            <Card className="bg-dark-secondary flex items-center justify-center text-center">
+            <Card className="bg-dark-secondary/50 flex items-center justify-center text-center">
                 <p className="text-gray-400">Tax estimator requires transaction data. Please link a bank account.</p>
             </Card>
         )
     }
 
     return (
-        <Card className="bg-dark-secondary">
-          <h3 className="text-gray-400 text-sm font-medium mb-3">Tax Liability Estimator</h3>
-          <div className="space-y-3">
-             <div title="Companies Income Tax: Calculated based on your projected annual turnover.">
-                <p className="text-sm text-orange-300 flex justify-between items-center">
+        <Card>
+          <div className="flex justify-between items-center mb-4">
+              <h3 className="text-white font-bold text-lg">Tax Estimates</h3>
+              <span className="text-xs bg-gray-700/50 text-gray-300 px-2 py-1 rounded">Provisional</span>
+          </div>
+          <div className="space-y-4">
+             <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
+                <p className="text-xs text-orange-400 flex justify-between items-center mb-1">
                     <span>Est. CIT ({taxCalculations.citRate}%)</span>
-                    <InfoIcon />
                 </p>
-                <p className="text-xl font-bold text-orange-400">{formatNaira(taxCalculations.estimatedCIT)}</p>
+                <p className="text-xl font-bold text-white">{formatNaira(taxCalculations.estimatedCIT)}</p>
             </div>
-             <div title="Tertiary Education Tax: 3% of your current profit.">
-                <p className="text-sm text-cyan-300 flex justify-between items-center">
+             <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
+                <p className="text-xs text-cyan-400 flex justify-between items-center mb-1">
                     <span>Est. TET (3%)</span>
-                    <InfoIcon />
                 </p>
-                <p className="text-xl font-bold text-cyan-400">{formatNaira(taxCalculations.estimatedTET)}</p>
+                <p className="text-xl font-bold text-white">{formatNaira(taxCalculations.estimatedTET)}</p>
             </div>
-            <div>
-              <p className="text-sm text-blue-300">Est. VAT Payable</p>
-              <p className="text-xl font-bold text-blue-400">{formatNaira(taxCalculations.vatPayable)}</p>
-            </div>
-             <div>
-              <p className="text-sm text-purple-300">Est. WHT Receivable</p>
-              <p className="text-xl font-bold text-purple-400">{formatNaira(taxCalculations.whtReceivable)}</p>
+            <div className="grid grid-cols-2 gap-3">
+                <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
+                    <p className="text-[10px] text-blue-400 uppercase">VAT Payable</p>
+                    <p className="text-lg font-bold text-white">{formatNaira(taxCalculations.vatPayable)}</p>
+                </div>
+                <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
+                    <p className="text-[10px] text-purple-400 uppercase">WHT Credit</p>
+                    <p className="text-lg font-bold text-white">{formatNaira(taxCalculations.whtReceivable)}</p>
+                </div>
             </div>
           </div>
         </Card>
     );
 };
 
-const InfoIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-500">
-        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
-    </svg>
-);
-
-
-export const Dashboard: React.FC<DashboardProps> = ({ transactions, connections, bills, invoices }) => {
+export const Dashboard: React.FC<DashboardProps> = ({ transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   useEffect(() => {
     const fetchAllData = async () => {
@@ -443,104 +320,163 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, connections,
 
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      {/* Header with sync status */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">Business Overview</h1>
-          <p className="text-gray-400 text-sm mt-1">Monitor your Nigerian business performance</p>
-        </div>
-        {lastSyncTime && (
-          <div className="flex items-center gap-2 text-sm text-gray-400 bg-dark-secondary px-3 py-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400">
-              <polyline points="23 4 23 10 17 10"/>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-            </svg>
-            <span>Last Synced: Today at {lastSyncTime}</span>
+    <>
+    <ReceiptScannerModal 
+        isOpen={isScannerOpen} 
+        onClose={() => setIsScannerOpen(false)} 
+        onSave={(data) => {
+            if (onAddTransaction) {
+                onAddTransaction(data);
+            }
+        }} 
+    />
+
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h2 className="text-3xl font-bold text-white">Dashboard</h2>
+            <p className="text-gray-400">Welcome back, Tunde. Here's your financial overview.</p>
           </div>
-        )}
-      </div>
-
-      {/* Quick Stats Grid */}
-      <QuickStatsGrid transactions={transactions} bills={bills} invoices={invoices} />
-
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cash Flow Chart */}
-        <Card className="lg:col-span-2">
-          <h3 className="text-lg font-bold text-white mb-4">Cash Flow Overview</h3>
-          {transactions.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" />
-                <XAxis type="number" stroke="#888888" tickFormatter={(value) => `₦${Number(value) / 1000}k`} />
-                <YAxis type="category" dataKey="name" stroke="#888888" width={100} />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255, 255, 255, 0.1)' }}
-                  contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333' }}
-                  formatter={(value: number) => formatNaira(value)}
-                />
-                <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-[300px]">
-              <div className="w-16 h-16 bg-dark-secondary rounded-full flex items-center justify-center mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-brand-cyan">
-                  <path d="M3 3v18h18" />
-                  <path d="m19 9-5 5-4-4-3 3" />
-                </svg>
-              </div>
-              <p className="text-gray-400 font-medium">No transaction data available</p>
-              <p className="text-gray-500 text-sm">Connect your bank account to see cash flow insights</p>
+          {lastSyncTime && (
+            <div className="flex items-center gap-2 text-sm text-gray-400 bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-white/5">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span>Synced: {lastSyncTime}</span>
             </div>
           )}
-        </Card>
-
-        {/* Tax Compliance */}
-        <ComplianceWidget />
       </div>
 
-      {/* Bottom section */}
+      <OnboardingWidget connections={connections} invoices={invoices} />
+
+      {/* Quick Actions Bar */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <QuickActionCard 
+            title="Scan Receipt" 
+            color="bg-brand-cyan text-brand-cyan" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><line x1="21" y1="5" x2="10" y2="5"/><line x1="21" y1="2" x2="21" y2="8"/><line x1="24" y1="5" x2="18" y2="5"/></svg>}
+            onClick={() => setIsScannerOpen(true)}
+        />
+        <QuickActionCard 
+            title="Create Invoice" 
+            color="bg-brand-purple text-brand-purple" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>}
+            onClick={() => onQuickAction?.('receivables')}
+        />
+        <QuickActionCard 
+            title="Record Bill" 
+            color="bg-brand-pink text-brand-pink" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>}
+            onClick={() => onQuickAction?.('payables')}
+        />
+        <QuickActionCard 
+            title="Add Employee" 
+            color="bg-blue-400 text-blue-400" 
+            icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>}
+            onClick={() => onQuickAction?.('payroll')}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          </div>
+          <h3 className="text-gray-400 text-sm font-medium">Total Income</h3>
+          <p className="text-3xl font-bold text-white mt-2">{formatNaira(summary.income)}</p>
+          <div className="mt-2 flex items-center text-xs text-green-400 font-medium bg-green-500/10 w-fit px-2 py-1 rounded-full border border-green-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+             +12.5% vs last month
+          </div>
+        </Card>
+        <Card className="relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+          </div>
+          <h3 className="text-gray-400 text-sm font-medium">Total Expenses</h3>
+          <p className="text-3xl font-bold text-white mt-2">{formatNaira(summary.expenses)}</p>
+          <div className="mt-2 flex items-center text-xs text-red-400 font-medium bg-red-500/10 w-fit px-2 py-1 rounded-full border border-red-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+             +5.2% vs last month
+          </div>
+        </Card>
+        <Card>
+          <h3 className="text-gray-400 text-sm font-medium">Net Flow</h3>
+          <p className={`text-3xl font-bold mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-400'}`}>
+            {formatNaira(summary.income - summary.expenses)}
+          </p>
+          <div className="mt-2 text-xs text-gray-500">
+             Cash availability metric
+          </div>
+        </Card>
+         <TaxLiabilityEstimator transactions={transactions} invoices={invoices} />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        {/* Recent Activity */}
-        <RecentActivity transactions={transactions} bills={bills} invoices={invoices} />
-        
-        {/* AI Insights */}
-        <Card className="lg:col-span-2">
-          <h3 className="text-lg font-bold text-white mb-4">AI Financial Insights</h3>
-          {loadingInsights ? (
-            <div className="flex flex-col items-center justify-center h-64">
-              <Spinner />
-              <p className="mt-3 text-sm text-gray-400">Analyzing your financial data...</p>
-            </div>
+        <Card className="lg:col-span-3">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold text-white">Cash Flow Overview</h3>
+            <select className="bg-dark-primary/50 border border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-300">
+                <option>This Month</option>
+                <option>Last Quarter</option>
+            </select>
+          </div>
+          {transactions.length > 0 ? (
+               <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
+                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => `₦${Number(value) / 1000}k`} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
+                        <Tooltip 
+                            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                            contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
+                            formatter={(value: number) => formatNaira(value)}
+                        />
+                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
           ) : (
-            <div className="space-y-3 max-h-64 overflow-y-auto custom-scrollbar">
-              {insights.length > 0 ? insights.map((insight, index) => (
-                <InsightCard key={index} insight={insight} />
-              )) : (
-                <div className="flex flex-col items-center justify-center h-64 text-center">
-                  <div className="w-12 h-12 bg-brand-cyan/20 rounded-full flex items-center justify-center mb-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-brand-cyan">
-                      <path d="M12 8V4H8" />
-                      <rect width="16" height="12" x="4" y="8" rx="2" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-400 font-medium">No insights available</p>
-                  <p className="text-gray-500 text-sm">Add transactions to get AI-powered financial advice</p>
-                </div>
-              )}
+             <div className="flex flex-col items-center justify-center h-[300px]">
+                <p className="text-gray-400">No transaction data available.</p>
+                <p className="text-gray-500 text-sm">Link a bank account to see your cash flow.</p>
             </div>
           )}
         </Card>
-        
-        {/* Tax Estimator */}
-        <TaxLiabilityEstimator transactions={transactions} invoices={invoices} />
+        <Card className="lg:col-span-2 flex flex-col">
+            <div className="flex items-center gap-2 mb-4">
+                 <div className="p-1.5 bg-gradient-to-br from-brand-cyan to-brand-purple rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                 </div>
+                <h3 className="text-lg font-bold text-white">AI Advisor</h3>
+            </div>
+            <div className="flex-grow overflow-y-auto pr-1 custom-scrollbar">
+                {loadingInsights ? (
+                    <div className="flex flex-col items-center justify-center h-full">
+                        <Spinner />
+                        <p className="mt-2 text-sm text-gray-400 animate-pulse">Analyzing financials...</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {insights.length > 0 ? insights.map((insight, index) => (
+                            <InsightCard key={index} insight={insight} />
+                        )) : (
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <p className="text-gray-400">No insights to show.</p>
+                                <p className="text-gray-500 text-sm">Link a bank account and get AI-powered advice.</p>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </Card>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <RecentActivity transactions={transactions} bills={bills} invoices={invoices} />
       </div>
     </div>
+    </>
   );
 };
