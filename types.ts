@@ -254,7 +254,8 @@ export type View =
     'receivables' | 'payables' | 'payroll' |
     // New Views
     'chartOfAccounts' | 'journalEntries' | 'purchaseOrders' | 'estimates' | 'inventory' |
-    'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts';
+    'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts' |
+    'privacy' | 'terms';
 
 // Financial Report Types
 export interface ReportPeriod {

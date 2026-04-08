@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
+import { useToast } from './ui/Toast';
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: boolean) => void; description?: string }> = ({ label, checked, onChange, description }) => (
     <div className="flex items-center justify-between py-3">
@@ -25,6 +26,7 @@ const SectionHeader: React.FC<{ title: string; description: string }> = ({ title
 );
 
 export const SettingsView: React.FC = () => {
+    const { showToast } = useToast();
     const [companyName, setCompanyName] = useState('Aura Inc.');
     const [tin, setTin] = useState('12345678-0001');
     const [email, setEmail] = useState('admin@aurainc.ng');
@@ -40,7 +42,7 @@ export const SettingsView: React.FC = () => {
         setIsSaving(true);
         setTimeout(() => {
             setIsSaving(false);
-            alert("Settings saved successfully!");
+            showToast("Settings saved successfully!", "success");
         }, 1000);
     };
 
