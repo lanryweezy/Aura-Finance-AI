@@ -9,12 +9,32 @@ export const SubscriptionView: React.FC = () => {
     const [currentPlan, setCurrentPlan] = useState('Free');
     const [isLoading, setIsLoading] = useState<string | null>(null);
 
-    const handleUpgrade = async (planId: string) => {
-        setIsLoading(planId);
-        await billingService.upgradePlan(planId);
-        setCurrentPlan(planId);
-        setIsLoading(null);
-        alert(`Successfully switched to ${planId} plan!`);
+    const handleUpgrade = async (plan: SubscriptionTier) => {
+        if (plan.price === 0) {
+            setIsLoading(plan.id);
+            await billingService.upgradePlan(plan.id);
+            setCurrentPlan(plan.id);
+            setIsLoading(null);
+            return;
+        }
+
+        // Randomly pick a gateway for demo, or show a selector
+        const gateway = Math.random() > 0.5 ? 'Paystack' : 'Flutterwave';
+        setIsLoading(plan.id);
+
+        const callback = async (ref: string) => {
+            console.log('Payment successful:', ref);
+            await billingService.upgradePlan(plan.id);
+            setCurrentPlan(plan.id);
+            setIsLoading(null);
+            alert(`Payment successful! Welcome to ${plan.name} plan.`);
+        };
+
+        if (gateway === 'Paystack') {
+            billingService.initializePaystack(plan, 'demo@aura.ai', callback);
+        } else {
+            billingService.initializeFlutterwave(plan, 'demo@aura.ai', callback);
+        }
     };
 
     const formatNaira = (amount: number) => {
@@ -50,7 +70,7 @@ export const SubscriptionView: React.FC = () => {
                         </div>
                         
                         <button
-                            onClick={() => handleUpgrade(plan.id)}
+                            onClick={() => handleUpgrade(plan)}
                             disabled={currentPlan === plan.id || !!isLoading}
                             className={`w-full py-3 rounded-xl font-bold transition-all mb-8 ${
                                 currentPlan === plan.id

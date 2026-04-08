@@ -24,8 +24,10 @@ import { SettingsView } from './components/SettingsView';
 import { AuthView } from './components/AuthView';
 import { SubscriptionView } from './components/SubscriptionView';
 import { ContactsView } from './components/ContactsView';
+import { LegalView } from './components/LegalView';
 
 import { Spinner } from './components/ui/Spinner';
+import { useToast } from './components/ui/Toast';
 
 import { fetchTransactions as mockFetchTransactions } from './services/monoService';
 import { categorizeTransactions } from './services/geminiService';
@@ -50,6 +52,7 @@ import { DEFAULT_CATEGORIES } from './components/TransactionsView';
 import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnection, Bill, Invoice, PayrollRun, PayrollPayslip, PayrollAdjustment, Account, JournalEntry, Project, InventoryItem, PurchaseOrder, Estimate, Budget, User, Organization, Contact } from './types';
 
 export default function App(): React.ReactNode {
+  const { showToast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [activeView, setActiveView] = useState<View>('dashboard');
   
@@ -164,9 +167,14 @@ export default function App(): React.ReactNode {
   }, [employees]);
   
   const handleAddEmployee = async (employeeData: Omit<Employee, 'id'>) => {
-    const newEmployee = await addEmployee(employeeData);
-    setEmployees(prev => [...prev, newEmployee]);
-    logAndRefresh(`Added new employee: ${newEmployee.name}`, 'Payroll');
+    try {
+        const newEmployee = await addEmployee(employeeData);
+        setEmployees(prev => [...prev, newEmployee]);
+        logAndRefresh(`Added new employee: ${newEmployee.name}`, 'Payroll');
+        showToast('Employee added successfully', 'success');
+    } catch (err) {
+        showToast('Failed to add employee', 'error');
+    }
   };
     
   const handleUpdateEmployee = async (employeeData: Employee) => {
@@ -496,6 +504,10 @@ export default function App(): React.ReactNode {
           return <SubscriptionView />;
       case 'chat':
         return <AIChat transactions={transactions} />;
+      case 'privacy':
+        return <LegalView type="privacy" />;
+      case 'terms':
+        return <LegalView type="terms" />;
       default:
         return <Dashboard 
                   transactions={transactions} 

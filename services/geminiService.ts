@@ -10,10 +10,28 @@ if (!API_KEY) {
 
 const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
+// Simple in-memory cache for transaction categorization
+const categorizationCache = new Map<string, string>();
+
 export const categorizeTransactions = async (transactions: RawTransaction[], categoryList: string[]): Promise<CategorizedTransaction[]> => {
   if (!ai || !API_KEY) {
      return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
   }
+
+  // Filter out already cached transactions
+  const toCategorize: RawTransaction[] = [];
+  const results: CategorizedTransaction[] = [];
+
+  for (const t of transactions) {
+    const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
+    if (categorizationCache.has(cacheKey)) {
+        results.push({ ...t, category: categorizationCache.get(cacheKey)! });
+    } else {
+        toCategorize.push(t);
+    }
+  }
+
+  if (toCategorize.length === 0) return results;
 
   const transactionSchema = {
     type: Type.ARRAY,
@@ -52,7 +70,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -61,8 +79,15 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     });
 
     const jsonText = response.text.trim();
-    const result = JSON.parse(jsonText);
-    return result as CategorizedTransaction[];
+    const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
+
+    // Update cache
+    batchResult.forEach(t => {
+        const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
+        categorizationCache.set(cacheKey, t.category);
+    });
+
+    return [...results, ...batchResult].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   } catch (error) {
     console.error("Error categorizing transactions:", error);
@@ -112,7 +137,7 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
@@ -163,7 +188,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
     });
     return response.text.trim();
@@ -211,7 +236,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
     try {
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-2.0-flash",
             contents: prompt,
         });
         return response.text.trim();
@@ -241,7 +266,7 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
     });
     return response.text.trim();

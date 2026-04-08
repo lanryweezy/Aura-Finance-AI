@@ -100,7 +100,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onL
           ))}
         </nav>
       </div>
-      <div className="border-t border-white/5 pt-4">
+      <div className="border-t border-white/5 pt-4 space-y-2">
+         <div className="hidden lg:flex flex-wrap gap-x-3 gap-y-1 px-2 mb-4">
+            <button onClick={() => setActiveView('privacy')} className="text-[10px] text-gray-500 hover:text-gray-300">Privacy</button>
+            <button onClick={() => setActiveView('terms')} className="text-[10px] text-gray-500 hover:text-gray-300">Terms</button>
+         </div>
          <button
             onClick={onLogout}
             className="flex items-center gap-4 p-3 rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200 w-full group"

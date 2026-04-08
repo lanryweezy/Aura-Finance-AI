@@ -16,7 +16,7 @@ interface DashboardProps {
   onAddTransaction?: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
 }
 
-const InsightCard: React.FC<{ insight: FinancialInsight }> = ({ insight }) => {
+const InsightCard = React.memo<{ insight: FinancialInsight }>(({ insight }) => {
     const priorityColor = {
         High: 'border-red-500 from-red-500/10 to-transparent',
         Medium: 'border-yellow-500 from-yellow-500/10 to-transparent',
@@ -36,23 +36,23 @@ const InsightCard: React.FC<{ insight: FinancialInsight }> = ({ insight }) => {
             <p className="text-xs text-gray-300 mt-1 leading-relaxed">{insight.description}</p>
         </div>
     )
-}
+});
 
-const QuickActionCard: React.FC<{ 
+const QuickActionCard = React.memo<{
     title: string; 
     icon: React.ReactNode; 
     color: string;
     onClick: () => void 
-}> = ({ title, icon, color, onClick }) => (
+}>(({ title, icon, color, onClick }) => (
     <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-dark-tertiary/40 backdrop-blur-md border border-white/5 rounded-2xl hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-lg">
         <div className={`p-3 rounded-full bg-opacity-20 mb-3 ${color} group-hover:scale-110 transition-transform duration-300`}>
             {icon}
         </div>
         <span className="text-xs font-semibold text-gray-300 group-hover:text-white">{title}</span>
     </button>
-)
+));
 
-const OnboardingWidget: React.FC<{ connections: BankConnection[], invoices: Invoice[] }> = ({ connections, invoices }) => {
+const OnboardingWidget = React.memo<{ connections: BankConnection[], invoices: Invoice[] }>(({ connections, invoices }) => {
     const steps = [
         { id: 1, label: 'Create Account', completed: true },
         { id: 2, label: 'Link Bank Account', completed: connections.length > 0 },
@@ -96,9 +96,9 @@ const OnboardingWidget: React.FC<{ connections: BankConnection[], invoices: Invo
             </div>
         </div>
     );
-};
+});
 
-const RecentActivity: React.FC<{ transactions: CategorizedTransaction[], bills: Bill[], invoices: Invoice[] }> = ({ transactions, bills, invoices }) => {
+const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bills: Bill[], invoices: Invoice[] }>(({ transactions, bills, invoices }) => {
     const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     const combinedActivity = useMemo(() => {
@@ -175,9 +175,9 @@ const RecentActivity: React.FC<{ transactions: CategorizedTransaction[], bills: 
             </div>
         </Card>
     )
-}
+});
 
-const TaxLiabilityEstimator: React.FC<{ transactions: CategorizedTransaction[], invoices: Invoice[] }> = ({ transactions, invoices }) => {
+const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[], invoices: Invoice[] }>(({ transactions, invoices }) => {
     const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
     const taxCalculations = useMemo(() => {
@@ -265,9 +265,9 @@ const TaxLiabilityEstimator: React.FC<{ transactions: CategorizedTransaction[], 
           </div>
         </Card>
     );
-};
+});
 
-export const Dashboard: React.FC<DashboardProps> = ({ transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+export const Dashboard = React.memo<DashboardProps>(({ transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -479,4 +479,4 @@ export const Dashboard: React.FC<DashboardProps> = ({ transactions, connections,
     </div>
     </>
   );
-};
+});

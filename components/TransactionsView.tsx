@@ -77,7 +77,7 @@ interface TransactionsViewProps {
   chartOfAccounts: Account[];
 }
 
-const CategoryBadge: React.FC<{ category: string; onClick?: () => void; isInteractive?: boolean }> = ({ category, onClick, isInteractive = false }) => {
+const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInteractive?: boolean }>(({ category, onClick, isInteractive = false }) => {
   const colorClasses = CATEGORY_COLOR_MAP[category] || 'bg-brand-cyan/10 text-brand-cyan border-brand-cyan/20';
   const buttonClasses = isInteractive ? "cursor-pointer hover:opacity-80 transition-opacity" : "";
 
@@ -87,16 +87,16 @@ const CategoryBadge: React.FC<{ category: string; onClick?: () => void; isIntera
       {isInteractive && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>}
     </button>
   );
-};
+});
 
 
-const CategoryEditor: React.FC<{
+const CategoryEditor = React.memo<{
     transaction: CategorizedTransaction;
     allCategories: string[];
     projects: Project[];
     onSave: (id: string, category: string, projectId?: string, receiptUrl?: string) => void;
     onClose: () => void;
-}> = ({ transaction, allCategories, projects, onSave, onClose }) => {
+}>(({ transaction, allCategories, projects, onSave, onClose }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState(transaction.category);
     const [selectedProjectId, setSelectedProjectId] = useState(transaction.projectId || '');
@@ -162,15 +162,15 @@ const CategoryEditor: React.FC<{
             </div>
         </div>
     );
-};
+});
 
-const AddTransactionModal: React.FC<{
+const AddTransactionModal = React.memo<{
     isOpen: boolean;
     onClose: () => void;
     onAdd: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
     categories: string[];
     projects: Project[];
-}> = ({ isOpen, onClose, onAdd, categories, projects }) => {
+}>(({ isOpen, onClose, onAdd, categories, projects }) => {
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [narration, setNarration] = useState('');
     const [amount, setAmount] = useState('');
@@ -249,10 +249,10 @@ const AddTransactionModal: React.FC<{
             </div>
         </div>
     );
-};
+});
 
 
-export const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
+export const TransactionsView = React.memo<TransactionsViewProps>(({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'credit'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -459,4 +459,4 @@ export const TransactionsView: React.FC<TransactionsViewProps> = ({ transactions
     </Card>
     </>
   );
-};
+});

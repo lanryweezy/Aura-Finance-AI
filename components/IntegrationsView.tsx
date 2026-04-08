@@ -1,6 +1,7 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from './ui/Card';
+import { ComingSoon } from './ui/ComingSoon';
 
 interface Integration {
   name: string;
@@ -102,9 +103,9 @@ const integrationCategories = [
 ] as const;
 
 
-const IntegrationCard: React.FC<{ integration: Integration }> = ({ integration }) => {
+const IntegrationCard: React.FC<{ integration: Integration; onClick: () => void }> = ({ integration, onClick }) => {
     return (
-        <Card className="flex flex-col justify-between group hover:border-brand-cyan transition-all duration-300 transform hover:-translate-y-1">
+        <Card onClick={onClick} className="flex flex-col justify-between group hover:border-brand-cyan transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
             <div>
                 <div className="flex items-center gap-4 mb-4">
                     <div className="h-12 w-12 bg-white rounded-lg flex items-center justify-center p-1">
@@ -115,7 +116,7 @@ const IntegrationCard: React.FC<{ integration: Integration }> = ({ integration }
                 <p className="text-sm text-gray-400 min-h-[40px]">{integration.description}</p>
             </div>
             <div className="mt-6 flex justify-end">
-                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-gray-600/50 text-gray-300">
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${integration.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-600/50 text-gray-300'}`}>
                     {integration.status}
                 </span>
             </div>
@@ -124,6 +125,20 @@ const IntegrationCard: React.FC<{ integration: Integration }> = ({ integration }
 };
 
 export const IntegrationsView: React.FC = () => {
+    const [selectedIntegration, setSelectedIntegration] = useState<string | null>(null);
+
+    if (selectedIntegration) {
+        return (
+            <div className="space-y-6">
+                <button onClick={() => setSelectedIntegration(null)} className="flex items-center gap-2 text-brand-cyan hover:underline mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Integrations
+                </button>
+                <ComingSoon featureName={`${selectedIntegration} Integration`} />
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-10">
             <div>
@@ -138,7 +153,11 @@ export const IntegrationsView: React.FC = () => {
                         {allIntegrations
                             .filter(int => int.category === category)
                             .map(integration => (
-                                <IntegrationCard key={integration.name} integration={integration} />
+                                <IntegrationCard
+                                    key={integration.name}
+                                    integration={integration}
+                                    onClick={() => setSelectedIntegration(integration.name)}
+                                />
                             ))
                         }
                     </div>
