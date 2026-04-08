@@ -2,14 +2,16 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import type { RawTransaction, CategorizedTransaction, FinancialInsight, Invoice, ReportData, PayrollRun } from '../types';
 
-if (!process.env.API_KEY) {
-  console.error("API_KEY environment variable not set. Some features will be disabled.");
+const API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
+
+if (!API_KEY) {
+  console.warn("API_KEY environment variable not set. AI features will be disabled.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 export const categorizeTransactions = async (transactions: RawTransaction[], categoryList: string[]): Promise<CategorizedTransaction[]> => {
-  if (!process.env.API_KEY) {
+  if (!ai || !API_KEY) {
      return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
   }
 
@@ -85,6 +87,16 @@ const insightsSchema = {
 
 
 export const getFinancialInsights = async (transactions: CategorizedTransaction[]): Promise<FinancialInsight[]> => {
+  if (!ai || !API_KEY) {
+    return [
+      {
+        title: 'AI Analysis Disabled',
+        description: 'Set your Gemini API key to enable automated financial insights.',
+        priority: 'Medium',
+      }
+    ];
+  }
+
   if (transactions.length === 0) {
     return [];
   }
@@ -125,7 +137,7 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
 };
 
 export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<string> => {
-  if (!process.env.API_KEY) {
+  if (!ai || !API_KEY) {
       return "AI features are disabled. Please set your API key.";
   }
   if (payrollHistory.length === 0) {
@@ -163,7 +175,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
 
 export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, comparisonPeriodData?: ReportData): Promise<string> => {
-    if (!process.env.API_KEY) {
+    if (!ai || !API_KEY) {
         return "AI features are disabled. Please set your API key.";
     }
 
@@ -210,7 +222,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 };
 
 export const generateInvoiceReminder = async (invoice: Invoice): Promise<string> => {
-  if (!process.env.API_KEY) {
+  if (!ai || !API_KEY) {
       return "AI features are disabled. Please set your API key.";
   }
 

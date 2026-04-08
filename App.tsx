@@ -107,10 +107,6 @@ export default function App(): React.ReactNode {
     setIsLoading(true);
     setError(null);
     try {
-      if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set.");
-      }
-      
       const [
           fetchedConnections, fetchedEmployees, fetchedBills, fetchedInvoices, 
           fetchedProjects, fetchedInventory, fetchedPOs, fetchedEstimates,
