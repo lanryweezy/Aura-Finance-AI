@@ -31,7 +31,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
 
     if(process.env.API_KEY) {
         chatInstance.current = ai.chats.create({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-2.0-flash',
             config: { systemInstruction },
         });
 
