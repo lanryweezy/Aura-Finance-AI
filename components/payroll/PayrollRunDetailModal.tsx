@@ -1,16 +1,13 @@
 
 import React from 'react';
 import type { PayrollRun } from '../../types';
+import { useCurrency } from '../ui/CurrencyProvider';
 
 interface PayrollRunDetailModalProps {
     isOpen: boolean;
     onClose: () => void;
     run: PayrollRun | null;
 }
-
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
 
 const downloadCSV = (filename: string, headers: string[], data: (string|number)[][]) => {
      let csvContent = "data:text/csv;charset=utf-8," 
@@ -26,23 +23,25 @@ const downloadCSV = (filename: string, headers: string[], data: (string|number)[
 }
 
 export const PayrollRunDetailModal: React.FC<PayrollRunDetailModalProps> = ({ isOpen, onClose, run }) => {
+    const { formatAmount } = useCurrency();
     
     if (!isOpen || !run) return null;
     
+    const { currency } = useCurrency();
     const handleDownloadPaymentSchedule = () => {
-        const headers = ['Employee Name', 'Net Salary (NGN)'];
+        const headers = ['Employee Name', `Net Salary (${currency})`];
         const data = run.payslips.map(p => [p.employeeName, p.netSalary.toFixed(2)]);
         downloadCSV(`Payment_Schedule_${run.period.replace(' ','_')}`, headers, data);
     }
     
     const handleDownloadPAYESchedule = () => {
-        const headers = ['Employee Name', 'Gross Income (NGN)', 'PAYE (NGN)'];
+        const headers = ['Employee Name', `Gross Income (${currency})`, `PAYE (${currency})`];
         const data = run.payslips.map(p => [p.employeeName, p.totalIncome.toFixed(2), p.paye.toFixed(2)]);
         downloadCSV(`PAYE_Remittance_${run.period.replace(' ','_')}`, headers, data);
     }
     
     const handleDownloadPensionSchedule = () => {
-        const headers = ['Employee Name', 'Gross Salary (NGN)', 'Pension Contribution (NGN)'];
+        const headers = ['Employee Name', `Gross Salary (${currency})`, `Pension Contribution (${currency})`];
         const data = run.payslips.map(p => [p.employeeName, p.grossSalary.toFixed(2), p.pension.toFixed(2)]);
         downloadCSV(`Pension_Remittance_${run.period.replace(' ','_')}`, headers, data);
     }
@@ -74,9 +73,9 @@ export const PayrollRunDetailModal: React.FC<PayrollRunDetailModalProps> = ({ is
                              {run.payslips.map(p => (
                                  <tr key={p.employeeId}>
                                      <td className="p-2 text-white">{p.employeeName}</td>
-                                     <td className="p-2 font-mono text-gray-300">{formatNaira(p.totalIncome)}</td>
-                                     <td className="p-2 font-mono text-red-400">({formatNaira(p.totalDeductions)})</td>
-                                     <td className="p-2 font-mono font-semibold text-brand-cyan">{formatNaira(p.netSalary)}</td>
+                                     <td className="p-2 font-mono text-gray-300">{formatAmount(p.totalIncome)}</td>
+                                     <td className="p-2 font-mono text-red-400">({formatAmount(p.totalDeductions)})</td>
+                                     <td className="p-2 font-mono font-semibold text-brand-cyan">{formatAmount(p.netSalary)}</td>
                                  </tr>
                              ))}
                         </tbody>

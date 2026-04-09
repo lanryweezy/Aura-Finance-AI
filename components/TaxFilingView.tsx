@@ -4,8 +4,10 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { fetchInvoices } from '../services/receivablesService';
 import type { CategorizedTransaction, Invoice } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }> = ({ transactions }) => {
+    const { formatAmount } = useCurrency();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [period, setPeriod] = useState({ start: '', end: '' });
@@ -46,9 +48,6 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         }
     };
 
-    const formatNaira = (amount: number) => {
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-    };
 
     const filteredData = useMemo(() => {
         const result = {
@@ -150,15 +149,15 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <Card className="summary-card">
                         <h3 className="text-gray-400 text-sm font-medium">Total Sales (VAT-exclusive)</h3>
-                        <p className="text-3xl font-bold text-brand-cyan mt-2">{formatNaira(filteredData.totalSales)}</p>
+                        <p className="text-3xl font-bold text-brand-cyan mt-2">{formatAmount(filteredData.totalSales)}</p>
                     </Card>
                     <Card className="summary-card">
                         <h3 className="text-gray-400 text-sm font-medium">Total VAT Collected</h3>
-                        <p className="text-3xl font-bold text-blue-400 mt-2">{formatNaira(filteredData.totalVAT)}</p>
+                        <p className="text-3xl font-bold text-blue-400 mt-2">{formatAmount(filteredData.totalVAT)}</p>
                     </Card>
                     <Card className="summary-card">
                         <h3 className="text-gray-400 text-sm font-medium">Total WHT Suffered</h3>
-                        <p className="text-3xl font-bold text-purple-400 mt-2">{formatNaira(filteredData.totalWHT)}</p>
+                        <p className="text-3xl font-bold text-purple-400 mt-2">{formatAmount(filteredData.totalWHT)}</p>
                     </Card>
                 </div>
                 
@@ -179,7 +178,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                                 <tr key={invoice.id}>
                                     <td className="p-4 text-gray-300">{new Date(invoice.issueDate).toLocaleDateString()}</td>
                                     <td className="p-4 text-white font-medium">{invoice.customer}</td>
-                                    <td className="p-4 font-mono text-blue-400">{formatNaira(invoice.vat)}</td>
+                                    <td className="p-4 font-mono text-blue-400">{formatAmount(invoice.vat)}</td>
                                 </tr>
                             )) : (
                                 <tr><td colSpan={3} className="text-center p-8 text-gray-400">No invoices.</td></tr>
@@ -191,13 +190,13 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                     <Card>
                         <h3 className="text-xl font-bold text-white mb-6">CIT Estimator (Period)</h3>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Revenue:</span> <span className="font-mono text-green-400">{formatNaira(filteredData.revenue)}</span></div>
-                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Expenses:</span> <span className="font-mono text-red-400">({formatNaira(filteredData.expenses)})</span></div>
+                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Revenue:</span> <span className="font-mono text-green-400">{formatAmount(filteredData.revenue)}</span></div>
+                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Expenses:</span> <span className="font-mono text-red-400">({formatAmount(filteredData.expenses)})</span></div>
                              <hr className="border-gray-700 !my-3"/>
-                            <div className="flex justify-between items-center text-lg font-bold"><span className="text-white">Assessable Profit:</span> <span className="font-mono text-white">{formatNaira(filteredData.assessableProfit)}</span></div>
+                            <div className="flex justify-between items-center text-lg font-bold"><span className="text-white">Assessable Profit:</span> <span className="font-mono text-white">{formatAmount(filteredData.assessableProfit)}</span></div>
                              <hr className="border-gray-700 !my-3"/>
                             <div className="flex justify-between items-center"><span className="text-gray-300">Applicable CIT Rate:</span> <span className="font-mono text-orange-400">{filteredData.citRate}%</span></div>
-                            <div className="flex justify-between items-center text-xl font-bold bg-dark-secondary p-3 rounded-lg"><span className="text-orange-300">Est. CIT Payable:</span> <span className="font-mono text-orange-300">{formatNaira(filteredData.estimatedCIT)}</span></div>
+                            <div className="flex justify-between items-center text-xl font-bold bg-dark-secondary p-3 rounded-lg"><span className="text-orange-300">Est. CIT Payable:</span> <span className="font-mono text-orange-300">{formatAmount(filteredData.estimatedCIT)}</span></div>
                         </div>
                     </Card>
                 </div>

@@ -1,18 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { billingService } from '../services/billingService';
 import { usageService } from '../services/usageService';
+import { monitoringService } from '../services/monitoringService';
 import type { SubscriptionTier } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 import { useToast } from './ui/Toast';
 
 export const SubscriptionView: React.FC = () => {
+    const { formatAmount } = useCurrency();
     const { showToast } = useToast();
     const plans = billingService.getPlans();
     const [currentPlan, setCurrentPlan] = useState(billingService.getCurrentPlan());
     const [isLoading, setIsLoading] = useState<string | null>(null);
-    const usageStats = usageService.getUsageStats();
+    const [usageStats, setUsageStats] = useState<any[]>([]);
+
+    useEffect(() => {
+        usageService.getUsageStats().then(setUsageStats);
+    }, []);
 
     const handleUpgrade = async (plan: SubscriptionTier) => {
         if (plan.price === 0) {
@@ -23,7 +30,7 @@ export const SubscriptionView: React.FC = () => {
             return;
         }
 
-        // Randomly pick a gateway for demo, or show a selector
+        // Randomly pick a gateway for demo
         const gateway = Math.random() > 0.5 ? 'Paystack' : 'Flutterwave';
         setIsLoading(plan.id);
 
@@ -40,10 +47,6 @@ export const SubscriptionView: React.FC = () => {
         } else {
             billingService.initializeFlutterwave(plan, 'demo@aura.ai', callback);
         }
-    };
-
-    const formatNaira = (amount: number) => {
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(amount);
     };
 
     const getUsageLabel = (type: string) => {
@@ -98,7 +101,7 @@ export const SubscriptionView: React.FC = () => {
                         )}
                         <h3 className="text-xl font-bold text-white">{plan.name}</h3>
                         <div className="my-6">
-                            <span className="text-4xl font-bold text-white">{formatNaira(plan.price)}</span>
+                            <span className="text-4xl font-bold text-white">{formatAmount(plan.price, { maximumFractionDigits: 0 })}</span>
                             <span className="text-gray-400">/month</span>
                         </div>
                         

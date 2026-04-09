@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { PurchaseOrder } from '../types';
 import { authService } from './authService';
@@ -24,7 +25,7 @@ const loadPOs = (): PurchaseOrder[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse POs', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse POs' });
             return initialPOs;
         }
     }

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import type { Invoice, Estimate, LineItem } from '../../types';
 import { useToast } from './Toast';
+import { useCurrency } from './CurrencyProvider';
 
 interface DocumentData {
     id: string;
@@ -35,6 +36,7 @@ const TEMPLATES = [
 ];
 
 export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOpen, onClose, data, type }) => {
+    const { formatAmount } = useCurrency();
     const { showToast } = useToast();
     const [selectedTemplate, setSelectedTemplate] = useState('modern');
     const [isSending, setIsSending] = useState(false);
@@ -57,7 +59,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
         currency: 'NGN'
     };
 
-    const formatMoney = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+    const formatMoney = (amount: number) => formatAmount(amount);
     const formatDate = (dateStr: string) => new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
     const handlePrint = () => {

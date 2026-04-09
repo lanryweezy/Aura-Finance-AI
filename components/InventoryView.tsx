@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import type { InventoryItem } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface InventoryViewProps {
     items: InventoryItem[];
@@ -9,14 +10,13 @@ interface InventoryViewProps {
     onUpdateItem: (item: InventoryItem) => void;
 }
 
-const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-
 const AddEditItemModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     onSave: (item: any) => void;
     item: InventoryItem | null;
 }> = ({ isOpen, onClose, onSave, item }) => {
+    const { currency } = useCurrency();
     const [formData, setFormData] = useState<Omit<InventoryItem, 'id'>>({
         name: '', sku: '', category: '', type: 'Product', costPrice: 0, salePrice: 0, quantity: 0
     });
@@ -61,8 +61,8 @@ const AddEditItemModal: React.FC<{
                         </select>
                     </div>
                      <div className="grid grid-cols-2 gap-4">
-                        <input type="number" name="salePrice" placeholder="Sale Price (NGN)" value={formData.salePrice || ''} onChange={handleChange} required className="w-full bg-dark-secondary p-3 rounded-lg border border-gray-700"/>
-                        <input type="number" name="costPrice" placeholder="Cost Price (NGN)" value={formData.costPrice || ''} onChange={handleChange} className="w-full bg-dark-secondary p-3 rounded-lg border border-gray-700"/>
+                        <input type="number" name="salePrice" placeholder={`Sale Price (${currency})`} value={formData.salePrice || ''} onChange={handleChange} required className="w-full bg-dark-secondary p-3 rounded-lg border border-gray-700"/>
+                        <input type="number" name="costPrice" placeholder={`Cost Price (${currency})`} value={formData.costPrice || ''} onChange={handleChange} className="w-full bg-dark-secondary p-3 rounded-lg border border-gray-700"/>
                     </div>
                     {formData.type === 'Product' && (
                          <input type="number" name="quantity" placeholder="Quantity in Stock" value={formData.quantity || ''} onChange={handleChange} className="w-full bg-dark-secondary p-3 rounded-lg border border-gray-700"/>
@@ -78,6 +78,7 @@ const AddEditItemModal: React.FC<{
 };
 
 export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, onUpdateItem }) => {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
 
@@ -115,8 +116,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, 
                                     <td className="p-4 text-white">{item.name} <span className="text-gray-500 text-xs">({item.sku})</span></td>
                                     <td className="p-4 text-gray-300">{item.type}</td>
                                     <td className="p-4 text-gray-300 font-mono">{item.type === 'Product' ? item.quantity : 'N/A'}</td>
-                                    <td className="p-4 text-green-400 font-mono">{formatNaira(item.salePrice)}</td>
-                                    <td className="p-4 text-red-400 font-mono">{formatNaira(item.costPrice)}</td>
+                                    <td className="p-4 text-green-400 font-mono">{formatAmount(item.salePrice)}</td>
+                                    <td className="p-4 text-red-400 font-mono">{formatAmount(item.costPrice)}</td>
                                     <td className="p-4 text-right">
                                         <button onClick={() => handleOpenModal(item)} className="text-sm py-1 px-3 rounded-md border border-brand-cyan text-brand-cyan hover:bg-brand-cyan/20">Edit</button>
                                     </td>

@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { Budget } from '../types';
 import { useToast } from './ui/Toast';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface BudgetingViewProps {
     budgets: Budget[];
@@ -10,9 +11,8 @@ interface BudgetingViewProps {
     expenseCategories: string[];
 }
 
-const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-
 export const BudgetingView: React.FC<BudgetingViewProps> = ({ budgets, onSaveBudgets, expenseCategories }) => {
+    const { currency } = useCurrency();
     const { showToast } = useToast();
     const [editableBudgets, setEditableBudgets] = useState<Budget[]>([]);
 
@@ -54,7 +54,7 @@ export const BudgetingView: React.FC<BudgetingViewProps> = ({ budgets, onSaveBud
                         <thead className="sticky top-0 bg-dark-tertiary">
                             <tr>
                                 <th className="p-4 text-sm font-semibold text-gray-400">Expense Category</th>
-                                <th className="p-4 text-sm font-semibold text-gray-400">Monthly Budget (NGN)</th>
+                                <th className="p-4 text-sm font-semibold text-gray-400">Monthly Budget ({currency})</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-800">

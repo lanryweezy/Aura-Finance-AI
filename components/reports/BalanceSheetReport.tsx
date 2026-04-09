@@ -1,20 +1,16 @@
-
 import React from 'react';
 import { Card } from '../ui/Card';
 import type { BalanceSheetData } from '../../types';
 import { useToast } from '../ui/Toast';
+import { useCurrency } from "../ui/CurrencyProvider";
 
 interface BalanceSheetReportProps {
     data: BalanceSheetData;
     onDrillDown: (title: string, type: 'credit' | 'debit', categories: string[]) => void;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
-const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, className?: string, onDrillDown?: () => void}> = 
-({ label, value, isTotal, isHeader, className, onDrillDown }) => (
+const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
+({ label, value, isTotal, isHeader, className, onDrillDown, formatAmount }) => (
     <tr 
         className={`${isTotal ? 'section-total' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-dark-secondary' : ''} ${isHeader ? (className ?? '') : ''}`}
         onClick={onDrillDown}
@@ -22,7 +18,7 @@ const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isH
         <td className={`py-2 ${isTotal || isHeader ? 'font-bold' : 'pl-4'}`} colSpan={isHeader ? 2 : 1}>{label}</td>
         {!isHeader && (
             <td className={`text-right font-mono ${!isHeader ? (className ?? '') : ''}`}>
-                {typeof value === 'number' && formatNaira(value)}
+                {typeof value === 'number' && formatAmount(value)}
             </td>
         )}
     </tr>
@@ -51,6 +47,7 @@ const RatioIndicator: React.FC<{ratio: number}> = ({ratio}) => {
 }
 
 export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, onDrillDown }) => {
+    const { formatAmount } = useCurrency();
     const { showToast } = useToast();
     return (
         <Card>
@@ -59,25 +56,25 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, on
                 <div className="md:col-span-3">
                     <table className="w-full text-white">
                         <tbody>
-                            <ReportRow label="Assets" isHeader />
-                            <ReportRow label="Current Assets" isHeader className="text-base font-semibold" />
-                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-300" onDrillDown={() => showToast("Drill-down for cash balance not implemented yet.", "info")} />
-                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-300" onDrillDown={() => showToast("Drill-down for receivables not implemented yet.", "info")} />
-                            <ReportRow label="Inventory" value={data.inventory} className="text-gray-300" />
-                            <ReportRow label="Total Current Assets" value={data.totalCurrentAssets} isTotal />
+                            <ReportRow label="Assets" isHeader formatAmount={formatAmount} />
+                            <ReportRow label="Current Assets" isHeader className="text-base font-semibold" formatAmount={formatAmount} />
+                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for cash balance not implemented yet.", "info")} />
+                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for receivables not implemented yet.", "info")} />
+                            <ReportRow label="Inventory" value={data.inventory} className="text-gray-300" formatAmount={formatAmount} />
+                            <ReportRow label="Total Current Assets" value={data.totalCurrentAssets} isTotal formatAmount={formatAmount} />
 
                             <tr className="h-6"><td colSpan={2}></td></tr>
 
-                            <ReportRow label="Liabilities" isHeader />
-                            <ReportRow label="Current Liabilities" isHeader className="text-base font-semibold"/>
-                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-300" onDrillDown={() => showToast("Drill-down for payables not implemented yet.", "info")} />
-                            <ReportRow label="Total Current Liabilities" value={data.totalCurrentLiabilities} isTotal />
+                            <ReportRow label="Liabilities" isHeader formatAmount={formatAmount} />
+                            <ReportRow label="Current Liabilities" isHeader className="text-base font-semibold" formatAmount={formatAmount} />
+                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for payables not implemented yet.", "info")} />
+                            <ReportRow label="Total Current Liabilities" value={data.totalCurrentLiabilities} isTotal formatAmount={formatAmount} />
                             
                             <tr className="h-6"><td colSpan={2}></td></tr>
 
-                            <ReportRow label="Equity" isHeader />
-                             <ReportRow label="Retained Earnings / Owner's Equity" value={data.equity} className="text-gray-300" />
-                            <ReportRow label="Total Equity" value={data.equity} isTotal />
+                            <ReportRow label="Equity" isHeader formatAmount={formatAmount} />
+                             <ReportRow label="Retained Earnings / Owner's Equity" value={data.equity} className="text-gray-300" formatAmount={formatAmount} />
+                            <ReportRow label="Total Equity" value={data.equity} isTotal formatAmount={formatAmount} />
 
                         </tbody>
                     </table>

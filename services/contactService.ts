@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { Contact } from '../types';
 import { authService } from './authService';
@@ -46,7 +47,7 @@ const loadContacts = (): Contact[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse contacts', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse contacts' });
             return initialContacts;
         }
     }

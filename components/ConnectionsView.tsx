@@ -1,3 +1,4 @@
+import { monitoringService } from '../services/monitoringService';
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from './ui/Card';
@@ -85,7 +86,7 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
             const data = await fetchConnections();
             setConnections(data);
         } catch (error) {
-            console.error("Failed to fetch connections:", error);
+            monitoringService.trackError('UI', error, { message: "Failed to fetch connections:" });
             // Handle error UI
         } finally {
             setIsLoading(false);

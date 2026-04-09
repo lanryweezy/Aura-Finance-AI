@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { PurchaseOrder, LineItem, InventoryItem } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface PurchaseOrdersViewProps {
     purchaseOrders: PurchaseOrder[];
@@ -30,6 +31,7 @@ const NewPOModal: React.FC<{
     onAdd: (po: Omit<PurchaseOrder, 'id'|'status'|'issueDate'>) => void; 
     inventoryItems: InventoryItem[];
 }> = ({ isOpen, onClose, onAdd, inventoryItems }) => {
+    const { formatAmount } = useCurrency();
     const [vendor, setVendor] = useState('');
     const [expectedDeliveryDate, setExpectedDeliveryDate] = useState('');
     const [lineItems, setLineItems] = useState<Partial<LineItem>[]>([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
@@ -93,7 +95,7 @@ const NewPOModal: React.FC<{
                         </div>
                     ))}
                     <button type="button" onClick={addLine} className="text-xs text-brand-cyan">+ Add Line</button>
-                    <div className="flex justify-end font-bold text-lg">Total: {total.toLocaleString()} NGN</div>
+                    <div className="flex justify-end font-bold text-lg">Total: {formatAmount(total)}</div>
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
                         <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold">Save PO</button>
@@ -105,8 +107,8 @@ const NewPOModal: React.FC<{
 };
 
 export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ purchaseOrders, onAddPurchaseOrder, onConvertToBill, inventoryItems }) => {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     return (
         <>
@@ -137,7 +139,7 @@ export const PurchaseOrdersView: React.FC<PurchaseOrdersViewProps> = ({ purchase
                                 <td className="p-4 text-gray-300">{new Date(po.issueDate).toLocaleDateString()}</td>
                                 <td className="p-4 text-white font-mono">#{po.id.slice(-6)}</td>
                                 <td className="p-4 text-white">{po.vendor}</td>
-                                <td className="p-4 font-mono text-white">{formatNaira(po.total)}</td>
+                                <td className="p-4 font-mono text-white">{formatAmount(po.total)}</td>
                                 <td className="p-4"><POStatusBadge status={po.status} /></td>
                                 <td className="p-4 text-right">
                                     {po.status === 'Sent' && (

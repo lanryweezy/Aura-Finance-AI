@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Employee, PayrollAdjustment } from '../../types';
 import { calculateDeductions } from '../../services/taxCalculatorService';
+import { useCurrency } from '../ui/CurrencyProvider';
 
 interface RunPayrollWizardProps {
     isOpen: boolean;
@@ -10,11 +11,8 @@ interface RunPayrollWizardProps {
     onRunPayroll: (period: string, adjustments: Record<string, PayrollAdjustment>) => void;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
 export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onClose, employees, onRunPayroll }) => {
+    const { formatAmount } = useCurrency();
     const [step, setStep] = useState(1);
     const [period, setPeriod] = useState('');
     const [adjustments, setAdjustments] = useState<Record<string, PayrollAdjustment>>({});
@@ -77,11 +75,11 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
                         <h3 className="text-xl font-bold text-white mb-2">Confirm Payroll for {period}</h3>
                         <p className="text-gray-400 mb-6">Review the final figures before confirming.</p>
                         <div className="space-y-3 bg-dark-secondary p-4 rounded-lg border border-gray-700">
-                             <div className="flex justify-between text-white"><span className="text-gray-400">Total Gross Salaries:</span><span className="font-mono">{formatNaira(summary.totalGross)}</span></div>
-                             <div className="flex justify-between text-white"><span className="text-gray-400">Total Bonuses:</span><span className="font-mono">{formatNaira(summary.totalBonuses)}</span></div>
-                             <div className="flex justify-between text-white"><span className="text-gray-400">Total One-time Deductions:</span><span className="font-mono text-red-400">({formatNaira(summary.totalOneTimeDeductions)})</span></div>
+                             <div className="flex justify-between text-white"><span className="text-gray-400">Total Gross Salaries:</span><span className="font-mono">{formatAmount(summary.totalGross)}</span></div>
+                             <div className="flex justify-between text-white"><span className="text-gray-400">Total Bonuses:</span><span className="font-mono">{formatAmount(summary.totalBonuses)}</span></div>
+                             <div className="flex justify-between text-white"><span className="text-gray-400">Total One-time Deductions:</span><span className="font-mono text-red-400">({formatAmount(summary.totalOneTimeDeductions)})</span></div>
                              <hr className="border-gray-700"/>
-                             <div className="flex justify-between text-white text-lg font-bold"><span className="text-gray-200">Total Net Payout:</span><span className="font-mono text-brand-cyan">{formatNaira(summary.totalNet)}</span></div>
+                             <div className="flex justify-between text-white text-lg font-bold"><span className="text-gray-200">Total Net Payout:</span><span className="font-mono text-brand-cyan">{formatAmount(summary.totalNet)}</span></div>
                         </div>
                     </div>
                 );

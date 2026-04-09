@@ -5,6 +5,7 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import { useCurrency } from './ui/CurrencyProvider';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
@@ -100,7 +101,7 @@ const OnboardingWidget = React.memo<{ connections: BankConnection[], invoices: I
 });
 
 const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bills: Bill[], invoices: Invoice[] }>(({ transactions, bills, invoices }) => {
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+    const { formatAmount } = useCurrency();
 
     const combinedActivity = useMemo(() => {
         const transactionActivity = transactions.map(t => ({
@@ -162,7 +163,7 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
                             <p className="text-xs text-gray-500">{item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
                         </div>
                         <div className={`font-mono text-sm font-semibold ${item.isCredit ? 'text-green-400' : 'text-red-400'}`}>
-                            {item.isCredit ? '+' : '-'}{formatNaira(item.amount)}
+                            {item.isCredit ? '+' : '-'}{formatAmount(item.amount)}
                         </div>
                     </div>
                 )) : (
@@ -179,7 +180,7 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
 });
 
 const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[], invoices: Invoice[] }>(({ transactions, invoices }) => {
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    const { formatAmount } = useCurrency();
 
     const taxCalculations = useMemo(() => {
         const summary = transactions.reduce((acc, t) => {
@@ -245,22 +246,22 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
                 <p className="text-xs text-orange-400 flex justify-between items-center mb-1">
                     <span>Est. CIT ({taxCalculations.citRate}%)</span>
                 </p>
-                <p className="text-xl font-bold text-white">{formatNaira(taxCalculations.estimatedCIT)}</p>
+                <p className="text-xl font-bold text-white">{formatAmount(taxCalculations.estimatedCIT)}</p>
             </div>
              <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
                 <p className="text-xs text-cyan-400 flex justify-between items-center mb-1">
                     <span>Est. TET (3%)</span>
                 </p>
-                <p className="text-xl font-bold text-white">{formatNaira(taxCalculations.estimatedTET)}</p>
+                <p className="text-xl font-bold text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
                 <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
                     <p className="text-[10px] text-blue-400 uppercase">VAT Payable</p>
-                    <p className="text-lg font-bold text-white">{formatNaira(taxCalculations.vatPayable)}</p>
+                    <p className="text-lg font-bold text-white">{formatAmount(taxCalculations.vatPayable)}</p>
                 </div>
                 <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
                     <p className="text-[10px] text-purple-400 uppercase">WHT Credit</p>
-                    <p className="text-lg font-bold text-white">{formatNaira(taxCalculations.whtReceivable)}</p>
+                    <p className="text-lg font-bold text-white">{formatAmount(taxCalculations.whtReceivable)}</p>
                 </div>
             </div>
           </div>
@@ -269,6 +270,7 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
 });
 
 export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+  const { formatAmount } = useCurrency();
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -287,9 +289,6 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
     fetchAllData();
   }, [transactions]);
 
-  const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-  };
 
   const summary = useMemo(() => {
     return transactions.reduce(
@@ -382,7 +381,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
           </div>
           <h3 className="text-gray-400 text-sm font-medium">Total Income</h3>
-          <p className="text-3xl font-bold text-white mt-2">{formatNaira(summary.income)}</p>
+          <p className="text-3xl font-bold text-white mt-2">{formatAmount(summary.income)}</p>
           <div className="mt-2 flex items-center text-xs text-green-400 font-medium bg-green-500/10 w-fit px-2 py-1 rounded-full border border-green-500/20">
              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +12.5% vs last month
@@ -393,7 +392,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
              <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
           </div>
           <h3 className="text-gray-400 text-sm font-medium">Total Expenses</h3>
-          <p className="text-3xl font-bold text-white mt-2">{formatNaira(summary.expenses)}</p>
+          <p className="text-3xl font-bold text-white mt-2">{formatAmount(summary.expenses)}</p>
           <div className="mt-2 flex items-center text-xs text-red-400 font-medium bg-red-500/10 w-fit px-2 py-1 rounded-full border border-red-500/20">
              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +5.2% vs last month
@@ -402,7 +401,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Net Flow</h3>
           <p className={`text-3xl font-bold mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-400'}`}>
-            {formatNaira(summary.income - summary.expenses)}
+            {formatAmount(summary.income - summary.expenses)}
           </p>
           <div className="mt-2 text-xs text-gray-500">
              Cash availability metric
@@ -424,12 +423,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
                <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
-                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => `₦${Number(value) / 1000}k`} axisLine={false} tickLine={false} />
+                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => formatAmount(value, { compact: true })} axisLine={false} tickLine={false} />
                         <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
                         <Tooltip 
                             cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                             contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
-                            formatter={(value: number) => formatNaira(value)}
+                            formatter={(value: number) => formatAmount(value)}
                         />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
                             {chartData.map((entry, index) => (

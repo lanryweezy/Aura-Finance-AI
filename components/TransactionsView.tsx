@@ -4,6 +4,7 @@ import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
+import { useCurrency } from './ui/CurrencyProvider';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -36,39 +37,6 @@ const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   'Miscellaneous': 'bg-stone-500/10 text-stone-400 border-stone-500/20',
   'Uncategorized': 'bg-gray-600/20 text-gray-300 border-gray-500/20'
 };
-
-export const DEFAULT_CATEGORIES: Account[] = [
-    // Revenue
-    { name: 'Sales Revenue', type: 'Revenue' },
-    { name: 'Service Revenue', type: 'Revenue' },
-    { name: 'Interest Income', type: 'Revenue' },
-    { name: 'Other Income', type: 'Revenue' },
-    // Equity
-    { name: 'Capital Injection', type: 'Equity' },
-    { name: "Owner's Draw", type: 'Equity' },
-    // Expenses
-    { name: 'Salaries & Wages', type: 'Expense' },
-    { name: 'Utilities', type: 'Expense' },
-    { name: 'Software & Subscriptions', type: 'Expense' },
-    { name: 'Marketing & Advertising', type: 'Expense' },
-    { name: 'Rent & Leases', type: 'Expense' },
-    { name: 'Travel', type: 'Expense' },
-    { name: 'Meals & Entertainment', type: 'Expense' },
-    { name: 'Hardware', type: 'Expense' },
-    { name: 'Bank Charges & Fees', type: 'Expense' },
-    { name: 'Professional Fees', type: 'Expense' },
-    { name: 'Legal Fees', type: 'Expense' },
-    { name: 'Insurance', type: 'Expense' },
-    { name: 'Repairs & Maintenance', type: 'Expense' },
-    { name: 'Cost of Sales', type: 'Expense' },
-    { name: 'COGS - Raw Materials', type: 'Expense' },
-    { name: 'COGS - Direct Labor', type: 'Expense' },
-    { name: 'Taxes - Corporate', type: 'Expense' },
-    { name: 'Miscellaneous', type: 'Expense' },
-    // Other / Special
-    { name: 'Inter-account Transfer', type: 'Expense' },
-    { name: 'Uncategorized', type: 'Expense' },
-];
 
 interface TransactionsViewProps {
   transactions: CategorizedTransaction[];
@@ -181,6 +149,7 @@ const AddTransactionModal = React.memo<{
     const [projectId, setProjectId] = useState('');
     const [receiptUrl, setReceiptUrl] = useState('');
 
+    const { currency } = useCurrency();
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const numericAmount = parseFloat(amount);
@@ -224,7 +193,7 @@ const AddTransactionModal = React.memo<{
                         <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
                     </div>
                      <input type="text" placeholder="Narration / Description" value={narration} onChange={e => setNarration(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                    <input type="number" placeholder="Amount (NGN)" value={amount} onChange={e => setAmount(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                    <input type="number" placeholder={`Amount (${currency})`} value={amount} onChange={e => setAmount(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
 
                     <div className="flex gap-2 bg-dark-secondary p-1 rounded-lg">
                         <button type="button" onClick={() => setType('debit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'debit' ? 'bg-brand-pink text-white shadow' : 'text-gray-400 hover:text-white'}`}>Debit (Out)</button>
@@ -255,6 +224,7 @@ const AddTransactionModal = React.memo<{
 
 
 export const TransactionsView = React.memo<TransactionsViewProps>(({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
+  const { formatAmount } = useCurrency();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'credit'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -264,9 +234,6 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   
-  const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-  };
 
   const allAvailableCategories = useMemo(() => {
     return [...new Set(chartOfAccounts.map(a => a.name))].sort();
@@ -427,7 +394,7 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
                     </div>
                 </td>
                 <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
-                  {t.type === 'credit' ? '+' : ''} {formatNaira(t.amount)}
+                  {t.type === 'credit' ? '+' : ''} {formatAmount(t.amount)}
                 </td>
                 <td className="p-4 relative">
                     <div className="flex items-center gap-2">

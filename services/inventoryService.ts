@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { InventoryItem } from '../types';
 import { authService } from './authService';
@@ -17,7 +18,7 @@ const loadInventory = (): InventoryItem[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse inventory', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse inventory' });
             return initialInventory;
         }
     }

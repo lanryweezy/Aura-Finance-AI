@@ -4,7 +4,7 @@ import { aiClient, API_KEY } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { ReceiptData } from '../types';
-import { DEFAULT_CATEGORIES } from '../components/TransactionsView';
+import { DEFAULT_CATEGORIES } from '../constants/accounting';
 
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
     return new Promise((resolve, reject) => {

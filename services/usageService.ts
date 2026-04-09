@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import { authService } from './authService';
 import { apiClient } from './apiClient';
@@ -25,7 +26,7 @@ export const usageService = {
         try {
             await apiClient.post('/usage/track', { type });
         } catch (e) {
-            console.error("Failed to track usage via API", e);
+            monitoringService.trackError('SERVICE', e, { message: "Failed to track usage via API" });
         }
     },
 

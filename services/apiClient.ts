@@ -2,7 +2,7 @@
 import { authService } from './authService';
 import { monitoringService } from './monitoringService';
 
-const BASE_URL = process.env.VITE_API_URL || '/api';
+const BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api';
 
 interface FetchOptions extends RequestInit {
   timeout?: number;

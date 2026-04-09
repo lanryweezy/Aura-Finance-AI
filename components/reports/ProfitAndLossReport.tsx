@@ -1,23 +1,16 @@
-
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
 import { Card } from '../ui/Card';
 import type { PandLData } from '../../types';
+import { useCurrency } from "../ui/CurrencyProvider";
 
 interface ProfitAndLossReportProps {
     data: PandLData;
     onDrillDown: (title: string, type: 'credit' | 'debit', categories: string[]) => void;
 }
 
-const formatNaira = (amount: number, compact = false) => {
-    if (compact) {
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', notation: 'compact', maximumFractionDigits: 1 }).format(amount);
-    }
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
-const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, isProfit?: boolean, className?: string, onDrillDown?: () => void}> = 
-({ label, value, isTotal, isHeader, isProfit, className, onDrillDown }) => (
+const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, isProfit?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
+({ label, value, isTotal, isHeader, isProfit, className, onDrillDown, formatAmount }) => (
     <tr 
         className={`${isTotal ? 'section-total' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-dark-secondary' : ''} ${isHeader ? (className ?? '') : ''}`}
         onClick={onDrillDown}
@@ -25,13 +18,14 @@ const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isH
         <td className={`py-2 ${isTotal || isHeader ? 'font-bold' : 'pl-4'}`} colSpan={isHeader ? 2 : 1}>{label}</td>
         {!isHeader && (
             <td className={`text-right font-mono ${isProfit && typeof value === 'number' && value < 0 ? 'text-brand-pink' : ''} ${!isHeader ? (className ?? '') : ''}`}>
-                {typeof value === 'number' && (value < 0 ? `(${formatNaira(Math.abs(value))})` : formatNaira(value))}
+                {typeof value === 'number' && (value < 0 ? `(${formatAmount(Math.abs(value))})` : formatAmount(value))}
             </td>
         )}
     </tr>
 );
 
 export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, onDrillDown }) => {
+    const { formatAmount } = useCurrency();
     
     const expenseChartData = Object.entries(data.expensesByCategory)
         .map(([name, value]) => ({ name, value: Number(value) }))
@@ -46,21 +40,21 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                 <div className="md:col-span-3">
                      <table className="w-full text-white">
                         <tbody>
-                            <ReportRow label="Revenue" isHeader onDrillDown={() => onDrillDown('Revenue', 'credit', ['All'])} />
-                            <ReportRow label="Total Revenue" value={data.revenue} className="text-green-400" isTotal onDrillDown={() => onDrillDown('Revenue', 'credit', ['All'])} />
+                            <ReportRow label="Revenue" isHeader formatAmount={formatAmount} onDrillDown={() => onDrillDown('Revenue', 'credit', ['All'])} />
+                            <ReportRow label="Total Revenue" value={data.revenue} className="text-green-400" isTotal formatAmount={formatAmount} onDrillDown={() => onDrillDown('Revenue', 'credit', ['All'])} />
                             
-                            <ReportRow label="Cost of Goods Sold" value={-data.cogs} className="text-red-400" onDrillDown={() => onDrillDown('COGS', 'debit', ['COGS - Raw Materials', 'COGS - Direct Labor', 'Cost of Sales'])} />
-                            <ReportRow label="Gross Profit" value={data.grossProfit} isTotal />
+                            <ReportRow label="Cost of Goods Sold" value={-data.cogs} className="text-red-400" formatAmount={formatAmount} onDrillDown={() => onDrillDown('COGS', 'debit', ['COGS - Raw Materials', 'COGS - Direct Labor', 'Cost of Sales'])} />
+                            <ReportRow label="Gross Profit" value={data.grossProfit} isTotal formatAmount={formatAmount} />
                             
-                            <ReportRow label="Operating Expenses" isHeader className="pt-6" onDrillDown={() => onDrillDown('All Expenses', 'debit', Object.keys(data.expensesByCategory))}/>
+                            <ReportRow label="Operating Expenses" isHeader className="pt-6" formatAmount={formatAmount} onDrillDown={() => onDrillDown('All Expenses', 'debit', Object.keys(data.expensesByCategory))}/>
                             {Object.entries(data.expensesByCategory).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([category, amount]) => (
-                                <ReportRow key={category} label={category} value={-amount} className="text-red-400" onDrillDown={() => onDrillDown(category, 'debit', [category])} />
+                                <ReportRow key={category} label={category} value={-amount} className="text-red-400" formatAmount={formatAmount} onDrillDown={() => onDrillDown(category, 'debit', [category])} />
                             ))}
-                            <ReportRow label="Total Operating Expenses" value={-data.totalExpenses} isTotal />
+                            <ReportRow label="Total Operating Expenses" value={-data.totalExpenses} isTotal formatAmount={formatAmount} />
                             
-                            <ReportRow label="Net Operating Income" value={data.netOperatingIncome} isTotal isProfit className={`text-xl ${data.netOperatingIncome >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} />
+                            <ReportRow label="Net Operating Income" value={data.netOperatingIncome} isTotal isProfit className={`text-xl ${data.netOperatingIncome >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} formatAmount={formatAmount} />
 
-                            <ReportRow label="Net Profit" value={data.netProfit} isTotal isProfit className={`text-xl font-black ${data.netProfit >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} />
+                            <ReportRow label="Net Profit" value={data.netProfit} isTotal isProfit className={`text-xl font-black ${data.netProfit >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} formatAmount={formatAmount} />
                         </tbody>
                     </table>
                 </div>
@@ -72,7 +66,7 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                                 <Pie data={expenseChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" labelLine={false}>
                                      {expenseChartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                                 </Pie>
-                                <Tooltip formatter={(value: number) => formatNaira(value)} />
+                                <Tooltip formatter={(value: number) => formatAmount(value)} />
                                 <Legend layout="vertical" align="right" verticalAlign="middle" iconSize={8} />
                             </PieChart>
                         </ResponsiveContainer>

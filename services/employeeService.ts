@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { Employee } from '../types';
 import { authService } from './authService';
@@ -53,7 +54,7 @@ const loadEmployees = (): Employee[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse employees', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse employees' });
             return initialEmployees;
         }
     }

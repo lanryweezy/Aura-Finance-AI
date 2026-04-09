@@ -1,3 +1,4 @@
+import { useCurrency } from "../ui/CurrencyProvider";
 
 import React from 'react';
 import { Card } from '../ui/Card';

@@ -56,7 +56,7 @@ export const billingService = {
 
     initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof PaystackPop === 'undefined') {
-            console.error('PaystackPop is not defined. Ensure the script is loaded.');
+            monitoringService.trackError('SERVICE', 'PaystackPop is not defined. Ensure the script is loaded.');
             // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-PAYSTACK-' + Date.now()), 1000);
             return;
@@ -79,7 +79,7 @@ export const billingService = {
 
     initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof FlutterwaveCheckout === 'undefined') {
-            console.error('FlutterwaveCheckout is not defined. Ensure the script is loaded.');
+            monitoringService.trackError('SERVICE', 'FlutterwaveCheckout is not defined. Ensure the script is loaded.');
             // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-FLUTTERWAVE-' + Date.now()), 1000);
             return;

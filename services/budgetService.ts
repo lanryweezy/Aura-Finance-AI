@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { Budget } from '../types';
 import { authService } from './authService';
@@ -16,7 +17,7 @@ const loadBudgets = (): Budget[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse budgets', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse budgets' });
             return initialBudgets;
         }
     }

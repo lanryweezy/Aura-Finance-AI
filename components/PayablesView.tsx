@@ -4,6 +4,7 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface PayablesViewProps {
     bills: Bill[];
@@ -134,6 +135,7 @@ const NewBillModal: React.FC<{
 
 
 export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, onPayBill, inventoryItems }) => {
+  const { formatAmount } = useCurrency();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -153,9 +155,6 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
     );
   }, [bills]);
 
-  const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-  };
 
   if (isLoading) {
     return (
@@ -189,11 +188,11 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Total Outstanding</h3>
-          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatNaira(summary.totalOutstanding)}</p>
+          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatAmount(summary.totalOutstanding)}</p>
         </Card>
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Total Overdue</h3>
-          <p className="text-3xl font-bold text-red-400 mt-2">{formatNaira(summary.totalOverdue)}</p>
+          <p className="text-3xl font-bold text-red-400 mt-2">{formatAmount(summary.totalOverdue)}</p>
         </Card>
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Upcoming Bills (30 days)</h3>
@@ -223,7 +222,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
                   <td className="p-4 font-mono text-white">
                     <div className="flex items-center gap-2">
-                        <span>{formatNaira(bill.amount)}</span>
+                        <span>{formatAmount(bill.amount)}</span>
                         {bill.whtApplies && <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-md">WHT</span>}
                     </div>
                   </td>

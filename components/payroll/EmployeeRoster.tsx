@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import type { Employee } from '../../types';
+import { useCurrency } from '../ui/CurrencyProvider';
 
 interface EmployeeRosterProps {
     employees: Employee[];
@@ -9,11 +10,8 @@ interface EmployeeRosterProps {
     onRemove: (id: string) => void;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
 export const EmployeeRoster: React.FC<EmployeeRosterProps> = ({ employees, onEdit, onRemove }) => {
+    const { formatAmount } = useCurrency();
     
     return (
         <Card className="h-full overflow-hidden flex flex-col">
@@ -38,7 +36,7 @@ export const EmployeeRoster: React.FC<EmployeeRosterProps> = ({ employees, onEdi
                                     </div>
                                 </td>
                                 <td className="p-3 text-gray-300">{emp.jobTitle}</td>
-                                <td className="p-3 font-mono text-gray-300">{formatNaira(emp.grossSalary)}</td>
+                                <td className="p-3 font-mono text-gray-300">{formatAmount(emp.grossSalary)}</td>
                                 <td className="p-3 text-right space-x-2">
                                     <button onClick={() => onEdit(emp)} className="text-brand-cyan hover:text-white font-semibold text-sm py-1 px-3 rounded-md border border-brand-cyan/50 hover:bg-brand-cyan/20">Edit</button>
                                     <button onClick={() => onRemove(emp.id)} className="text-red-400 hover:text-white font-semibold text-sm py-1 px-3 rounded-md border border-red-400/50 hover:bg-red-400/20">Remove</button>

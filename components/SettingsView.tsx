@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import { useToast } from './ui/Toast';
+import { TeamManagement } from './TeamManagement';
+import { exportToCSV } from '../services/exportService';
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: boolean) => void; description?: string }> = ({ label, checked, onChange, description }) => (
     <div className="flex items-center justify-between py-3">
@@ -27,6 +29,7 @@ const SectionHeader: React.FC<{ title: string; description: string }> = ({ title
 
 export const SettingsView: React.FC = () => {
     const { showToast } = useToast();
+    const [activeTab, setActiveTab] = useState<'profile' | 'team'>('profile');
     const [companyName, setCompanyName] = useState('Aura Inc.');
     const [tin, setTin] = useState('12345678-0001');
     const [email, setEmail] = useState('admin@aurainc.ng');
@@ -62,7 +65,27 @@ export const SettingsView: React.FC = () => {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="flex gap-4 border-b border-gray-800 pb-px">
+                <button
+                    onClick={() => setActiveTab('profile')}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'profile' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    Organization Profile
+                    {activeTab === 'profile' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
+                </button>
+                <button
+                    onClick={() => setActiveTab('team')}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'team' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    Team Management
+                    {activeTab === 'team' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
+                </button>
+            </div>
+
+            {activeTab === 'team' ? (
+                <TeamManagement />
+            ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
                 {/* Left Column - General Info */}
                 <div className="lg:col-span-2 space-y-6">
                     <Card>
@@ -102,8 +125,10 @@ export const SettingsView: React.FC = () => {
                                 <label className="block text-xs font-medium text-gray-400 mb-1">Base Currency</label>
                                 <select disabled className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-gray-400 cursor-not-allowed">
                                     <option>Nigerian Naira (NGN)</option>
+                                    <option>US Dollar (USD)</option>
+                                    <option>British Pound (GBP)</option>
                                 </select>
-                                <p className="text-[10px] text-gray-500 mt-1">Base currency cannot be changed after transactions are recorded.</p>
+                                <p className="text-[10px] text-gray-500 mt-1">Base currency is set by your organization's region and cannot be changed.</p>
                             </div>
                             <div>
                                 <label className="block text-xs font-medium text-gray-400 mb-1">Time Zone</label>
@@ -162,13 +187,19 @@ export const SettingsView: React.FC = () => {
                     <Card>
                         <SectionHeader title="Data Management" description="Export or reset your account data." />
                         <div className="space-y-3">
-                            <button className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-gray-600 text-gray-300 hover:bg-dark-secondary hover:text-white transition-colors text-sm font-medium">
+                            <button
+                                onClick={() => exportToCSV('aura_audit_log', monitoringService.getLogs())}
+                                className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-gray-600 text-gray-300 hover:bg-dark-secondary hover:text-white transition-colors text-sm font-medium"
+                            >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                Export All Data (CSV)
+                                Export Audit Logs (CSV)
                             </button>
-                            <button className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-red-900/50 text-red-500 hover:bg-red-900/20 transition-colors text-sm font-medium">
+                            <button
+                                onClick={() => { if(confirm("This will wipe ALL locally saved data. Proceed?")) { localStorage.clear(); window.location.reload(); } }}
+                                className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg border border-red-900/50 text-red-500 hover:bg-red-900/20 transition-colors text-sm font-medium"
+                            >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                Clear Test Data
+                                Factory Reset Aura
                             </button>
                         </div>
                     </Card>
@@ -185,6 +216,7 @@ export const SettingsView: React.FC = () => {
                     </Card>
                 </div>
             </div>
+            )}
         </div>
     );
 };

@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { JournalEntry } from '../types';
 import { authService } from './authService';
@@ -22,7 +23,7 @@ const loadJournalEntries = (): JournalEntry[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse journal entries', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse journal entries' });
             return initialJournalEntries;
         }
     }

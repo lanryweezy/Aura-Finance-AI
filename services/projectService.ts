@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { Project } from '../types';
 import { authService } from './authService';
@@ -16,7 +17,7 @@ const loadProjects = (): Project[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse projects', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse projects' });
             return initialProjects;
         }
     }

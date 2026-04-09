@@ -1,3 +1,4 @@
+import { monitoringService } from './monitoringService';
 
 import type { Estimate } from '../types';
 import { authService } from './authService';
@@ -25,7 +26,7 @@ const loadEstimates = (): Estimate[] => {
         try {
             return JSON.parse(stored);
         } catch (e) {
-            console.error('Failed to parse estimates', e);
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse estimates' });
             return initialEstimates;
         }
     }

@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Spinner } from './Spinner';
 import { ocrService } from '../../services/ocrService';
 import type { ReceiptData, CategorizedTransaction } from '../../types';
-import { DEFAULT_CATEGORIES } from '../TransactionsView';
+import { DEFAULT_CATEGORIES } from '../../constants/accounting';
 import { useToast } from './Toast';
 
 interface ReceiptScannerModalProps {

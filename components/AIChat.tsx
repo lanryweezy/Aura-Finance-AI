@@ -1,7 +1,9 @@
+import { monitoringService } from '../services/monitoringService';
 
 import React, { useState, useRef, useEffect } from 'react';
 import type { CategorizedTransaction, ChatMessage } from '../types';
 import { Card } from './ui/Card';
+import { useCurrency } from './ui/CurrencyProvider';
 import { GoogleGenAI, Chat } from "@google/genai";
 
 interface AIChatProps {
@@ -18,6 +20,7 @@ const suggestedPrompts = [
 ];
 
 export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
+  const { currency } = useCurrency();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,7 +29,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
 
   useEffect(() => {
     const systemInstruction = `You are O-Heidi, a friendly and expert financial AI assistant for Nigerian small business owners. 
-    Analyze the user's financial data to answer their questions. Be concise, helpful, and use Nigerian Naira (NGN) for currency.
+    Analyze the user's financial data to answer their questions. Be concise, helpful, and use ${currency} for currency.
     Here is the user's transaction data in JSON format: ${JSON.stringify(transactions)}`;
 
     if(process.env.API_KEY) {
@@ -83,7 +86,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
       }
 
     } catch (error) {
-      console.error("AI Chat Error:", error);
+      monitoringService.trackError('UI', error, { message: "AI Chat Error:" });
        setMessages(prev => prev.map(msg => 
             msg.id === modelMessageId ? { ...msg, text: "Sorry, I encountered an error. Please try again." } : msg
         ));
