@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import { billingService } from '../services/billingService';
+import { usageService } from '../services/usageService';
 import type { SubscriptionTier } from '../types';
 
 import { useToast } from './ui/Toast';
@@ -11,6 +12,7 @@ export const SubscriptionView: React.FC = () => {
     const plans = billingService.getPlans();
     const [currentPlan, setCurrentPlan] = useState(billingService.getCurrentPlan());
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const usageStats = usageService.getUsageStats();
 
     const handleUpgrade = async (plan: SubscriptionTier) => {
         if (plan.price === 0) {
@@ -44,8 +46,36 @@ export const SubscriptionView: React.FC = () => {
         return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(amount);
     };
 
+    const getUsageLabel = (type: string) => {
+        switch(type) {
+            case 'ai_insight': return 'AI Insights';
+            case 'ai_chat': return 'AI Chat & Gen';
+            case 'ocr_scan': return 'Receipt Scans';
+            case 'bank_sync': return 'Bank Syncs';
+            default: return type;
+        }
+    };
+
     return (
         <div className="space-y-8 max-w-6xl mx-auto pb-10">
+            {/* Usage Metrics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+                {usageStats.map(stat => (
+                    <Card key={stat.type} className="bg-dark-secondary/40 border-white/5">
+                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">{getUsageLabel(stat.type)}</p>
+                        <div className="flex justify-between items-end">
+                            <h4 className="text-2xl font-bold text-white">{stat.used} <span className="text-sm text-gray-500">/ {stat.limit > 10000 ? '∞' : stat.limit}</span></h4>
+                            <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden mb-2">
+                                <div
+                                    className={`h-full ${stat.used >= stat.limit ? 'bg-red-500' : 'bg-brand-cyan'}`}
+                                    style={{ width: `${Math.min(100, (stat.used / stat.limit) * 100)}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+
             <div className="text-center max-w-2xl mx-auto">
                 <h2 className="text-4xl font-bold text-white mb-4">Choose the right plan for your business</h2>
                 <p className="text-gray-400 text-lg">Scale your financial operations with Aura. Upgrade or downgrade at any time.</p>

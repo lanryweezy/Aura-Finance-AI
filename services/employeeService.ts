@@ -1,7 +1,8 @@
 
 import type { Employee } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_employees';
+const getStorageKey = () => `aura_${authService.getTenantId()}_employees`;
 
 const initialEmployees: Employee[] = [
   {
@@ -47,7 +48,7 @@ const initialEmployees: Employee[] = [
 ];
 
 const loadEmployees = (): Employee[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -59,16 +60,11 @@ const loadEmployees = (): Employee[] => {
     return initialEmployees;
 };
 
-let mockEmployees: Employee[] = loadEmployees();
-
-const saveEmployees = (employees: Employee[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
-};
-
 export const fetchEmployees = (): Promise<Employee[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve([...mockEmployees].sort((a, b) => a.name.localeCompare(b.name)));
+      const employees = loadEmployees();
+      resolve([...employees].sort((a, b) => a.name.localeCompare(b.name)));
     }, 400);
   });
 };
@@ -76,12 +72,13 @@ export const fetchEmployees = (): Promise<Employee[]> => {
 export const addEmployee = (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
     return new Promise((resolve) => {
         setTimeout(() => {
+            const current = loadEmployees();
             const newEmployee: Employee = {
                 id: `emp_${Date.now()}`,
                 ...employeeData
             };
-            mockEmployees.push(newEmployee);
-            saveEmployees(mockEmployees);
+            const updated = [...current, newEmployee];
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve(newEmployee);
         }, 300);
     });
@@ -90,10 +87,11 @@ export const addEmployee = (employeeData: Omit<Employee, 'id'>): Promise<Employe
 export const updateEmployee = (employeeData: Employee): Promise<Employee> => {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
-            const index = mockEmployees.findIndex(e => e.id === employeeData.id);
+            const current = loadEmployees();
+            const index = current.findIndex(e => e.id === employeeData.id);
             if(index !== -1){
-                mockEmployees[index] = employeeData;
-                saveEmployees(mockEmployees);
+                current[index] = employeeData;
+                localStorage.setItem(getStorageKey(), JSON.stringify(current));
                 resolve(employeeData);
             } else {
                 reject(new Error("Employee not found"));
@@ -105,8 +103,9 @@ export const updateEmployee = (employeeData: Employee): Promise<Employee> => {
 export const removeEmployee = (employeeId: string): Promise<void> => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            mockEmployees = mockEmployees.filter(emp => emp.id !== employeeId);
-            saveEmployees(mockEmployees);
+            const current = loadEmployees();
+            const updated = current.filter(emp => emp.id !== employeeId);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve();
         }, 300);
     });

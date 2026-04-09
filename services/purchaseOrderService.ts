@@ -1,7 +1,8 @@
 
 import type { PurchaseOrder } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_purchase_orders';
+const getStorageKey = () => `aura_${authService.getTenantId()}_purchase_orders`;
 
 const initialPOs: PurchaseOrder[] = [
     {
@@ -18,7 +19,7 @@ const initialPOs: PurchaseOrder[] = [
 ];
 
 const loadPOs = (): PurchaseOrder[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -30,28 +31,23 @@ const loadPOs = (): PurchaseOrder[] => {
     return initialPOs;
 };
 
-let mockPOs: PurchaseOrder[] = loadPOs();
-
-const savePOs = (pos: PurchaseOrder[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
-};
-
 export const fetchPurchaseOrders = (): Promise<PurchaseOrder[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockPOs]), 500);
+        setTimeout(() => resolve(loadPOs()), 500);
     });
 };
 
 export const addPurchaseOrder = (poData: Omit<PurchaseOrder, 'id' | 'status' | 'issueDate'>): Promise<PurchaseOrder> => {
     return new Promise(resolve => {
+        const current = loadPOs();
         const newPO: PurchaseOrder = {
             ...poData,
             id: `po_${Date.now()}`,
             issueDate: new Date().toISOString(),
             status: 'Draft',
         };
-        mockPOs = [newPO, ...mockPOs];
-        savePOs(mockPOs);
+        const updated = [newPO, ...current];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newPO), 300);
     });
 };
@@ -59,8 +55,9 @@ export const addPurchaseOrder = (poData: Omit<PurchaseOrder, 'id' | 'status' | '
 export const updatePurchaseOrder = (po: PurchaseOrder): Promise<PurchaseOrder> => {
     return new Promise(resolve => {
         setTimeout(() => {
-            mockPOs = mockPOs.map(p => p.id === po.id ? po : p);
-            savePOs(mockPOs);
+            const current = loadPOs();
+            const updated = current.map(p => p.id === po.id ? po : p);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve(po);
         }, 300);
     });

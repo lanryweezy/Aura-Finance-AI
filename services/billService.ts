@@ -1,11 +1,12 @@
 
 import type { Bill } from '../types';
+import { authService } from './authService';
 
 const today = new Date();
 const oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
 const twoWeeksFromNow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
 
-const STORAGE_KEY = 'aura_bills';
+const getStorageKey = () => `aura_${authService.getTenantId()}_bills`;
 
 const initialBills: Bill[] = [
   {
@@ -44,7 +45,7 @@ const initialBills: Bill[] = [
 ];
 
 const loadBills = (): Bill[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -54,12 +55,6 @@ const loadBills = (): Bill[] => {
         }
     }
     return initialBills;
-};
-
-let mockBills: Bill[] = loadBills();
-
-const saveBills = (bills: Bill[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(bills));
 };
 
 const getStatus = (dueDate: string, currentStatus: Bill['status']): Bill['status'] => {
@@ -76,7 +71,8 @@ const getStatus = (dueDate: string, currentStatus: Bill['status']): Bill['status
 export const fetchBills = (): Promise<Bill[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-        const processedBills = mockBills.map(bill => ({
+        const bills = loadBills();
+        const processedBills = bills.map(bill => ({
             ...bill,
             status: getStatus(bill.dueDate, bill.status)
         })).sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
@@ -88,14 +84,15 @@ export const fetchBills = (): Promise<Bill[]> => {
 export const addBill = (billData: Omit<Bill, 'id'|'status'|'issueDate'>): Promise<Bill> => {
     return new Promise((resolve) => {
         setTimeout(() => {
+            const currentBills = loadBills();
             const newBill: Bill = {
                 id: `bill_${Date.now()}`,
                 status: 'Unpaid',
                 issueDate: new Date().toISOString(),
                 ...billData
             };
-            mockBills = [newBill, ...mockBills];
-            saveBills(mockBills);
+            const updatedBills = [newBill, ...currentBills];
+            localStorage.setItem(getStorageKey(), JSON.stringify(updatedBills));
             resolve(newBill);
         }, 300);
     });
@@ -104,8 +101,9 @@ export const addBill = (billData: Omit<Bill, 'id'|'status'|'issueDate'>): Promis
 export const updateBill = (bill: Bill): Promise<Bill> => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            mockBills = mockBills.map(b => b.id === bill.id ? bill : b);
-            saveBills(mockBills);
+            const currentBills = loadBills();
+            const updatedBills = currentBills.map(b => b.id === bill.id ? bill : b);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updatedBills));
             resolve(bill);
         }, 300);
     });

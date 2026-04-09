@@ -1,7 +1,8 @@
 
 import type { Budget } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_budgets';
+const getStorageKey = () => `aura_${authService.getTenantId()}_budgets`;
 
 const initialBudgets: Budget[] = [
     { category: 'Software & Subscriptions', amount: 50000 },
@@ -10,7 +11,7 @@ const initialBudgets: Budget[] = [
 ];
 
 const loadBudgets = (): Budget[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -22,22 +23,15 @@ const loadBudgets = (): Budget[] => {
     return initialBudgets;
 };
 
-let mockBudgets: Budget[] = loadBudgets();
-
-const saveBudgetsToStore = (budgets: Budget[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(budgets));
-};
-
 export const fetchBudgets = (): Promise<Budget[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockBudgets]), 300);
+        setTimeout(() => resolve(loadBudgets()), 300);
     });
 };
 
 export const saveBudgets = (updatedBudgets: Budget[]): Promise<Budget[]> => {
     return new Promise(resolve => {
-        mockBudgets = updatedBudgets;
-        saveBudgetsToStore(mockBudgets);
-        setTimeout(() => resolve([...mockBudgets]), 500);
+        localStorage.setItem(getStorageKey(), JSON.stringify(updatedBudgets));
+        setTimeout(() => resolve(updatedBudgets), 500);
     });
 };

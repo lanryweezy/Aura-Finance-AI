@@ -1,7 +1,8 @@
 
 import type { Project } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_projects';
+const getStorageKey = () => `aura_${authService.getTenantId()}_projects`;
 
 const initialProjects: Project[] = [
     { id: 'proj_1', name: 'Aura Website Revamp' },
@@ -10,7 +11,7 @@ const initialProjects: Project[] = [
 ];
 
 const loadProjects = (): Project[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -22,26 +23,21 @@ const loadProjects = (): Project[] => {
     return initialProjects;
 };
 
-let mockProjects: Project[] = loadProjects();
-
-const saveProjects = (projects: Project[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-};
-
 export const fetchProjects = (): Promise<Project[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockProjects]), 200);
+        setTimeout(() => resolve(loadProjects()), 200);
     });
 };
 
 export const addProject = (projectName: string): Promise<Project> => {
     return new Promise(resolve => {
+        const current = loadProjects();
         const newProject: Project = {
             id: `proj_${Date.now()}`,
             name: projectName,
         };
-        mockProjects.push(newProject);
-        saveProjects(mockProjects);
+        const updated = [...current, newProject];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newProject), 300);
     });
 };

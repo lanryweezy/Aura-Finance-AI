@@ -1,6 +1,8 @@
 
 import { Type } from "@google/genai";
 import { aiClient, API_KEY } from './aiConfig';
+import { usageService } from './usageService';
+import { monitoringService } from './monitoringService';
 import type { ReceiptData } from '../types';
 import { DEFAULT_CATEGORIES } from '../components/TransactionsView';
 
@@ -24,41 +26,35 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 
 export const ocrService = {
     scanReceipt: async (file: File): Promise<ReceiptData> => {
+        // SaaS Check
+        if (usageService.isRateLimited('ocr_scan')) {
+            monitoringService.log('warn', 'OCR_ENGINE', 'Rate limit reached for OCR');
+            throw new Error("Plan limit reached for AI Receipt Scanning. Please upgrade your plan.");
+        }
+
         // Fallback if no API key
         if (!aiClient || !API_KEY) {
             console.warn("No API Key found. Returning mock OCR data.");
             return new Promise(resolve => {
-                setTimeout(() => resolve({
-                    merchantName: "Mock Vendor Ltd",
-                    date: new Date().toISOString().split('T')[0],
-                    totalAmount: 15750,
-                    category: "Miscellaneous",
-                    description: "Office Supplies (Mock Scan)"
-                }), 2000);
+                setTimeout(() => {
+                    usageService.trackUsage('ocr_scan');
+                    resolve({
+                        merchantName: "Mock Vendor Ltd",
+                        date: new Date().toISOString().split('T')[0],
+                        totalAmount: 15750,
+                        category: "Miscellaneous",
+                        description: "Office Supplies (Mock Scan)"
+                    });
+                }, 2000);
             });
         }
 
         try {
+            monitoringService.log('info', 'OCR_ENGINE', 'Starting receipt scan', { fileName: file.name });
             const imagePart = await fileToGenerativePart(file);
             const categories = DEFAULT_CATEGORIES.map(c => c.name).join(', ');
 
-            const prompt = `
-                Analyze this receipt image and extract the following information.
-                1. Merchant/Vendor Name
-                2. Date of transaction (Format: YYYY-MM-DD)
-                3. Total Amount (Numbers only)
-                4. A brief description of items purchased (e.g. "Lunch meeting" or "Laptop repair")
-                5. The most appropriate category from this list: [${categories}]
-
-                Return the data in valid JSON format matching this schema:
-                {
-                    "merchantName": "string",
-                    "date": "string",
-                    "totalAmount": number,
-                    "description": "string",
-                    "category": "string"
-                }
-            `;
+            const prompt = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}].`;
 
             const receiptSchema = {
                 type: Type.OBJECT,
@@ -73,15 +69,7 @@ export const ocrService = {
             };
 
             const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent({
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [
-                            imagePart,
-                            { text: prompt }
-                        ]
-                    }
-                ],
+                contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
                 generationConfig: {
                     responseMimeType: "application/json",
                     responseSchema: receiptSchema as any,
@@ -90,10 +78,14 @@ export const ocrService = {
 
             const jsonText = response.response.text().trim();
             const data = JSON.parse(jsonText) as ReceiptData;
+
+            // Track usage on success
+            usageService.trackUsage('ocr_scan');
+
             return data;
 
         } catch (error) {
-            console.error("OCR Error:", error);
+            monitoringService.trackError('OCR_ENGINE', error as Error);
             throw new Error("Failed to scan receipt. Please try again manually.");
         }
     }

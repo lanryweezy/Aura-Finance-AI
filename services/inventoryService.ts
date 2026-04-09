@@ -1,7 +1,8 @@
 
 import type { InventoryItem } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_inventory';
+const getStorageKey = () => `aura_${authService.getTenantId()}_inventory`;
 
 const initialInventory: InventoryItem[] = [
     { id: 'inv_item_1', name: 'Web Dev Retainer (Monthly)', sku: 'WD-RETAIN', category: 'Services', type: 'Service', costPrice: 0, salePrice: 500000, quantity: 9999 },
@@ -11,7 +12,7 @@ const initialInventory: InventoryItem[] = [
 ];
 
 const loadInventory = (): InventoryItem[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -23,39 +24,36 @@ const loadInventory = (): InventoryItem[] => {
     return initialInventory;
 };
 
-let mockInventory: InventoryItem[] = loadInventory();
-
-const saveInventory = (items: InventoryItem[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-};
-
 export const fetchInventoryItems = (): Promise<InventoryItem[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockInventory]), 400);
+        setTimeout(() => resolve(loadInventory()), 400);
     });
 };
 
 export const addInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
     return new Promise(resolve => {
+        const current = loadInventory();
         const newItem: InventoryItem = { ...item, id: `inv_item_${Date.now()}` };
-        mockInventory = [newItem, ...mockInventory];
-        saveInventory(mockInventory);
+        const updated = [newItem, ...current];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newItem), 300);
     });
 };
 
 export const updateInventoryItem = (item: InventoryItem): Promise<InventoryItem> => {
      return new Promise(resolve => {
-        mockInventory = mockInventory.map(i => i.id === item.id ? item : i);
-        saveInventory(mockInventory);
+        const current = loadInventory();
+        const updated = current.map(i => i.id === item.id ? item : i);
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(item), 300);
     });
 };
 
 export const updateStock = (itemId: string, quantityChange: number): void => {
-    const itemIndex = mockInventory.findIndex(i => i.id === itemId);
+    const current = loadInventory();
+    const itemIndex = current.findIndex(i => i.id === itemId);
     if(itemIndex > -1) {
-        mockInventory[itemIndex].quantity += quantityChange;
-        saveInventory(mockInventory);
+        current[itemIndex].quantity += quantityChange;
+        localStorage.setItem(getStorageKey(), JSON.stringify(current));
     }
 }

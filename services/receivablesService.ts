@@ -1,11 +1,12 @@
 
 import type { Invoice } from '../types';
+import { authService } from './authService';
 
 const today = new Date();
 const oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
 const twoWeeksFromNow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
 
-const STORAGE_KEY = 'aura_invoices';
+const getStorageKey = () => `aura_${authService.getTenantId()}_invoices`;
 
 const initialInvoices: Invoice[] = [
   {
@@ -63,7 +64,7 @@ const initialInvoices: Invoice[] = [
 ];
 
 const loadInvoices = (): Invoice[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -73,12 +74,6 @@ const loadInvoices = (): Invoice[] => {
         }
     }
     return initialInvoices;
-};
-
-let mockInvoices: Invoice[] = loadInvoices();
-
-const saveInvoices = (invoices: Invoice[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
 };
 
 const getStatus = (dueDate: string, currentStatus: Invoice['status']): Invoice['status'] => {
@@ -95,7 +90,8 @@ const getStatus = (dueDate: string, currentStatus: Invoice['status']): Invoice['
 export const fetchInvoices = (): Promise<Invoice[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
-        const processedInvoices = mockInvoices.map(invoice => ({
+        const invoices = loadInvoices();
+        const processedInvoices = invoices.map(invoice => ({
             ...invoice,
             status: getStatus(invoice.dueDate, invoice.status)
         })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
@@ -107,14 +103,15 @@ export const fetchInvoices = (): Promise<Invoice[]> => {
 export const addInvoice = (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>): Promise<Invoice> => {
     return new Promise((resolve) => {
         setTimeout(() => {
+            const currentInvoices = loadInvoices();
             const newInvoice: Invoice = {
                 id: `inv_${Date.now()}`,
                 status: 'Draft',
                 issueDate: new Date().toISOString(),
                 ...invoiceData,
             };
-            mockInvoices = [newInvoice, ...mockInvoices];
-            saveInvoices(mockInvoices);
+            const updated = [newInvoice, ...currentInvoices];
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve(newInvoice);
         }, 300);
     });
@@ -123,8 +120,9 @@ export const addInvoice = (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>
 export const updateInvoice = (invoice: Invoice): Promise<Invoice> => {
     return new Promise((resolve) => {
         setTimeout(() => {
-            mockInvoices = mockInvoices.map(i => i.id === invoice.id ? invoice : i);
-            saveInvoices(mockInvoices);
+            const currentInvoices = loadInvoices();
+            const updated = currentInvoices.map(i => i.id === invoice.id ? invoice : i);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve(invoice);
         }, 300);
     });

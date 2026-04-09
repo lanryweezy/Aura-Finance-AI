@@ -1,7 +1,8 @@
 
 import type { Contact } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_contacts';
+const getStorageKey = () => `aura_${authService.getTenantId()}_contacts`;
 
 const initialContacts: Contact[] = [
     {
@@ -40,7 +41,7 @@ const initialContacts: Contact[] = [
 ];
 
 const loadContacts = (): Contact[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -52,34 +53,30 @@ const loadContacts = (): Contact[] => {
     return initialContacts;
 };
 
-let mockContacts: Contact[] = loadContacts();
-
-const saveContacts = (contacts: Contact[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
-};
-
 export const fetchContacts = (): Promise<Contact[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockContacts]), 400);
+        setTimeout(() => resolve(loadContacts()), 400);
     });
 };
 
 export const addContact = (contactData: Omit<Contact, 'id'>): Promise<Contact> => {
     return new Promise(resolve => {
+        const current = loadContacts();
         const newContact: Contact = {
             id: `cont_${Date.now()}`,
             ...contactData
         };
-        mockContacts.push(newContact);
-        saveContacts(mockContacts);
+        const updated = [...current, newContact];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newContact), 300);
     });
 };
 
 export const updateContact = (contact: Contact): Promise<Contact> => {
     return new Promise(resolve => {
-        mockContacts = mockContacts.map(c => c.id === contact.id ? contact : c);
-        saveContacts(mockContacts);
+        const current = loadContacts();
+        const updated = current.map(c => c.id === contact.id ? contact : c);
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(contact), 300);
     });
 };

@@ -1,7 +1,8 @@
 
 import type { Estimate } from '../types';
+import { authService } from './authService';
 
-const STORAGE_KEY = 'aura_estimates';
+const getStorageKey = () => `aura_${authService.getTenantId()}_estimates`;
 
 const initialEstimates: Estimate[] = [
     {
@@ -19,7 +20,7 @@ const initialEstimates: Estimate[] = [
 ];
 
 const loadEstimates = (): Estimate[] => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(getStorageKey());
     if (stored) {
         try {
             return JSON.parse(stored);
@@ -31,28 +32,23 @@ const loadEstimates = (): Estimate[] => {
     return initialEstimates;
 };
 
-let mockEstimates: Estimate[] = loadEstimates();
-
-const saveEstimates = (estimates: Estimate[]) => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(estimates));
-};
-
 export const fetchEstimates = (): Promise<Estimate[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockEstimates]), 500);
+        setTimeout(() => resolve(loadEstimates()), 500);
     });
 };
 
 export const addEstimate = (estData: Omit<Estimate, 'id' | 'status' | 'issueDate'>): Promise<Estimate> => {
     return new Promise(resolve => {
+        const current = loadEstimates();
         const newEst: Estimate = {
             ...estData,
             id: `est_${Date.now()}`,
             issueDate: new Date().toISOString(),
             status: 'Draft',
         };
-        mockEstimates = [newEst, ...mockEstimates];
-        saveEstimates(mockEstimates);
+        const updated = [newEst, ...current];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newEst), 300);
     });
 };
@@ -60,8 +56,9 @@ export const addEstimate = (estData: Omit<Estimate, 'id' | 'status' | 'issueDate
 export const updateEstimate = (est: Estimate): Promise<Estimate> => {
     return new Promise(resolve => {
         setTimeout(() => {
-            mockEstimates = mockEstimates.map(e => e.id === est.id ? est : e);
-            saveEstimates(mockEstimates);
+            const current = loadEstimates();
+            const updated = current.map(e => e.id === est.id ? est : e);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
             resolve(est);
         }, 300);
     });
