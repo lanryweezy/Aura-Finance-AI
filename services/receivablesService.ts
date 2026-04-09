@@ -5,7 +5,9 @@ const today = new Date();
 const oneWeekAgo = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 7);
 const twoWeeksFromNow = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 14);
 
-let mockInvoices: Invoice[] = [
+const STORAGE_KEY = 'aura_invoices';
+
+const initialInvoices: Invoice[] = [
   {
     id: 'inv_1',
     customer: 'Client A Inc.',
@@ -60,6 +62,25 @@ let mockInvoices: Invoice[] = [
   },
 ];
 
+const loadInvoices = (): Invoice[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse invoices', e);
+            return initialInvoices;
+        }
+    }
+    return initialInvoices;
+};
+
+let mockInvoices: Invoice[] = loadInvoices();
+
+const saveInvoices = (invoices: Invoice[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+};
+
 const getStatus = (dueDate: string, currentStatus: Invoice['status']): Invoice['status'] => {
   if (currentStatus === 'Paid' || currentStatus === 'Draft') {
     return currentStatus;
@@ -79,7 +100,7 @@ export const fetchInvoices = (): Promise<Invoice[]> => {
             status: getStatus(invoice.dueDate, invoice.status)
         })).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
       resolve(processedInvoices);
-    }, 800);
+    }, 400);
   });
 };
 
@@ -92,8 +113,19 @@ export const addInvoice = (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>
                 issueDate: new Date().toISOString(),
                 ...invoiceData,
             };
-            mockInvoices.unshift(newInvoice);
+            mockInvoices = [newInvoice, ...mockInvoices];
+            saveInvoices(mockInvoices);
             resolve(newInvoice);
         }, 300);
     });
 };
+
+export const updateInvoice = (invoice: Invoice): Promise<Invoice> => {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            mockInvoices = mockInvoices.map(i => i.id === invoice.id ? invoice : i);
+            saveInvoices(mockInvoices);
+            resolve(invoice);
+        }, 300);
+    });
+}

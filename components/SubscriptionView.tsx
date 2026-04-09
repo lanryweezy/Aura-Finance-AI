@@ -4,9 +4,12 @@ import { Card } from './ui/Card';
 import { billingService } from '../services/billingService';
 import type { SubscriptionTier } from '../types';
 
+import { useToast } from './ui/Toast';
+
 export const SubscriptionView: React.FC = () => {
+    const { showToast } = useToast();
     const plans = billingService.getPlans();
-    const [currentPlan, setCurrentPlan] = useState('Free');
+    const [currentPlan, setCurrentPlan] = useState(billingService.getCurrentPlan());
     const [isLoading, setIsLoading] = useState<string | null>(null);
 
     const handleUpgrade = async (plan: SubscriptionTier) => {
@@ -27,7 +30,7 @@ export const SubscriptionView: React.FC = () => {
             await billingService.upgradePlan(plan.id);
             setCurrentPlan(plan.id);
             setIsLoading(null);
-            alert(`Payment successful! Welcome to ${plan.name} plan.`);
+            showToast(`Welcome to ${plan.name} plan!`, 'success');
         };
 
         if (gateway === 'Paystack') {

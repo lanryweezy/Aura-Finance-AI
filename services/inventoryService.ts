@@ -1,12 +1,33 @@
 
 import type { InventoryItem } from '../types';
 
-let mockInventory: InventoryItem[] = [
+const STORAGE_KEY = 'aura_inventory';
+
+const initialInventory: InventoryItem[] = [
     { id: 'inv_item_1', name: 'Web Dev Retainer (Monthly)', sku: 'WD-RETAIN', category: 'Services', type: 'Service', costPrice: 0, salePrice: 500000, quantity: 9999 },
     { id: 'inv_item_2', name: 'Social Media Management', sku: 'SMM-BASIC', category: 'Services', type: 'Service', costPrice: 0, salePrice: 250000, quantity: 9999 },
     { id: 'inv_item_3', name: 'Laptop - 16" Pro', sku: 'HW-LAP-PRO16', category: 'Hardware', type: 'Product', costPrice: 950000, salePrice: 1250000, quantity: 5 },
     { id: 'inv_item_4', name: 'Ergonomic Office Chair', sku: 'HW-CHR-ERGO', category: 'Furniture', type: 'Product', costPrice: 85000, salePrice: 150000, quantity: 12 },
 ];
+
+const loadInventory = (): InventoryItem[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse inventory', e);
+            return initialInventory;
+        }
+    }
+    return initialInventory;
+};
+
+let mockInventory: InventoryItem[] = loadInventory();
+
+const saveInventory = (items: InventoryItem[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+};
 
 export const fetchInventoryItems = (): Promise<InventoryItem[]> => {
     return new Promise(resolve => {
@@ -18,6 +39,7 @@ export const addInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<Inven
     return new Promise(resolve => {
         const newItem: InventoryItem = { ...item, id: `inv_item_${Date.now()}` };
         mockInventory = [newItem, ...mockInventory];
+        saveInventory(mockInventory);
         setTimeout(() => resolve(newItem), 300);
     });
 };
@@ -25,6 +47,7 @@ export const addInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<Inven
 export const updateInventoryItem = (item: InventoryItem): Promise<InventoryItem> => {
      return new Promise(resolve => {
         mockInventory = mockInventory.map(i => i.id === item.id ? item : i);
+        saveInventory(mockInventory);
         setTimeout(() => resolve(item), 300);
     });
 };
@@ -33,5 +56,6 @@ export const updateStock = (itemId: string, quantityChange: number): void => {
     const itemIndex = mockInventory.findIndex(i => i.id === itemId);
     if(itemIndex > -1) {
         mockInventory[itemIndex].quantity += quantityChange;
+        saveInventory(mockInventory);
     }
 }

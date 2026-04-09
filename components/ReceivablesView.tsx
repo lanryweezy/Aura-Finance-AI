@@ -5,6 +5,7 @@ import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import type { Invoice, LineItem, InventoryItem } from '../types';
+import { useToast } from './ui/Toast';
 
 interface ReceivablesViewProps {
     invoices: Invoice[];
@@ -33,6 +34,7 @@ const NewInvoiceModal: React.FC<{
     onAddInvoice: (invoice: Omit<Invoice, 'id' | 'issueDate' | 'status'>) => void; 
     inventoryItems: InventoryItem[];
 }> = ({ isOpen, onClose, onAddInvoice, inventoryItems }) => {
+    const { showToast } = useToast();
     const [customer, setCustomer] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [applyVat, setApplyVat] = useState(true);
@@ -73,7 +75,7 @@ const NewInvoiceModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if(!customer || !dueDate) {
-            alert("Please fill customer and due date.");
+            showToast("Please fill customer and due date.", "error");
             return;
         }
 
@@ -187,6 +189,7 @@ const NewInvoiceModal: React.FC<{
 };
 
 const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: Invoice | null; reminderText: string; isLoading: boolean; }> = ({ isOpen, onClose, invoice, reminderText, isLoading }) => {
+    const { showToast } = useToast();
     if (!isOpen || !invoice) return null;
 
     return (
@@ -199,7 +202,10 @@ const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: I
                 </div>
                 <div className="flex justify-end gap-4 pt-6">
                     <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                    <button type="button" onClick={() => alert('Email sent (simulated)!')} className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Send Email</button>
+                    <button type="button" onClick={() => {
+                        showToast('Email sent (simulated)!', 'success');
+                        onClose();
+                    }} className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Send Email</button>
                 </div>
             </div>
         </div>

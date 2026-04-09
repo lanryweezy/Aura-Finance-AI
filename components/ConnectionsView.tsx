@@ -4,6 +4,7 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { fetchConnections, simulateConnect, unlinkConnection, syncConnection } from '../services/connectionService';
 import type { BankConnection } from '../types';
+import { useToast } from './ui/Toast';
 
 interface ConnectionsViewProps {
     onConnectionsUpdated: () => void;
@@ -71,6 +72,7 @@ const ConnectionHealthBadge: React.FC<{ lastSynced: string }> = ({ lastSynced })
 
 
 export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsUpdated }) => {
+    const { showToast } = useToast();
     const [connections, setConnections] = useState<BankConnection[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isConnecting, setIsConnecting] = useState(false);
@@ -101,8 +103,9 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
             onConnectionsUpdated(); // Notify App.tsx to reload all data
             setIsModalOpen(false); // Close modal on success
             await loadConnections(); // Refresh local list
+            showToast('Account linked successfully!', 'success');
         } catch (error) {
-            alert((error as Error).message);
+            showToast((error as Error).message, 'error');
         } finally {
             setIsConnecting(false);
         }
@@ -118,10 +121,16 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
     
     const handleSync = async (id: string) => {
         setSyncingId(id);
-        await syncConnection(id);
-        onConnectionsUpdated();
-        await loadConnections();
-        setSyncingId(null);
+        try {
+            await syncConnection(id);
+            onConnectionsUpdated();
+            await loadConnections();
+            showToast('Account synced successfully!', 'success');
+        } catch (error) {
+            showToast('Sync failed. Please try again.', 'error');
+        } finally {
+            setSyncingId(null);
+        }
     }
 
 

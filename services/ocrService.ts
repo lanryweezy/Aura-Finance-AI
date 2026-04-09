@@ -1,9 +1,8 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { aiClient, API_KEY } from './aiConfig';
 import type { ReceiptData } from '../types';
 import { DEFAULT_CATEGORIES } from '../components/TransactionsView';
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
     return new Promise((resolve, reject) => {
@@ -26,7 +25,7 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 export const ocrService = {
     scanReceipt: async (file: File): Promise<ReceiptData> => {
         // Fallback if no API key
-        if (!process.env.API_KEY) {
+        if (!aiClient || !API_KEY) {
             console.warn("No API Key found. Returning mock OCR data.");
             return new Promise(resolve => {
                 setTimeout(() => resolve({
@@ -73,18 +72,23 @@ export const ocrService = {
                 required: ["merchantName", "date", "totalAmount", "description", "category"],
             };
 
-            const response = await ai.models.generateContent({
-                model: "gemini-2.0-flash",
-                contents: {
-                    parts: [imagePart, { text: prompt }],
-                },
-                config: {
+            const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent({
+                contents: [
+                    {
+                        role: 'user',
+                        parts: [
+                            imagePart,
+                            { text: prompt }
+                        ]
+                    }
+                ],
+                generationConfig: {
                     responseMimeType: "application/json",
-                    responseSchema: receiptSchema,
+                    responseSchema: receiptSchema as any,
                 }
             });
 
-            const jsonText = response.text.trim();
+            const jsonText = response.response.text().trim();
             const data = JSON.parse(jsonText) as ReceiptData;
             return data;
 

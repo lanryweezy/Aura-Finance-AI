@@ -8,6 +8,7 @@ import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
+  user: { name: string } | null;
   transactions: CategorizedTransaction[];
   connections: BankConnection[];
   bills: Bill[];
@@ -267,7 +268,7 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
     );
 });
 
-export const Dashboard = React.memo<DashboardProps>(({ transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -335,7 +336,7 @@ export const Dashboard = React.memo<DashboardProps>(({ transactions, connections
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-3xl font-bold text-white">Dashboard</h2>
-            <p className="text-gray-400">Welcome back, Tunde. Here's your financial overview.</p>
+            <p className="text-gray-400">Welcome back, {user?.name || 'Tunde'}. Here's your financial overview.</p>
           </div>
           {lastSyncTime && (
             <div className="flex items-center gap-2 text-sm text-gray-400 bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-white/5">

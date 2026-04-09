@@ -1,7 +1,9 @@
 
 import type { Estimate } from '../types';
 
-let mockEstimates: Estimate[] = [
+const STORAGE_KEY = 'aura_estimates';
+
+const initialEstimates: Estimate[] = [
     {
         id: `est_${Date.now() - 20000}`,
         customer: 'Potential Client X',
@@ -15,6 +17,25 @@ let mockEstimates: Estimate[] = [
         total: 750000
     }
 ];
+
+const loadEstimates = (): Estimate[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse estimates', e);
+            return initialEstimates;
+        }
+    }
+    return initialEstimates;
+};
+
+let mockEstimates: Estimate[] = loadEstimates();
+
+const saveEstimates = (estimates: Estimate[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(estimates));
+};
 
 export const fetchEstimates = (): Promise<Estimate[]> => {
     return new Promise(resolve => {
@@ -31,6 +52,17 @@ export const addEstimate = (estData: Omit<Estimate, 'id' | 'status' | 'issueDate
             status: 'Draft',
         };
         mockEstimates = [newEst, ...mockEstimates];
+        saveEstimates(mockEstimates);
         setTimeout(() => resolve(newEst), 300);
     });
 };
+
+export const updateEstimate = (est: Estimate): Promise<Estimate> => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            mockEstimates = mockEstimates.map(e => e.id === est.id ? est : e);
+            saveEstimates(mockEstimates);
+            resolve(est);
+        }, 300);
+    });
+}

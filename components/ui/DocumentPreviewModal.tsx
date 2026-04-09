@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import type { Invoice, Estimate, LineItem } from '../../types';
+import { useToast } from './Toast';
 
 interface DocumentData {
     id: string;
@@ -34,6 +35,7 @@ const TEMPLATES = [
 ];
 
 export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOpen, onClose, data, type }) => {
+    const { showToast } = useToast();
     const [selectedTemplate, setSelectedTemplate] = useState('modern');
     const [isSending, setIsSending] = useState(false);
 
@@ -211,7 +213,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
         setIsSending(true);
         setTimeout(() => {
             setIsSending(false);
-            alert(`Email sent successfully to ${doc.recipientName}!`);
+            showToast(`Email sent successfully to ${doc.recipientName}!`, 'success');
         }, 1500);
     };
 

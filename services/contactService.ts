@@ -1,7 +1,9 @@
 
 import type { Contact } from '../types';
 
-let mockContacts: Contact[] = [
+const STORAGE_KEY = 'aura_contacts';
+
+const initialContacts: Contact[] = [
     {
         id: 'cont_1',
         type: 'Customer',
@@ -37,6 +39,25 @@ let mockContacts: Contact[] = [
     }
 ];
 
+const loadContacts = (): Contact[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse contacts', e);
+            return initialContacts;
+        }
+    }
+    return initialContacts;
+};
+
+let mockContacts: Contact[] = loadContacts();
+
+const saveContacts = (contacts: Contact[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts));
+};
+
 export const fetchContacts = (): Promise<Contact[]> => {
     return new Promise(resolve => {
         setTimeout(() => resolve([...mockContacts]), 400);
@@ -50,6 +71,7 @@ export const addContact = (contactData: Omit<Contact, 'id'>): Promise<Contact> =
             ...contactData
         };
         mockContacts.push(newContact);
+        saveContacts(mockContacts);
         setTimeout(() => resolve(newContact), 300);
     });
 };
@@ -57,6 +79,7 @@ export const addContact = (contactData: Omit<Contact, 'id'>): Promise<Contact> =
 export const updateContact = (contact: Contact): Promise<Contact> => {
     return new Promise(resolve => {
         mockContacts = mockContacts.map(c => c.id === contact.id ? contact : c);
+        saveContacts(mockContacts);
         setTimeout(() => resolve(contact), 300);
     });
 };

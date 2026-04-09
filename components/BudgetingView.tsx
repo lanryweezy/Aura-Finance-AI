@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { Budget } from '../types';
+import { useToast } from './ui/Toast';
 
 interface BudgetingViewProps {
     budgets: Budget[];
@@ -12,6 +13,7 @@ interface BudgetingViewProps {
 const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
 export const BudgetingView: React.FC<BudgetingViewProps> = ({ budgets, onSaveBudgets, expenseCategories }) => {
+    const { showToast } = useToast();
     const [editableBudgets, setEditableBudgets] = useState<Budget[]>([]);
 
     useEffect(() => {
@@ -31,7 +33,7 @@ export const BudgetingView: React.FC<BudgetingViewProps> = ({ budgets, onSaveBud
 
     const handleSave = () => {
         onSaveBudgets(editableBudgets.filter(b => b.amount > 0));
-        alert("Budgets saved!");
+        showToast("Budgets saved successfully!", "success");
     };
     
     return (

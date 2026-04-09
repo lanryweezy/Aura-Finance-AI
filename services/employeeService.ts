@@ -1,7 +1,9 @@
 
 import type { Employee } from '../types';
 
-let mockEmployees: Employee[] = [
+const STORAGE_KEY = 'aura_employees';
+
+const initialEmployees: Employee[] = [
   {
     id: 'emp_1',
     name: 'Ada Okoro',
@@ -44,11 +46,30 @@ let mockEmployees: Employee[] = [
   }
 ];
 
+const loadEmployees = (): Employee[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse employees', e);
+            return initialEmployees;
+        }
+    }
+    return initialEmployees;
+};
+
+let mockEmployees: Employee[] = loadEmployees();
+
+const saveEmployees = (employees: Employee[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(employees));
+};
+
 export const fetchEmployees = (): Promise<Employee[]> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve([...mockEmployees].sort((a, b) => a.name.localeCompare(b.name)));
-    }, 500);
+    }, 400);
   });
 };
 
@@ -60,6 +81,7 @@ export const addEmployee = (employeeData: Omit<Employee, 'id'>): Promise<Employe
                 ...employeeData
             };
             mockEmployees.push(newEmployee);
+            saveEmployees(mockEmployees);
             resolve(newEmployee);
         }, 300);
     });
@@ -71,6 +93,7 @@ export const updateEmployee = (employeeData: Employee): Promise<Employee> => {
             const index = mockEmployees.findIndex(e => e.id === employeeData.id);
             if(index !== -1){
                 mockEmployees[index] = employeeData;
+                saveEmployees(mockEmployees);
                 resolve(employeeData);
             } else {
                 reject(new Error("Employee not found"));
@@ -83,6 +106,7 @@ export const removeEmployee = (employeeId: string): Promise<void> => {
     return new Promise((resolve) => {
         setTimeout(() => {
             mockEmployees = mockEmployees.filter(emp => emp.id !== employeeId);
+            saveEmployees(mockEmployees);
             resolve();
         }, 300);
     });

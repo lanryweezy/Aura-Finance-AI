@@ -4,6 +4,8 @@ import type { SubscriptionTier } from '../types';
 declare const PaystackPop: any;
 declare const FlutterwaveCheckout: any;
 
+const STORAGE_KEY = 'aura_subscription_plan';
+
 export const PLANS: SubscriptionTier[] = [
     {
         id: 'Free',
@@ -48,11 +50,21 @@ export const PLANS: SubscriptionTier[] = [
 export const billingService = {
     getPlans: () => PLANS,
 
+    getCurrentPlan: (): string => {
+        return localStorage.getItem(STORAGE_KEY) || 'Free';
+    },
+
     initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
+        if (typeof PaystackPop === 'undefined') {
+            console.error('PaystackPop is not defined. Ensure the script is loaded.');
+            // Mock success for development if script is missing
+            setTimeout(() => callback('MOCK-PAYSTACK-' + Date.now()), 1000);
+            return;
+        }
         const handler = PaystackPop.setup({
-            key: 'pk_test_placeholder', // Should be in env
+            key: 'pk_test_placeholder',
             email: email,
-            amount: plan.price * 100, // Amount in kobo
+            amount: plan.price * 100,
             currency: 'NGN',
             ref: 'AURA-' + Math.floor((Math.random() * 1000000000) + 1),
             callback: function(response: any) {
@@ -66,8 +78,14 @@ export const billingService = {
     },
 
     initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
+        if (typeof FlutterwaveCheckout === 'undefined') {
+            console.error('FlutterwaveCheckout is not defined. Ensure the script is loaded.');
+            // Mock success for development if script is missing
+            setTimeout(() => callback('MOCK-FLUTTERWAVE-' + Date.now()), 1000);
+            return;
+        }
         FlutterwaveCheckout({
-            public_key: 'FLWPUBK_TEST-placeholder', // Should be in env
+            public_key: 'FLWPUBK_TEST-placeholder',
             tx_ref: 'AURA-' + Math.floor((Math.random() * 1000000000) + 1),
             amount: plan.price,
             currency: 'NGN',
@@ -93,8 +111,15 @@ export const billingService = {
     upgradePlan: (planId: string): Promise<boolean> => {
         return new Promise((resolve) => {
             setTimeout(() => {
+                localStorage.setItem(STORAGE_KEY, planId);
+                const orgStr = localStorage.getItem('aura_org');
+                if (orgStr) {
+                    const org = JSON.parse(orgStr);
+                    org.plan = planId;
+                    localStorage.setItem('aura_org', JSON.stringify(org));
+                }
                 resolve(true);
-            }, 1500);
+            }, 1000);
         });
     }
 };

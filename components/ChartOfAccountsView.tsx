@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import type { Account } from '../types';
+import { useToast } from './ui/Toast';
 
 interface ChartOfAccountsViewProps {
     accounts: Account[];
@@ -13,6 +14,7 @@ const NewAccountModal: React.FC<{
     onClose: () => void;
     onAdd: (account: Account) => void;
 }> = ({ isOpen, onClose, onAdd }) => {
+    const { showToast } = useToast();
     const [name, setName] = useState('');
     const [type, setType] = useState<Account['type']>('Expense');
     const [description, setDescription] = useState('');
@@ -20,10 +22,11 @@ const NewAccountModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !type) {
-            alert('Please provide a name and type for the account.');
+            showToast('Please provide a name and type for the account.', 'error');
             return;
         }
         onAdd({ name, type, description });
+        showToast('Account created successfully!', 'success');
         onClose();
     };
     

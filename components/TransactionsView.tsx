@@ -3,6 +3,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import type { CategorizedTransaction, Project, Account } from '../types';
+import { useToast } from './ui/Toast';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -171,6 +172,7 @@ const AddTransactionModal = React.memo<{
     categories: string[];
     projects: Project[];
 }>(({ isOpen, onClose, onAdd, categories, projects }) => {
+    const { showToast } = useToast();
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [narration, setNarration] = useState('');
     const [amount, setAmount] = useState('');
@@ -183,7 +185,7 @@ const AddTransactionModal = React.memo<{
         e.preventDefault();
         const numericAmount = parseFloat(amount);
         if (!narration || !numericAmount || numericAmount <= 0 || !date) {
-            alert('Please fill in all fields with valid values.');
+            showToast('Please fill in all fields with valid values.', 'error');
             return;
         }
         onAdd({

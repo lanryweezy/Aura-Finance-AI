@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import type { JournalEntry, JournalLine, Account } from '../types';
+import { useToast } from './ui/Toast';
 
 interface JournalEntriesViewProps {
     entries: JournalEntry[];
@@ -19,6 +20,7 @@ const NewJournalEntryModal: React.FC<{
     onAdd: (entry: Omit<JournalEntry, 'id'|'date'>) => void;
     accounts: Account[];
 }> = ({ isOpen, onClose, onAdd, accounts }) => {
+    const { showToast } = useToast();
     const [narration, setNarration] = useState('');
     const [lines, setLines] = useState<Partial<JournalLine>[]>([
         { accountName: '', type: 'debit', amount: 0 },
@@ -56,10 +58,11 @@ const NewJournalEntryModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isBalanced) {
-            alert('Journal entry must be balanced (debits must equal credits) and not zero.');
+            showToast('Journal entry must be balanced (debits must equal credits) and not zero.', 'error');
             return;
         }
         onAdd({ narration, lines: lines as JournalLine[] });
+        showToast('Journal entry recorded successfully!', 'success');
         onClose();
     };
 

@@ -1,7 +1,9 @@
 
 import type { PurchaseOrder } from '../types';
 
-let mockPOs: PurchaseOrder[] = [
+const STORAGE_KEY = 'aura_purchase_orders';
+
+const initialPOs: PurchaseOrder[] = [
     {
         id: `po_${Date.now() - 10000}`,
         vendor: 'Tech Supplies Ltd',
@@ -14,6 +16,25 @@ let mockPOs: PurchaseOrder[] = [
         total: 1900000
     }
 ];
+
+const loadPOs = (): PurchaseOrder[] => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error('Failed to parse POs', e);
+            return initialPOs;
+        }
+    }
+    return initialPOs;
+};
+
+let mockPOs: PurchaseOrder[] = loadPOs();
+
+const savePOs = (pos: PurchaseOrder[]) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pos));
+};
 
 export const fetchPurchaseOrders = (): Promise<PurchaseOrder[]> => {
     return new Promise(resolve => {
@@ -30,6 +51,17 @@ export const addPurchaseOrder = (poData: Omit<PurchaseOrder, 'id' | 'status' | '
             status: 'Draft',
         };
         mockPOs = [newPO, ...mockPOs];
+        savePOs(mockPOs);
         setTimeout(() => resolve(newPO), 300);
     });
 };
+
+export const updatePurchaseOrder = (po: PurchaseOrder): Promise<PurchaseOrder> => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            mockPOs = mockPOs.map(p => p.id === po.id ? po : p);
+            savePOs(mockPOs);
+            resolve(po);
+        }, 300);
+    });
+}

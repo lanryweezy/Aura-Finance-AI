@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import type { Bill, LineItem, InventoryItem } from '../types';
+import { useToast } from './ui/Toast';
 
 interface PayablesViewProps {
     bills: Bill[];
@@ -31,6 +32,7 @@ const NewBillModal: React.FC<{
     onAddBill: (bill: Omit<Bill, 'id' | 'status' | 'issueDate'>) => void;
     inventoryItems: InventoryItem[];
 }> = ({ isOpen, onClose, onAddBill, inventoryItems }) => {
+    const { showToast } = useToast();
     const [vendor, setVendor] = useState('');
     const [description, setDescription] = useState('');
     const [dueDate, setDueDate] = useState('');
@@ -55,7 +57,7 @@ const NewBillModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if(!vendor || !dueDate || lineItems.length === 0) {
-            alert("Please fill vendor, due date, and at least one line item.");
+            showToast("Please fill vendor, due date, and at least one line item.", "error");
             return;
         }
         

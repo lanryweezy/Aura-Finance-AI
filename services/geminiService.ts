@@ -1,20 +1,13 @@
 
-import { GoogleGenAI, Type } from "@google/genai";
+import { Type } from "@google/genai";
+import { aiClient, API_KEY } from './aiConfig';
 import type { RawTransaction, CategorizedTransaction, FinancialInsight, Invoice, ReportData, PayrollRun } from '../types';
-
-const API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
-
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. AI features will be disabled.");
-}
-
-const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 // Simple in-memory cache for transaction categorization
 const categorizationCache = new Map<string, string>();
 
 export const categorizeTransactions = async (transactions: RawTransaction[], categoryList: string[]): Promise<CategorizedTransaction[]> => {
-  if (!ai || !API_KEY) {
+  if (!aiClient || !API_KEY) {
      return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
   }
 
@@ -69,16 +62,15 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-      config: {
+    const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: transactionSchema,
+        responseSchema: transactionSchema as any,
       },
     });
 
-    const jsonText = response.text.trim();
+    const jsonText = response.response.text().trim();
     const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
 
     // Update cache
@@ -112,7 +104,7 @@ const insightsSchema = {
 
 
 export const getFinancialInsights = async (transactions: CategorizedTransaction[]): Promise<FinancialInsight[]> => {
-  if (!ai || !API_KEY) {
+  if (!aiClient || !API_KEY) {
     return [
       {
         title: 'AI Analysis Disabled',
@@ -136,16 +128,15 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-      config: {
+    const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
         responseMimeType: "application/json",
-        responseSchema: insightsSchema,
+        responseSchema: insightsSchema as any,
       },
     });
     
-    const jsonText = response.text.trim();
+    const jsonText = response.response.text().trim();
     const result = JSON.parse(jsonText);
     return result as FinancialInsight[];
 
@@ -162,7 +153,7 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
 };
 
 export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<string> => {
-  if (!ai || !API_KEY) {
+  if (!aiClient || !API_KEY) {
       return "AI features are disabled. Please set your API key.";
   }
   if (payrollHistory.length === 0) {
@@ -187,11 +178,8 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
-    return response.text.trim();
+    const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
+    return response.response.text().trim();
   } catch (error) {
     console.error("Error getting payroll insights:", error);
     return "Could not generate AI insight at this time.";
@@ -200,7 +188,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
 
 export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, comparisonPeriodData?: ReportData): Promise<string> => {
-    if (!ai || !API_KEY) {
+    if (!aiClient || !API_KEY) {
         return "AI features are disabled. Please set your API key.";
     }
 
@@ -235,11 +223,8 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
     `;
 
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.0-flash",
-            contents: prompt,
-        });
-        return response.text.trim();
+        const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
+        return response.response.text().trim();
     } catch (error) {
         console.error("Error getting financial report analysis:", error);
         return "Could not generate AI analysis at this time. Please check your connection or API key.";
@@ -247,7 +232,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 };
 
 export const generateInvoiceReminder = async (invoice: Invoice): Promise<string> => {
-  if (!ai || !API_KEY) {
+  if (!aiClient || !API_KEY) {
       return "AI features are disabled. Please set your API key.";
   }
 
@@ -265,11 +250,8 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
   `;
 
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
-    return response.text.trim();
+    const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
+    return response.response.text().trim();
   } catch (error) {
     console.error("Error generating invoice reminder:", error);
     return "Could not generate AI reminder at this time.";

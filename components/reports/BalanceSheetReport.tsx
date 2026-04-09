@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import type { BalanceSheetData } from '../../types';
+import { useToast } from '../ui/Toast';
 
 interface BalanceSheetReportProps {
     data: BalanceSheetData;
@@ -50,6 +51,7 @@ const RatioIndicator: React.FC<{ratio: number}> = ({ratio}) => {
 }
 
 export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, onDrillDown }) => {
+    const { showToast } = useToast();
     return (
         <Card>
             <h2 className="text-2xl font-semibold text-white mb-4">Balance Sheet</h2>
@@ -59,8 +61,8 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, on
                         <tbody>
                             <ReportRow label="Assets" isHeader />
                             <ReportRow label="Current Assets" isHeader className="text-base font-semibold" />
-                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-300" onDrillDown={() => alert("Drill-down for cash balance not implemented yet.")} />
-                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-300" onDrillDown={() => alert("Drill-down for receivables not implemented yet.")} />
+                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-300" onDrillDown={() => showToast("Drill-down for cash balance not implemented yet.", "info")} />
+                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-300" onDrillDown={() => showToast("Drill-down for receivables not implemented yet.", "info")} />
                             <ReportRow label="Inventory" value={data.inventory} className="text-gray-300" />
                             <ReportRow label="Total Current Assets" value={data.totalCurrentAssets} isTotal />
 
@@ -68,7 +70,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, on
 
                             <ReportRow label="Liabilities" isHeader />
                             <ReportRow label="Current Liabilities" isHeader className="text-base font-semibold"/>
-                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-300" onDrillDown={() => alert("Drill-down for payables not implemented yet.")} />
+                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-300" onDrillDown={() => showToast("Drill-down for payables not implemented yet.", "info")} />
                             <ReportRow label="Total Current Liabilities" value={data.totalCurrentLiabilities} isTotal />
                             
                             <tr className="h-6"><td colSpan={2}></td></tr>

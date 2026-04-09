@@ -4,6 +4,7 @@ import { Spinner } from './Spinner';
 import { ocrService } from '../../services/ocrService';
 import type { ReceiptData, CategorizedTransaction } from '../../types';
 import { DEFAULT_CATEGORIES } from '../TransactionsView';
+import { useToast } from './Toast';
 
 interface ReceiptScannerModalProps {
     isOpen: boolean;
@@ -12,6 +13,7 @@ interface ReceiptScannerModalProps {
 }
 
 export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen, onClose, onSave }) => {
+    const { showToast } = useToast();
     const [step, setStep] = useState<'upload' | 'scanning' | 'review'>('upload');
     const [file, setFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
             setScannedData(data);
             setStep('review');
         } catch (error) {
-            alert("Failed to scan receipt. Please try entering manually.");
+            showToast("Failed to scan receipt. Please try entering manually.", "error");
             setStep('upload');
         }
     };

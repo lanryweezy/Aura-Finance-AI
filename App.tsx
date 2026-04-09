@@ -443,6 +443,7 @@ export default function App(): React.ReactNode {
     switch (activeView) {
       case 'dashboard':
         return <Dashboard 
+                  user={user}
                   transactions={transactions} 
                   connections={connections} 
                   bills={bills} 
@@ -510,6 +511,7 @@ export default function App(): React.ReactNode {
         return <LegalView type="terms" />;
       default:
         return <Dashboard 
+                  user={user}
                   transactions={transactions} 
                   connections={connections} 
                   bills={bills} 
