@@ -1,10 +1,11 @@
+import { useCurrency } from "../ui/CurrencyProvider";
 
 import React from 'react';
 import type { ReportPeriod, Project } from '../../types';
 
 interface ReportHeaderProps {
-    activeReport: 'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance';
-    setActiveReport: (report: 'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance') => void;
+    activeReport: 'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance' | 'forecast';
+    setActiveReport: (report: 'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance' | 'forecast') => void;
     reportPeriod: ReportPeriod;
     setReportPeriod: (period: ReportPeriod) => void;
     comparePeriod: ReportPeriod | null;
@@ -65,6 +66,7 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         { id: 'balance_sheet', label: 'Balance Sheet' },
         { id: 'cash_flow', label: 'Cash Flow' },
         { id: 'trial_balance', label: 'Trial Balance' },
+        { id: 'forecast', label: 'Forecast' },
     ] as const;
 
     return (

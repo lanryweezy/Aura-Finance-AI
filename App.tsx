@@ -1,33 +1,37 @@
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
-import { TransactionsView } from './components/TransactionsView';
-import { AIChat } from './components/AIChat';
-import { PayablesView } from './components/PayablesView';
-import { ReceivablesView } from './components/ReceivablesView';
-import { PayrollView } from './components/PayrollView';
-import { TaxFilingView } from './components/TaxFilingView';
-import { FinancialReportsView } from './components/FinancialReportsView';
-import { ConnectionsView } from './components/ConnectionsView';
-import { IntegrationsView } from './components/IntegrationsView';
-import { ChartOfAccountsView } from './components/ChartOfAccountsView';
-import { JournalEntriesView } from './components/JournalEntriesView';
-import { PurchaseOrdersView } from './components/PurchaseOrdersView';
-import { EstimatesView } from './components/EstimatesView';
-import { InventoryView } from './components/InventoryView';
-import { BudgetingView } from './components/BudgetingView';
-import { AuditTrailView } from './components/AuditTrailView';
-import { ProjectsView } from './components/ProjectsView';
-import { SettingsView } from './components/SettingsView';
 import { AuthView } from './components/AuthView';
-import { SubscriptionView } from './components/SubscriptionView';
-import { ContactsView } from './components/ContactsView';
-import { LegalView } from './components/LegalView';
-
 import { Spinner } from './components/ui/Spinner';
+
+// Lazy load non-critical views
+const TransactionsView = lazy(() => import('./components/TransactionsView').then(m => ({ default: m.TransactionsView })));
+const AIChat = lazy(() => import('./components/AIChat').then(m => ({ default: m.AIChat })));
+const PayablesView = lazy(() => import('./components/PayablesView').then(m => ({ default: m.PayablesView })));
+const ReceivablesView = lazy(() => import('./components/ReceivablesView').then(m => ({ default: m.ReceivablesView })));
+const PayrollView = lazy(() => import('./components/PayrollView').then(m => ({ default: m.PayrollView })));
+const TaxFilingView = lazy(() => import('./components/TaxFilingView').then(m => ({ default: m.TaxFilingView })));
+const FinancialReportsView = lazy(() => import('./components/FinancialReportsView').then(m => ({ default: m.FinancialReportsView })));
+const ConnectionsView = lazy(() => import('./components/ConnectionsView').then(m => ({ default: m.ConnectionsView })));
+const IntegrationsView = lazy(() => import('./components/IntegrationsView').then(m => ({ default: m.IntegrationsView })));
+const ChartOfAccountsView = lazy(() => import('./components/ChartOfAccountsView').then(m => ({ default: m.ChartOfAccountsView })));
+const JournalEntriesView = lazy(() => import('./components/JournalEntriesView').then(m => ({ default: m.JournalEntriesView })));
+const PurchaseOrdersView = lazy(() => import('./components/PurchaseOrdersView').then(m => ({ default: m.PurchaseOrdersView })));
+const EstimatesView = lazy(() => import('./components/EstimatesView').then(m => ({ default: m.EstimatesView })));
+const InventoryView = lazy(() => import('./components/InventoryView').then(m => ({ default: m.InventoryView })));
+const BudgetingView = lazy(() => import('./components/BudgetingView').then(m => ({ default: m.BudgetingView })));
+const AuditTrailView = lazy(() => import('./components/AuditTrailView').then(m => ({ default: m.AuditTrailView })));
+const ProjectsView = lazy(() => import('./components/ProjectsView').then(m => ({ default: m.ProjectsView })));
+const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
+const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
+const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
+const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+
+import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
+import { monitoringService } from './services/monitoringService';
 
 import { fetchTransactions as mockFetchTransactions } from './services/monoService';
 import { categorizeTransactions } from './services/geminiService';
@@ -45,9 +49,7 @@ import { fetchJournalEntries, addJournalEntry as apiAddJournalEntry } from './se
 import { fetchBudgets, saveBudgets as apiSaveBudgets } from './services/budgetService';
 import { authService } from './services/authService';
 import { fetchContacts, addContact as apiAddContact, updateContact as apiUpdateContact } from './services/contactService';
-
-import { DEFAULT_CATEGORIES } from './components/TransactionsView';
-
+import { DEFAULT_CATEGORIES } from './constants/accounting';
 
 import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnection, Bill, Invoice, PayrollRun, PayrollPayslip, PayrollAdjustment, Account, JournalEntry, Project, InventoryItem, PurchaseOrder, Estimate, Budget, User, Organization, Contact } from './types';
 
@@ -141,7 +143,7 @@ export default function App(): React.ReactNode {
       }
 
     } catch (err) {
-      console.error(err);
+      monitoringService.trackError('APP_INIT', err instanceof Error ? err : String(err));
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
     } finally {
       setIsLoading(false);
@@ -440,36 +442,29 @@ export default function App(): React.ReactNode {
       );
     }
 
-    switch (activeView) {
-      case 'dashboard':
-        return <Dashboard 
-                  transactions={transactions} 
-                  connections={connections} 
-                  bills={bills} 
-                  invoices={invoices} 
-                  onQuickAction={setActiveView}
-                  onAddTransaction={handleAddNewTransaction}
-               />;
-      case 'transactions':
-        return <TransactionsView 
+    const viewMap: Record<View, React.ReactNode> = {
+      dashboard: <Dashboard
+                    user={user}
                     transactions={transactions} 
-                    onUpdateCategory={handleUpdateTransaction}
+                    connections={connections}
+                    bills={bills}
+                    invoices={invoices}
+                    onQuickAction={setActiveView}
                     onAddTransaction={handleAddNewTransaction}
-                    projects={projects}
-                    chartOfAccounts={chartOfAccounts}
-                />;
-      case 'reports':
-        return <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>;
-      case 'payables':
-        return <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />;
-      case 'receivables':
-        return <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />;
-      case 'estimates':
-        return <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />;
-      case 'purchaseOrders':
-        return <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />;
-      case 'payroll':
-        return <PayrollView 
+                 />,
+      transactions: <TransactionsView
+                        transactions={transactions}
+                        onUpdateCategory={handleUpdateTransaction}
+                        onAddTransaction={handleAddNewTransaction}
+                        projects={projects}
+                        chartOfAccounts={chartOfAccounts}
+                    />,
+      reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
+      payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
+      receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
+      estimates: <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />,
+      purchaseOrders: <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />,
+      payroll: <PayrollView
                     employees={employees} 
                     payrollSummary={payrollSummary}
                     payrollHistory={payrollHistory}
@@ -477,47 +472,34 @@ export default function App(): React.ReactNode {
                     onUpdateEmployee={handleUpdateEmployee}
                     onRemoveEmployee={handleRemoveEmployee}
                     onRunPayroll={handleRunPayroll}
-                />;
-      case 'inventory':
-        return <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />;
-      case 'contacts':
-        return <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />;
-      case 'taxFiling':
-        return <TaxFilingView transactions={transactions} />;
-      case 'connections':
-        return <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />;
-      case 'integrations':
-        return <IntegrationsView />;
-      case 'chartOfAccounts':
-        return <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />;
-      case 'journalEntries':
-        return <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />;
-      case 'budgeting':
-          return <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />
-      case 'auditTrail':
-          return <AuditTrailView logs={auditLog} />;
-      case 'projects':
-          return <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />;
-      case 'settings':
-          return <SettingsView />;
-      case 'subscription':
-          return <SubscriptionView />;
-      case 'chat':
-        return <AIChat transactions={transactions} />;
-      case 'privacy':
-        return <LegalView type="privacy" />;
-      case 'terms':
-        return <LegalView type="terms" />;
-      default:
-        return <Dashboard 
-                  transactions={transactions} 
-                  connections={connections} 
-                  bills={bills} 
-                  invoices={invoices} 
-                  onQuickAction={setActiveView}
-                  onAddTransaction={handleAddNewTransaction}
-                />;
-    }
+                />,
+      inventory: <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />,
+      contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
+      taxFiling: <TaxFilingView transactions={transactions} />,
+      connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
+      integrations: <IntegrationsView />,
+      chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
+      journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
+      budgeting: <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />,
+      auditTrail: <AuditTrailView logs={auditLog} />,
+      projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
+      settings: <SettingsView />,
+      subscription: <SubscriptionView />,
+      chat: <AIChat transactions={transactions} />,
+      privacy: <LegalView type="privacy" />,
+      terms: <LegalView type="terms" />
+    };
+
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center h-full gap-4">
+                <Spinner />
+                <p className="text-gray-400 animate-pulse">Switching modules...</p>
+            </div>
+        }>
+            {viewMap[activeView] || viewMap.dashboard}
+        </Suspense>
+    );
   };
 
   if (!user) {
@@ -526,6 +508,7 @@ export default function App(): React.ReactNode {
 
   return (
     <div className="flex h-screen bg-dark-primary font-sans text-white">
+      {user && <OnboardingTour />}
       <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header user={user} />

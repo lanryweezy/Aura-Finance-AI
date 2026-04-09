@@ -2,6 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { Contact, Invoice, Bill } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface ContactsViewProps {
     contacts: Contact[];
@@ -74,12 +75,11 @@ const AddEditContactModal: React.FC<{
 };
 
 export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, bills, onAddContact, onUpdateContact }) => {
+    const { formatAmount } = useCurrency();
     const [activeTab, setActiveTab] = useState<'Customer' | 'Vendor'>('Customer');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingContact, setEditingContact] = useState<Contact | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     const filteredContacts = useMemo(() => {
         return contacts.filter(c => 
@@ -185,7 +185,7 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
                                         {activeTab === 'Customer' ? 'Outstanding' : 'Payable'}
                                     </span>
                                     <span className={`font-mono font-bold ${balance > 0 ? (activeTab === 'Customer' ? 'text-yellow-400' : 'text-red-400') : 'text-gray-500'}`}>
-                                        {formatNaira(balance)}
+                                        {formatAmount(balance)}
                                     </span>
                                 </div>
                             </Card>

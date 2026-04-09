@@ -1,13 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { billingService } from '../services/billingService';
+import { usageService } from '../services/usageService';
+import { monitoringService } from '../services/monitoringService';
 import type { SubscriptionTier } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
+
+import { useToast } from './ui/Toast';
 
 export const SubscriptionView: React.FC = () => {
+    const { formatAmount } = useCurrency();
+    const { showToast } = useToast();
     const plans = billingService.getPlans();
-    const [currentPlan, setCurrentPlan] = useState('Free');
+    const [currentPlan, setCurrentPlan] = useState(billingService.getCurrentPlan());
     const [isLoading, setIsLoading] = useState<string | null>(null);
+    const [usageStats, setUsageStats] = useState<any[]>([]);
+
+    useEffect(() => {
+        usageService.getUsageStats().then(setUsageStats);
+    }, []);
 
     const handleUpgrade = async (plan: SubscriptionTier) => {
         if (plan.price === 0) {
@@ -18,16 +30,16 @@ export const SubscriptionView: React.FC = () => {
             return;
         }
 
-        // Randomly pick a gateway for demo, or show a selector
+        // Randomly pick a gateway for demo
         const gateway = Math.random() > 0.5 ? 'Paystack' : 'Flutterwave';
         setIsLoading(plan.id);
 
         const callback = async (ref: string) => {
-            console.log('Payment successful:', ref);
+            monitoringService.log('info', 'BILLING', 'Payment successful', { reference: ref, plan: plan.id });
             await billingService.upgradePlan(plan.id);
             setCurrentPlan(plan.id);
             setIsLoading(null);
-            alert(`Payment successful! Welcome to ${plan.name} plan.`);
+            showToast(`Welcome to ${plan.name} plan!`, 'success');
         };
 
         if (gateway === 'Paystack') {
@@ -37,12 +49,36 @@ export const SubscriptionView: React.FC = () => {
         }
     };
 
-    const formatNaira = (amount: number) => {
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(amount);
+    const getUsageLabel = (type: string) => {
+        switch(type) {
+            case 'ai_insight': return 'AI Insights';
+            case 'ai_chat': return 'AI Chat & Gen';
+            case 'ocr_scan': return 'Receipt Scans';
+            case 'bank_sync': return 'Bank Syncs';
+            default: return type;
+        }
     };
 
     return (
         <div className="space-y-8 max-w-6xl mx-auto pb-10">
+            {/* Usage Metrics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
+                {usageStats.map(stat => (
+                    <Card key={stat.type} className="bg-dark-secondary/40 border-white/5">
+                        <p className="text-xs text-gray-400 uppercase font-bold mb-1">{getUsageLabel(stat.type)}</p>
+                        <div className="flex justify-between items-end">
+                            <h4 className="text-2xl font-bold text-white">{stat.used} <span className="text-sm text-gray-500">/ {stat.limit > 10000 ? '∞' : stat.limit}</span></h4>
+                            <div className="w-16 h-1 bg-gray-700 rounded-full overflow-hidden mb-2">
+                                <div
+                                    className={`h-full ${stat.used >= stat.limit ? 'bg-red-500' : 'bg-brand-cyan'}`}
+                                    style={{ width: `${Math.min(100, (stat.used / stat.limit) * 100)}%` }}
+                                ></div>
+                            </div>
+                        </div>
+                    </Card>
+                ))}
+            </div>
+
             <div className="text-center max-w-2xl mx-auto">
                 <h2 className="text-4xl font-bold text-white mb-4">Choose the right plan for your business</h2>
                 <p className="text-gray-400 text-lg">Scale your financial operations with Aura. Upgrade or downgrade at any time.</p>
@@ -65,7 +101,7 @@ export const SubscriptionView: React.FC = () => {
                         )}
                         <h3 className="text-xl font-bold text-white">{plan.name}</h3>
                         <div className="my-6">
-                            <span className="text-4xl font-bold text-white">{formatNaira(plan.price)}</span>
+                            <span className="text-4xl font-bold text-white">{formatAmount(plan.price, { maximumFractionDigits: 0 })}</span>
                             <span className="text-gray-400">/month</span>
                         </div>
                         

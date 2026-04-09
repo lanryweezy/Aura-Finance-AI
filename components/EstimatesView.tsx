@@ -3,6 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import type { Estimate, LineItem, InventoryItem } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface EstimatesViewProps {
     estimates: Estimate[];
@@ -31,6 +32,7 @@ const NewEstimateModal: React.FC<{
     onAdd: (est: Omit<Estimate, 'id'|'status'|'issueDate'>) => void; 
     inventoryItems: InventoryItem[];
 }> = ({ isOpen, onClose, onAdd, inventoryItems }) => {
+    const { formatAmount } = useCurrency();
     const [customer, setCustomer] = useState('');
     const [expiryDate, setExpiryDate] = useState('');
     const [lineItems, setLineItems] = useState<Partial<LineItem>[]>([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
@@ -94,7 +96,7 @@ const NewEstimateModal: React.FC<{
                         </div>
                     ))}
                     <button type="button" onClick={addLine} className="text-xs text-brand-cyan">+ Add Line</button>
-                    <div className="flex justify-end font-bold text-lg">Total: {total.toLocaleString()} NGN</div>
+                    <div className="flex justify-end font-bold text-lg">Total: {formatAmount(total)}</div>
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
                         <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold">Save Estimate</button>
@@ -106,9 +108,9 @@ const NewEstimateModal: React.FC<{
 };
 
 export const EstimatesView: React.FC<EstimatesViewProps> = ({ estimates, onAddEstimate, onConvertToInvoice, inventoryItems }) => {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [previewEstimate, setPreviewEstimate] = useState<Estimate | null>(null);
-    const formatNaira = (amount: number) => new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
     return (
         <>
@@ -146,7 +148,7 @@ export const EstimatesView: React.FC<EstimatesViewProps> = ({ estimates, onAddEs
                                 <td className="p-4 text-gray-300">{new Date(est.issueDate).toLocaleDateString()}</td>
                                 <td className="p-4 text-white font-mono">#{est.id.slice(-6)}</td>
                                 <td className="p-4 text-white">{est.customer}</td>
-                                <td className="p-4 font-mono text-white">{formatNaira(est.total)}</td>
+                                <td className="p-4 font-mono text-white">{formatAmount(est.total)}</td>
                                 <td className="p-4"><EstimateStatusBadge status={est.status} /></td>
                                 <td className="p-4 text-right space-x-2">
                                      <button

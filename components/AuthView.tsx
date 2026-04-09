@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { authService } from '../services/authService';
 import type { User, Organization } from '../types';
+import { useToast } from './ui/Toast';
 
 interface AuthViewProps {
     onLogin: (user: User, org: Organization) => void;
 }
 
 export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
+    const { showToast } = useToast();
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
     
@@ -29,7 +31,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                 onLogin(user, org);
             }
         } catch (error) {
-            alert('Authentication failed. Please try again.');
+            showToast('Authentication failed. Please check your credentials.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -41,7 +43,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
             const { user, org } = await authService.loginWithProvider(provider);
             onLogin(user, org);
         } catch (error) {
-            alert('SSO Authentication failed.');
+            showToast('SSO Authentication failed. Please try again.', 'error');
         } finally {
             setIsLoading(false);
         }

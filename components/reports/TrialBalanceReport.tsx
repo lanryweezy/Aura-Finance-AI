@@ -1,7 +1,7 @@
-
 import React, { useMemo } from 'react';
 import { Card } from '../ui/Card';
 import type { Account, CategorizedTransaction, ReportPeriod } from '../../types';
+import { useCurrency } from "../ui/CurrencyProvider";
 
 interface TrialBalanceReportProps {
     accounts: Account[];
@@ -9,11 +9,8 @@ interface TrialBalanceReportProps {
     period: ReportPeriod;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
 export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts, transactions, period }) => {
+    const { currency, formatAmount } = useCurrency();
     
     const balances = useMemo(() => {
         const periodTransactions = transactions.filter(t => {
@@ -60,8 +57,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts
                 <thead>
                     <tr className="border-b-2 border-gray-600">
                         <th className="p-3 text-left font-semibold">Account</th>
-                        <th className="p-3 text-right font-semibold">Debit (NGN)</th>
-                        <th className="p-3 text-right font-semibold">Credit (NGN)</th>
+                        <th className="p-3 text-right font-semibold">Debit ({currency})</th>
+                        <th className="p-3 text-right font-semibold">Credit ({currency})</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-800">
@@ -72,10 +69,10 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts
                              <tr key={item.name}>
                                 <td className="p-3">{item.name}</td>
                                 <td className="p-3 text-right font-mono">
-                                    {(isDebit && item.balance > 0) || (isCredit && item.balance < 0) ? formatNaira(Math.abs(item.balance)) : '-'}
+                                    {(isDebit && item.balance > 0) || (isCredit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
                                 </td>
                                 <td className="p-3 text-right font-mono">
-                                     {(isCredit && item.balance > 0) || (isDebit && item.balance < 0) ? formatNaira(Math.abs(item.balance)) : '-'}
+                                     {(isCredit && item.balance > 0) || (isDebit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
                                 </td>
                             </tr>
                         )
@@ -84,8 +81,8 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts
                 <tfoot>
                     <tr className="trial-balance-total text-lg">
                         <td className="p-3 font-bold">Total</td>
-                        <td className="p-3 text-right font-bold font-mono">{formatNaira(totals.debit)}</td>
-                        <td className="p-3 text-right font-bold font-mono">{formatNaira(totals.credit)}</td>
+                        <td className="p-3 text-right font-bold font-mono">{formatAmount(totals.debit)}</td>
+                        <td className="p-3 text-right font-bold font-mono">{formatAmount(totals.credit)}</td>
                     </tr>
                 </tfoot>
             </table>

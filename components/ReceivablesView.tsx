@@ -5,6 +5,8 @@ import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import type { Invoice, LineItem, InventoryItem } from '../types';
+import { useToast } from './ui/Toast';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface ReceivablesViewProps {
     invoices: Invoice[];
@@ -33,15 +35,13 @@ const NewInvoiceModal: React.FC<{
     onAddInvoice: (invoice: Omit<Invoice, 'id' | 'issueDate' | 'status'>) => void; 
     inventoryItems: InventoryItem[];
 }> = ({ isOpen, onClose, onAddInvoice, inventoryItems }) => {
+    const { formatAmount } = useCurrency();
+    const { showToast } = useToast();
     const [customer, setCustomer] = useState('');
     const [dueDate, setDueDate] = useState('');
     const [applyVat, setApplyVat] = useState(true);
     const [applyWht, setApplyWht] = useState(false);
     const [lineItems, setLineItems] = useState<Partial<LineItem>[]>([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
-
-    const formatNaira = (amount: number) => {
-        return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-    };
 
     const handleLineItemChange = (index: number, field: keyof LineItem, value: any) => {
         const updatedLineItems = [...lineItems];
@@ -73,7 +73,7 @@ const NewInvoiceModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if(!customer || !dueDate) {
-            alert("Please fill customer and due date.");
+            showToast("Please fill customer and due date.", "error");
             return;
         }
 
@@ -157,21 +157,21 @@ const NewInvoiceModal: React.FC<{
                     <div className="bg-dark-secondary/30 p-4 rounded-lg space-y-2 border border-gray-700/50 mt-2">
                         <div className="flex justify-between text-sm text-gray-400">
                             <span>Subtotal</span>
-                            <span>{formatNaira(calculatedSubtotal)}</span>
+                            <span>{formatAmount(calculatedSubtotal)}</span>
                         </div>
                         {applyVat && (
                             <div className="flex justify-between text-sm text-brand-cyan">
                                 <span>VAT (7.5%)</span>
-                                <span>{formatNaira(calculatedVat)}</span>
+                                <span>{formatAmount(calculatedVat)}</span>
                             </div>
                         )}
                         <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700/50">
                             <span>Total</span>
-                            <span>{formatNaira(calculatedTotal)}</span>
+                            <span>{formatAmount(calculatedTotal)}</span>
                         </div>
                         {applyWht && (
                              <div className="flex justify-between text-xs text-brand-purple pt-1 italic">
-                                <span>* Withholding Tax (5%) Applicable: {formatNaira(calculatedSubtotal * 0.05)}</span>
+                                <span>* Withholding Tax (5%) Applicable: {formatAmount(calculatedSubtotal * 0.05)}</span>
                             </div>
                         )}
                     </div>
@@ -187,6 +187,7 @@ const NewInvoiceModal: React.FC<{
 };
 
 const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: Invoice | null; reminderText: string; isLoading: boolean; }> = ({ isOpen, onClose, invoice, reminderText, isLoading }) => {
+    const { showToast } = useToast();
     if (!isOpen || !invoice) return null;
 
     return (
@@ -199,7 +200,10 @@ const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: I
                 </div>
                 <div className="flex justify-end gap-4 pt-6">
                     <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                    <button type="button" onClick={() => alert('Email sent (simulated)!')} className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Send Email</button>
+                    <button type="button" onClick={() => {
+                        showToast('Email sent (simulated)!', 'success');
+                        onClose();
+                    }} className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Send Email</button>
                 </div>
             </div>
         </div>
@@ -208,6 +212,7 @@ const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: I
 
 
 export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAddInvoice, onRecordPayment, inventoryItems }) => {
+  const { formatAmount } = useCurrency();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isNewInvoiceModalOpen, setIsNewInvoiceModalOpen] = useState(false);
@@ -252,9 +257,6 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
     );
   }, [invoices]);
 
-  const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-  };
 
   if (isLoading) {
     return (
@@ -297,11 +299,11 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Total Outstanding</h3>
-          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatNaira(summary.totalOutstanding)}</p>
+          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatAmount(summary.totalOutstanding)}</p>
         </Card>
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Total Overdue</h3>
-          <p className="text-3xl font-bold text-red-400 mt-2">{formatNaira(summary.totalOverdue)}</p>
+          <p className="text-3xl font-bold text-red-400 mt-2">{formatAmount(summary.totalOverdue)}</p>
         </Card>
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Draft Invoices</h3>
@@ -331,16 +333,16 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                   <td className="p-4 font-mono text-white">
                      <div className="flex flex-col gap-1">
-                        <span className="font-bold">{formatNaira(invoice.total)}</span>
+                        <span className="font-bold">{formatAmount(invoice.total)}</span>
                         <div className="flex flex-wrap gap-1">
                             {invoice.vat > 0 && (
-                                <span className="text-[10px] font-medium bg-blue-500/10 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/20" title={`VAT: ${formatNaira(invoice.vat)}`}>
+                                <span className="text-[10px] font-medium bg-blue-500/10 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/20" title={`VAT: ${formatAmount(invoice.vat)}`}>
                                     VAT
                                 </span>
                             )}
                             {invoice.whtApplied && (
                                 <span className="text-[10px] font-medium bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20" title="Withholding Tax (5%)">
-                                    WHT: {formatNaira(invoice.amount * 0.05)}
+                                    WHT: {formatAmount(invoice.amount * 0.05)}
                                 </span>
                             )}
                         </div>

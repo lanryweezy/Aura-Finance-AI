@@ -2,16 +2,13 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { Project, CategorizedTransaction } from '../types';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface ProjectsViewProps {
     projects: Project[];
     transactions: CategorizedTransaction[];
     onAddProject: (name: string) => void;
 }
-
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
 
 const NewProjectModal: React.FC<{
     isOpen: boolean;
@@ -58,6 +55,7 @@ const NewProjectModal: React.FC<{
 };
 
 export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactions, onAddProject }) => {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const projectFinancials = useMemo(() => {
@@ -102,17 +100,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
                                 <div className="mt-6 space-y-3">
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-400">Total Income</span>
-                                        <span className="font-mono text-green-400 font-medium">{formatNaira(proj.income)}</span>
+                                        <span className="font-mono text-green-400 font-medium">{formatAmount(proj.income)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm text-gray-400">Total Expenses</span>
-                                        <span className="font-mono text-red-400 font-medium">{formatNaira(proj.expenses)}</span>
+                                        <span className="font-mono text-red-400 font-medium">{formatAmount(proj.expenses)}</span>
                                     </div>
                                     <div className="h-px bg-gray-700/50 my-2"></div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-bold text-white">Net Profit</span>
                                         <span className={`font-mono font-bold ${proj.net >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`}>
-                                            {formatNaira(proj.net)}
+                                            {formatAmount(proj.net)}
                                         </span>
                                     </div>
                                 </div>

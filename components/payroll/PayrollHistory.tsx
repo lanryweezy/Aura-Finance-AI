@@ -2,18 +2,15 @@
 import React from 'react';
 import { Card } from '../ui/Card';
 import type { PayrollRun } from '../../types';
+import { useCurrency } from '../ui/CurrencyProvider';
 
 interface PayrollHistoryProps {
     runs: PayrollRun[];
     onViewDetails: (run: PayrollRun) => void;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
-
 export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDetails }) => {
+    const { formatAmount } = useCurrency();
     return (
          <Card className="h-full overflow-hidden flex flex-col">
             <h3 className="text-xl font-bold text-white mb-4">Payroll Run History</h3>
@@ -32,7 +29,7 @@ export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDeta
                         {runs.map(run => (
                             <tr key={run.id} className="hover:bg-dark-secondary/50">
                                 <td className="p-3 text-white font-medium">{run.period}</td>
-                                <td className="p-3 font-mono text-brand-cyan">{formatNaira(run.summary.totalNet)}</td>
+                                <td className="p-3 font-mono text-brand-cyan">{formatAmount(run.summary.totalNet)}</td>
                                 <td className="p-3 text-gray-300">{run.summary.employeeCount}</td>
                                 <td className="p-3 text-gray-400 text-sm">{new Date(run.runDate).toLocaleDateString()}</td>
                                 <td className="p-3 text-right">

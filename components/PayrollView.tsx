@@ -8,6 +8,7 @@ import { PayrollHistory } from './payroll/PayrollHistory';
 import { RunPayrollWizard } from './payroll/RunPayrollWizard';
 import { AddEditEmployeeModal } from './payroll/AddEditEmployeeModal';
 import { PayrollRunDetailModal } from './payroll/PayrollRunDetailModal';
+import { useCurrency } from './ui/CurrencyProvider';
 import type { Employee, PayrollSummary, PayrollRun, PayrollAdjustment } from '../types';
 
 interface PayrollViewProps {
@@ -20,12 +21,8 @@ interface PayrollViewProps {
     onRunPayroll: (period: string, adjustments: Record<string, PayrollAdjustment>) => void;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
-};
-
-
 export const PayrollView: React.FC<PayrollViewProps> = (props) => {
+    const { formatAmount } = useCurrency();
     const { employees, payrollSummary, payrollHistory, onAddEmployee, onUpdateEmployee, onRemoveEmployee, onRunPayroll } = props;
     
     const [activeTab, setActiveTab] = useState<'dashboard' | 'employees' | 'history'>('dashboard');
@@ -78,12 +75,12 @@ export const PayrollView: React.FC<PayrollViewProps> = (props) => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-4">
                              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                                <Card><h3 className="text-gray-400 text-sm">Total Gross Payroll</h3><p className="text-xl lg:text-2xl font-bold text-white mt-1">{formatNaira(payrollSummary.totalGross)}</p></Card>
-                                <Card><h3 className="text-gray-400 text-sm">Total Net Payout</h3><p className="text-xl lg:text-2xl font-bold text-brand-cyan mt-1">{formatNaira(payrollSummary.totalNet)}</p></Card>
+                                <Card><h3 className="text-gray-400 text-sm">Total Gross Payroll</h3><p className="text-xl lg:text-2xl font-bold text-white mt-1">{formatAmount(payrollSummary.totalGross)}</p></Card>
+                                <Card><h3 className="text-gray-400 text-sm">Total Net Payout</h3><p className="text-xl lg:text-2xl font-bold text-brand-cyan mt-1">{formatAmount(payrollSummary.totalNet)}</p></Card>
                                 <Card><h3 className="text-gray-400 text-sm">Active Employees</h3><p className="text-xl lg:text-2xl font-bold text-white mt-1">{payrollSummary.employeeCount}</p></Card>
-                                <Card><h3 className="text-gray-400 text-sm">Total PAYE to Remit</h3><p className="text-xl lg:text-2xl font-bold text-orange-400 mt-1">{formatNaira(payrollSummary.totalPAYE)}</p></Card>
-                                <Card><h3 className="text-gray-400 text-sm">Total Pension to Remit</h3><p className="text-xl lg:text-2xl font-bold text-cyan-400 mt-1">{formatNaira(payrollSummary.totalPension)}</p></Card>
-                                <Card><h3 className="text-gray-400 text-sm">Total NHF to Remit</h3><p className="text-xl lg:text-2xl font-bold text-blue-400 mt-1">{formatNaira(payrollSummary.totalNHF)}</p></Card>
+                                <Card><h3 className="text-gray-400 text-sm">Total PAYE to Remit</h3><p className="text-xl lg:text-2xl font-bold text-orange-400 mt-1">{formatAmount(payrollSummary.totalPAYE)}</p></Card>
+                                <Card><h3 className="text-gray-400 text-sm">Total Pension to Remit</h3><p className="text-xl lg:text-2xl font-bold text-cyan-400 mt-1">{formatAmount(payrollSummary.totalPension)}</p></Card>
+                                <Card><h3 className="text-gray-400 text-sm">Total NHF to Remit</h3><p className="text-xl lg:text-2xl font-bold text-blue-400 mt-1">{formatAmount(payrollSummary.totalNHF)}</p></Card>
                             </div>
                         </div>
                         <Card>

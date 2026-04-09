@@ -11,6 +11,7 @@ import { CashFlowStatement } from './reports/CashFlowStatement';
 import { TrialBalanceReport } from './reports/TrialBalanceReport';
 import { AICFOInsights } from './reports/AICFOInsights';
 import { DrillDownModal } from './reports/DrillDownModal';
+import { CashFlowForecast } from './reports/CashFlowForecast';
 
 import type { CategorizedTransaction, PayrollSummary, Bill, Invoice, ReportData, ReportPeriod, InventoryItem, Project, Account } from '../types';
 
@@ -36,7 +37,7 @@ const getDefaultPeriod = (): ReportPeriod => {
 export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ transactions, payrollSummary, bills, invoices, inventory, projects, chartOfAccounts }) => {
     const [reportPeriod, setReportPeriod] = useState<ReportPeriod>(getDefaultPeriod());
     const [comparePeriod, setComparePeriod] = useState<ReportPeriod | null>(null);
-    const [activeReport, setActiveReport] = useState<'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance'>('p&l');
+    const [activeReport, setActiveReport] = useState<'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance' | 'forecast'>('p&l');
     const [projectFilter, setProjectFilter] = useState<string>('all');
     
     const [aiAnalysis, setAiAnalysis] = useState('');
@@ -160,6 +161,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ tran
                                     {activeReport === 'balance_sheet' && reportData && <BalanceSheetReport data={reportData.balanceSheet} onDrillDown={handleDrillDown}/>}
                                     {activeReport === 'cash_flow' && reportData && <CashFlowStatement data={reportData.cashFlow} onDrillDown={handleDrillDown}/>}
                                     {activeReport === 'trial_balance' && <TrialBalanceReport accounts={chartOfAccounts} transactions={filteredTransactions} period={reportPeriod} />}
+                                    {activeReport === 'forecast' && <CashFlowForecast />}
                                 </>
                             ) : (
                                 <Card className="flex items-center justify-center h-96">

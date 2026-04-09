@@ -1,7 +1,7 @@
-
 import React from 'react';
 import type { CategorizedTransaction } from '../../types';
 import { Card } from '../ui/Card';
+import { useCurrency } from "../ui/CurrencyProvider";
 
 interface DrillDownModalProps {
     isOpen: boolean;
@@ -9,11 +9,8 @@ interface DrillDownModalProps {
     data: { title: string; transactions: CategorizedTransaction[] } | null;
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
 export const DrillDownModal: React.FC<DrillDownModalProps> = ({ isOpen, onClose, data }) => {
+    const { formatAmount } = useCurrency();
     if (!isOpen || !data) return null;
 
     return (
@@ -40,7 +37,7 @@ export const DrillDownModal: React.FC<DrillDownModalProps> = ({ isOpen, onClose,
                                     <td className="p-3 max-w-sm text-white truncate" title={t.narration}>{t.narration}</td>
                                     <td className="p-3 text-gray-300">{t.category}</td>
                                     <td className={`p-3 font-mono text-right ${t.type === 'credit' ? 'text-green-400' : 'text-red-400'}`}>
-                                        {formatNaira(t.amount)}
+                                        {formatAmount(t.amount)}
                                     </td>
                                 </tr>
                             ))}

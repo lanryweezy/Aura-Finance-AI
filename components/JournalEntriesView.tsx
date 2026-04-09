@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import type { JournalEntry, JournalLine, Account } from '../types';
+import { useToast } from './ui/Toast';
+import { useCurrency } from './ui/CurrencyProvider';
 
 interface JournalEntriesViewProps {
     entries: JournalEntry[];
@@ -9,16 +11,14 @@ interface JournalEntriesViewProps {
     accounts: Account[];
 }
 
-const formatNaira = (amount: number) => {
-    return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-};
-
 const NewJournalEntryModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
     onAdd: (entry: Omit<JournalEntry, 'id'|'date'>) => void;
     accounts: Account[];
 }> = ({ isOpen, onClose, onAdd, accounts }) => {
+    const { formatAmount } = useCurrency();
+    const { showToast } = useToast();
     const [narration, setNarration] = useState('');
     const [lines, setLines] = useState<Partial<JournalLine>[]>([
         { accountName: '', type: 'debit', amount: 0 },
@@ -56,10 +56,11 @@ const NewJournalEntryModal: React.FC<{
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isBalanced) {
-            alert('Journal entry must be balanced (debits must equal credits) and not zero.');
+            showToast('Journal entry must be balanced (debits must equal credits) and not zero.', 'error');
             return;
         }
         onAdd({ narration, lines: lines as JournalLine[] });
+        showToast('Journal entry recorded successfully!', 'success');
         onClose();
     };
 
@@ -91,7 +92,7 @@ const NewJournalEntryModal: React.FC<{
                     <div className={`flex justify-between p-3 rounded-lg mt-4 ${isBalanced ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
                         <div>
                             <span className="text-gray-400">Totals: </span>
-                            <span className="font-mono text-white"> D: {formatNaira(totals.debit)} / C: {formatNaira(totals.credit)}</span>
+                            <span className="font-mono text-white"> D: {formatAmount(totals.debit)} / C: {formatAmount(totals.credit)}</span>
                         </div>
                         <span className={`font-bold ${isBalanced ? 'text-green-400' : 'text-red-400'}`}>{isBalanced ? 'Balanced' : 'Unbalanced'}</span>
                     </div>
@@ -107,6 +108,7 @@ const NewJournalEntryModal: React.FC<{
 };
 
 export const JournalEntriesView: React.FC<JournalEntriesViewProps> = ({ entries, onAddEntry, accounts }) => {
+    const { formatAmount } = useCurrency();
     const [isModalOpen, setIsModalOpen] = useState(false);
     return (
         <>
@@ -144,8 +146,8 @@ export const JournalEntriesView: React.FC<JournalEntriesViewProps> = ({ entries,
                                         <tr key={idx}>
                                             <td></td>
                                             <td className="p-2 pl-8 text-gray-300">{line.accountName}</td>
-                                            <td className={`p-2 text-right font-mono ${line.type === 'debit' ? 'text-green-400' : 'text-gray-500'}`}>{line.type === 'debit' ? formatNaira(line.amount) : '-'}</td>
-                                            <td className={`p-2 text-right font-mono ${line.type === 'credit' ? 'text-red-400' : 'text-gray-500'}`}>{line.type === 'credit' ? formatNaira(line.amount) : '-'}</td>
+                                            <td className={`p-2 text-right font-mono ${line.type === 'debit' ? 'text-green-400' : 'text-gray-500'}`}>{line.type === 'debit' ? formatAmount(line.amount) : '-'}</td>
+                                            <td className={`p-2 text-right font-mono ${line.type === 'credit' ? 'text-red-400' : 'text-gray-500'}`}>{line.type === 'credit' ? formatAmount(line.amount) : '-'}</td>
                                         </tr>
                                     ))}
                                 </React.Fragment>

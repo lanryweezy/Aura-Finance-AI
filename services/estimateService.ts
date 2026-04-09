@@ -1,7 +1,11 @@
+import { monitoringService } from './monitoringService';
 
 import type { Estimate } from '../types';
+import { authService } from './authService';
 
-let mockEstimates: Estimate[] = [
+const getStorageKey = () => `aura_${authService.getTenantId()}_estimates`;
+
+const initialEstimates: Estimate[] = [
     {
         id: `est_${Date.now() - 20000}`,
         customer: 'Potential Client X',
@@ -16,21 +20,47 @@ let mockEstimates: Estimate[] = [
     }
 ];
 
+const loadEstimates = (): Estimate[] => {
+    const stored = localStorage.getItem(getStorageKey());
+    if (stored) {
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse estimates' });
+            return initialEstimates;
+        }
+    }
+    return initialEstimates;
+};
+
 export const fetchEstimates = (): Promise<Estimate[]> => {
     return new Promise(resolve => {
-        setTimeout(() => resolve([...mockEstimates]), 500);
+        setTimeout(() => resolve(loadEstimates()), 500);
     });
 };
 
 export const addEstimate = (estData: Omit<Estimate, 'id' | 'status' | 'issueDate'>): Promise<Estimate> => {
     return new Promise(resolve => {
+        const current = loadEstimates();
         const newEst: Estimate = {
             ...estData,
             id: `est_${Date.now()}`,
             issueDate: new Date().toISOString(),
             status: 'Draft',
         };
-        mockEstimates = [newEst, ...mockEstimates];
+        const updated = [newEst, ...current];
+        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
         setTimeout(() => resolve(newEst), 300);
     });
 };
+
+export const updateEstimate = (est: Estimate): Promise<Estimate> => {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            const current = loadEstimates();
+            const updated = current.map(e => e.id === est.id ? est : e);
+            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
+            resolve(est);
+        }, 300);
+    });
+}
