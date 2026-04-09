@@ -8,8 +8,8 @@ import type { RawTransaction, CategorizedTransaction, FinancialInsight, Invoice,
 // Simple in-memory cache for transaction categorization
 const categorizationCache = new Map<string, string>();
 
-const checkRateLimit = (type: 'ai_insight' | 'ai_chat'): boolean => {
-    if (usageService.isRateLimited(type)) {
+const checkRateLimit = async (type: 'ai_insight' | 'ai_chat'): Promise<boolean> => {
+    if (await usageService.isRateLimited(type)) {
         monitoringService.log('warn', 'AI_ENGINE', `Rate limit reached for ${type}`);
         return true;
     }
@@ -34,7 +34,6 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
      return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
   }
 
-  // Filter out already cached transactions
   const toCategorize: RawTransaction[] = [];
   const results: CategorizedTransaction[] = [];
 
@@ -49,7 +48,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
   if (toCategorize.length === 0) return results;
 
-  usageService.trackUsage('bank_sync');
+  await usageService.trackUsage('bank_sync');
 
   const transactionSchema = {
     type: Type.ARRAY,
@@ -71,11 +70,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     },
   };
 
-  const prompt = `
-    You are an expert accountant. Categorize these transactions:
-    Allowed Categories: ${categoryList.join(', ')}
-    Transactions: ${JSON.stringify(toCategorize)}
-  `;
+  const prompt = `Categorize these transactions for an accountant: ${JSON.stringify(toCategorize)}`;
 
   try {
     monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
@@ -109,13 +104,13 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
     return [{ title: 'AI Analysis Disabled', description: 'Set your Gemini API key.', priority: 'Medium' }];
   }
 
-  if (checkRateLimit('ai_insight')) {
+  if (await checkRateLimit('ai_insight')) {
       return [{ title: 'Plan Limit Reached', description: 'You have reached your AI insights limit for this month. Please upgrade your plan.', priority: 'High' }];
   }
 
   if (transactions.length === 0) return [];
 
-  const prompt = `Based on these transactions, generate 3 concise financial insights for a Nigerian SME: ${JSON.stringify(transactions)}`;
+  const prompt = `Generate 3 concise financial insights for a Nigerian SME based on: ${JSON.stringify(transactions)}`;
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
@@ -127,7 +122,7 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
         },
     });
     
-    usageService.trackUsage('ai_insight');
+    await usageService.trackUsage('ai_insight');
 
     const jsonText = response.response.text().trim();
     return JSON.parse(jsonText) as FinancialInsight[];
@@ -140,14 +135,14 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
 
 export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<string> => {
   if (!aiClient || !API_KEY) return "AI features disabled.";
-  if (checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
+  if (await checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
 
-  const prompt = `Analyze payroll history and provide one strategic insight: ${JSON.stringify(payrollHistory)}`;
+  const prompt = `Analyze payroll history: ${JSON.stringify(payrollHistory)}`;
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
     const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-    usageService.trackUsage('ai_insight');
+    await usageService.trackUsage('ai_insight');
     return response.response.text().trim();
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
@@ -157,14 +152,14 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
 export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, comparisonPeriodData?: ReportData): Promise<string> => {
     if (!aiClient || !API_KEY) return "AI features disabled.";
-    if (checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
+    if (await checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
 
     const prompt = `Provide CFO Executive Summary for: ${JSON.stringify(currentPeriodData)}`;
 
     try {
         monitoringService.trackAIUsage('report_analysis', prompt);
         const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-        usageService.trackUsage('ai_insight');
+        await usageService.trackUsage('ai_insight');
         return response.response.text().trim();
     } catch (error) {
         monitoringService.trackError('AI_ENGINE', error as Error);
@@ -174,14 +169,14 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
 export const generateInvoiceReminder = async (invoice: Invoice): Promise<string> => {
   if (!aiClient || !API_KEY) return "AI features disabled.";
-  if (checkRateLimit('ai_chat')) return "Plan limit reached for AI generation.";
+  if (await checkRateLimit('ai_chat')) return "Plan limit reached for AI generation.";
 
   const prompt = `Generate a reminder email for invoice: ${JSON.stringify(invoice)}`;
 
   try {
     monitoringService.trackAIUsage('invoice_reminder', prompt);
     const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent(prompt);
-    usageService.trackUsage('ai_chat');
+    await usageService.trackUsage('ai_chat');
     return response.response.text().trim();
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);

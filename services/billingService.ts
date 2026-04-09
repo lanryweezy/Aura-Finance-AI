@@ -71,7 +71,7 @@ export const billingService = {
                 callback(response.reference);
             },
             onClose: function() {
-                console.log('Window closed.');
+                monitoringService.log('info', 'BILLING', 'Paystack window closed');
             }
         });
         handler.openIframe();
@@ -98,7 +98,7 @@ export const billingService = {
                 callback(data.transaction_id);
             },
             onclose: function() {
-                console.log('Window closed.');
+                monitoringService.log('info', 'BILLING', 'Flutterwave window closed');
             },
             customizations: {
                 title: "Aura Finance AI",

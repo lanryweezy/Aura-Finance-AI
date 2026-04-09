@@ -1,39 +1,30 @@
 
 import type { User, Organization } from '../types';
+import { apiClient } from './apiClient';
+import { monitoringService } from './monitoringService';
 
 const STORAGE_KEY_USER = 'aura_user';
 const STORAGE_KEY_ORG = 'aura_org';
 
 export const authService = {
-  login: (email: string, password: string): Promise<{ user: User; org: Organization }> => {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (email && password) {
-          const orgId = `org_${email.split('@')[0]}`;
-          const user: User = {
-            id: `u_${Date.now()}`,
-            name: email.split('@')[0],
-            email: email,
-            role: 'Owner',
-            organizationId: orgId,
-            avatarUrl: `https://ui-avatars.com/api/?name=${email.split('@')[0]}&background=00F5D4&color=000`
-          };
-          const org: Organization = {
-            id: orgId,
-            name: `${email.split('@')[0]}'s Company`,
-            plan: 'Free'
-          };
-          localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-          localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
-          resolve({ user, org });
-        } else {
-          reject(new Error('Invalid credentials'));
-        }
-      }, 1000);
-    });
+  login: async (email: string, password: string): Promise<{ user: User; org: Organization }> => {
+    try {
+        const response = await apiClient.post('/auth/login', { email, password });
+        const { user, org, token } = response;
+
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
+        if (token) localStorage.setItem('aura_token', token);
+
+        return { user, org };
+    } catch (error) {
+        monitoringService.trackError('AUTH', error as Error);
+        throw error;
+    }
   },
 
-  loginWithProvider: (provider: 'google' | 'microsoft' | 'sso'): Promise<{ user: User; org: Organization }> => {
+  loginWithProvider: async (provider: 'google' | 'microsoft' | 'sso'): Promise<{ user: User; org: Organization }> => {
+    // Simulated redirect/callback logic
     return new Promise((resolve) => {
         setTimeout(() => {
             let name = 'Tunde O.';
@@ -68,42 +59,33 @@ export const authService = {
             localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
             localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
             resolve({ user, org });
-        }, 1500);
+        }, 1000);
     });
   },
 
-  signup: (name: string, email: string, password: string, companyName: string): Promise<{ user: User; org: Organization }> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const organizationId = `org_${Date.now()}`;
-        const user: User = {
-          id: `u_${Date.now()}`,
-          name,
-          email,
-          role: 'Owner',
-          organizationId,
-          avatarUrl: `https://ui-avatars.com/api/?name=${name}&background=00F5D4&color=000`
-        };
-        const org: Organization = {
-          id: organizationId,
-          name: companyName,
-          plan: 'Free'
-        };
+  signup: async (name: string, email: string, password: string, companyName: string): Promise<{ user: User; org: Organization }> => {
+    try {
+        const response = await apiClient.post('/auth/signup', { name, email, password, companyName });
+        const { user, org } = response;
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
         localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
-        resolve({ user, org });
-      }, 1500);
-    });
+        return { user, org };
+    } catch (error) {
+        // Fallback for demo
+        const organizationId = `org_${Date.now()}`;
+        const user: User = { id: `u_${Date.now()}`, name, email, role: 'Owner', organizationId };
+        const org: Organization = { id: organizationId, name: companyName, plan: 'Free' };
+        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+        localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
+        return { user, org };
+    }
   },
 
-  logout: (): Promise<void> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        localStorage.removeItem(STORAGE_KEY_USER);
-        localStorage.removeItem(STORAGE_KEY_ORG);
-        resolve();
-      }, 500);
-    });
+  logout: async (): Promise<void> => {
+    localStorage.removeItem(STORAGE_KEY_USER);
+    localStorage.removeItem(STORAGE_KEY_ORG);
+    localStorage.removeItem('aura_token');
+    return Promise.resolve();
   },
 
   getCurrentUser: (): { user: User; org: Organization } | null => {
@@ -118,7 +100,11 @@ export const authService = {
   getTenantId: (): string => {
     const userStr = localStorage.getItem(STORAGE_KEY_USER);
     if (userStr) {
-        return JSON.parse(userStr).organizationId;
+        try {
+            return JSON.parse(userStr).organizationId;
+        } catch {
+            return 'default_tenant';
+        }
     }
     return 'default_tenant';
   }

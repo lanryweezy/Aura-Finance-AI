@@ -26,18 +26,16 @@ const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: s
 
 export const ocrService = {
     scanReceipt: async (file: File): Promise<ReceiptData> => {
-        // SaaS Check
-        if (usageService.isRateLimited('ocr_scan')) {
+        if (await usageService.isRateLimited('ocr_scan')) {
             monitoringService.log('warn', 'OCR_ENGINE', 'Rate limit reached for OCR');
             throw new Error("Plan limit reached for AI Receipt Scanning. Please upgrade your plan.");
         }
 
-        // Fallback if no API key
         if (!aiClient || !API_KEY) {
             console.warn("No API Key found. Returning mock OCR data.");
             return new Promise(resolve => {
-                setTimeout(() => {
-                    usageService.trackUsage('ocr_scan');
+                setTimeout(async () => {
+                    await usageService.trackUsage('ocr_scan');
                     resolve({
                         merchantName: "Mock Vendor Ltd",
                         date: new Date().toISOString().split('T')[0],
@@ -79,8 +77,7 @@ export const ocrService = {
             const jsonText = response.response.text().trim();
             const data = JSON.parse(jsonText) as ReceiptData;
 
-            // Track usage on success
-            usageService.trackUsage('ocr_scan');
+            await usageService.trackUsage('ocr_scan');
 
             return data;
 

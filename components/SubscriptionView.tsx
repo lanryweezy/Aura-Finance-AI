@@ -28,7 +28,7 @@ export const SubscriptionView: React.FC = () => {
         setIsLoading(plan.id);
 
         const callback = async (ref: string) => {
-            console.log('Payment successful:', ref);
+            monitoringService.log('info', 'BILLING', 'Payment successful', { reference: ref, plan: plan.id });
             await billingService.upgradePlan(plan.id);
             setCurrentPlan(plan.id);
             setIsLoading(null);
