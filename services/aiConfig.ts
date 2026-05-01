@@ -7,6 +7,6 @@ if (!API_KEY) {
   console.warn("GEMINI_API_KEY environment variable not set. AI features will be limited.");
 }
 
-export const aiClient = API_KEY ? new GoogleGenAI(API_KEY) : null;
+export const aiClient = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 export { API_KEY };
 export { Type } from "@google/genai";

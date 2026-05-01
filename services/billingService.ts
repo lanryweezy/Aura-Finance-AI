@@ -1,5 +1,6 @@
 
 import type { SubscriptionTier } from '../types';
+import { monitoringService } from './monitoringService';
 
 declare const PaystackPop: any;
 declare const FlutterwaveCheckout: any;
