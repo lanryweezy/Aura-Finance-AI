@@ -66,15 +66,15 @@ export const ocrService = {
                 required: ["merchantName", "date", "totalAmount", "description", "category"],
             };
 
-            const response = await aiClient.getGenerativeModel({ model: "gemini-2.0-flash" }).generateContent({
+            const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash",
                 contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
-                generationConfig: {
+                config: {
                     responseMimeType: "application/json",
                     responseSchema: receiptSchema as any,
                 }
             });
 
-            const jsonText = response.response.text().trim();
+            const jsonText = response.text.trim();
             const data = JSON.parse(jsonText) as ReceiptData;
 
             await usageService.trackUsage('ocr_scan');
