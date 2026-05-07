@@ -3,12 +3,15 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { fetchInvoices } from '../services/receivablesService';
-import type { CategorizedTransaction, Invoice } from '../types';
+import { fetchEmployees } from '../services/employeeService';
+import { calculateDeductions } from '../services/taxCalculatorService';
+import type { CategorizedTransaction, Invoice, Employee } from '../types';
 import { useCurrency } from './ui/CurrencyProvider';
 
 export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }> = ({ transactions }) => {
     const { formatAmount } = useCurrency();
     const [invoices, setInvoices] = useState<Invoice[]>([]);
+    const [employees, setEmployees] = useState<Employee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [period, setPeriod] = useState({ start: '', end: '' });
     const printRef = useRef<HTMLDivElement>(null);
@@ -16,8 +19,12 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
-            const fetchedInvoices = await fetchInvoices();
+            const [fetchedInvoices, fetchedEmployees] = await Promise.all([
+                fetchInvoices(),
+                fetchEmployees()
+            ]);
             setInvoices(fetchedInvoices);
+            setEmployees(fetchedEmployees);
             setIsLoading(false);
         };
         loadData();
@@ -55,6 +62,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
             totalSales: 0,
             totalVAT: 0,
             totalWHT: 0,
+            totalPAYE: 0,
             revenue: 0,
             expenses: 0,
             assessableProfit: 0,
@@ -87,6 +95,25 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         }, { totalSales: 0, totalVAT: 0, totalWHT: 0 });
         
         Object.assign(result, invoiceSummary);
+
+        // PAYE Calculation based on employees
+        // Convert the date range to months (approximate)
+        let monthsInPeriod = 1;
+        if (period.start && period.end) {
+            const startYear = startDate.getFullYear();
+            const startMonth = startDate.getMonth();
+            const endYear = endDate.getFullYear();
+            const endMonth = endDate.getMonth();
+            monthsInPeriod = (endYear - startYear) * 12 + (endMonth - startMonth) + 1;
+            if (monthsInPeriod < 1) monthsInPeriod = 1;
+        }
+
+        const payeMonthly = employees.reduce((acc, emp) => {
+            const deductions = calculateDeductions(emp.grossSalary);
+            return acc + deductions.paye;
+        }, 0);
+
+        result.totalPAYE = payeMonthly * monthsInPeriod;
         
         const periodTransactions = transactions.filter(t => {
              const txDate = new Date(t.date);
@@ -109,7 +136,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
 
         return result;
 
-    }, [invoices, transactions, period]);
+    }, [invoices, employees, transactions, period]);
 
 
     if (isLoading) {
@@ -146,7 +173,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                  <h2 className="text-2xl font-bold text-white mb-4">
                     Tax Report: {period.start && period.end ? `${new Date(period.start).toLocaleDateString()} - ${new Date(period.end).toLocaleDateString()}` : 'Select a period'}
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <Card className="summary-card">
                         <h3 className="text-gray-400 text-sm font-medium">Total Sales (VAT-exclusive)</h3>
                         <p className="text-3xl font-bold text-brand-cyan mt-2">{formatAmount(filteredData.totalSales)}</p>
@@ -158,6 +185,10 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                     <Card className="summary-card">
                         <h3 className="text-gray-400 text-sm font-medium">Total WHT Suffered</h3>
                         <p className="text-3xl font-bold text-purple-400 mt-2">{formatAmount(filteredData.totalWHT)}</p>
+                    </Card>
+                    <Card className="summary-card">
+                        <h3 className="text-gray-400 text-sm font-medium">Total PAYE Estimated</h3>
+                        <p className="text-3xl font-bold text-green-400 mt-2">{formatAmount(filteredData.totalPAYE)}</p>
                     </Card>
                 </div>
                 
