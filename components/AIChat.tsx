@@ -85,7 +85,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
         ));
       }
 
-    } catch (error) {
+    } catch (error: any) {
       monitoringService.trackError('UI', error, { message: "AI Chat Error:" });
        setMessages(prev => prev.map(msg => 
             msg.id === modelMessageId ? { ...msg, text: "Sorry, I encountered an error. Please try again." } : msg

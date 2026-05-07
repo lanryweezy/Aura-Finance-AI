@@ -82,7 +82,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
       },
     });
 
-    const jsonText = response.text.trim();
+    const jsonText = (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
     const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
 
     batchResult.forEach(t => {
@@ -124,7 +124,7 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
     
     await usageService.trackUsage('ai_insight');
 
-    const jsonText = response.text.trim();
+    const jsonText = (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
     return JSON.parse(jsonText) as FinancialInsight[];
 
   } catch (error) {
@@ -143,7 +143,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
     monitoringService.trackAIUsage('payroll_insight', prompt);
     const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
     await usageService.trackUsage('ai_insight');
-    return response.text.trim();
+    return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return "Could not generate AI insight.";
@@ -160,7 +160,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
         monitoringService.trackAIUsage('report_analysis', prompt);
         const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
         await usageService.trackUsage('ai_insight');
-        return response.text.trim();
+        return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
     } catch (error) {
         monitoringService.trackError('AI_ENGINE', error as Error);
         return "Could not generate AI analysis.";
@@ -177,7 +177,7 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
     monitoringService.trackAIUsage('invoice_reminder', prompt);
     const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
     await usageService.trackUsage('ai_chat');
-    return response.text.trim();
+    return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return "Could not generate AI reminder.";
