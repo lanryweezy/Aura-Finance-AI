@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useCallback, useMemo, Suspense, lazy } from 'react';
+import { useAppStore } from './store/useAppStore';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
@@ -55,28 +56,28 @@ import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnec
 
 export default function App(): React.ReactNode {
   const { showToast } = useToast();
-  const [user, setUser] = useState<User | null>(null);
-  const [activeView, setActiveView] = useState<View>('dashboard');
-  
-  // App Data States
-  const [transactions, setTransactions] = useState<CategorizedTransaction[]>([]);
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [connections, setConnections] = useState<BankConnection[]>([]);
-  const [bills, setBills] = useState<Bill[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [payrollHistory, setPayrollHistory] = useState<PayrollRun[]>([]);
-  const [chartOfAccounts, setChartOfAccounts] = useState<Account[]>(DEFAULT_CATEGORIES);
-  const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
-  const [estimates, setEstimates] = useState<Estimate[]>([]);
-  const [budgets, setBudgets] = useState<Budget[]>([]);
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [auditLog, setAuditLog] = useState(auditLogService.getLogs());
-  
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const store = useAppStore();
+  const {
+    user, setUser,
+    activeView, setActiveView,
+    transactions, setTransactions,
+    employees, setEmployees,
+    connections, setConnections,
+    bills, setBills,
+    invoices, setInvoices,
+    payrollHistory, setPayrollHistory,
+    chartOfAccounts, setChartOfAccounts,
+    journalEntries, setJournalEntries,
+    projects, setProjects,
+    inventory, setInventory,
+    purchaseOrders, setPurchaseOrders,
+    estimates, setEstimates,
+    budgets, setBudgets,
+    contacts, setContacts,
+    auditLog, setAuditLog,
+    isLoading, setIsLoading,
+    error, setError
+  } = store;
   
   // Check for existing session on mount
   useEffect(() => {
