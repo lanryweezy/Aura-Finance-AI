@@ -19,9 +19,16 @@ export const teamService = {
         } catch {
             // Local fallback
             const stored = localStorage.getItem('aura_team_dev');
-            return stored ? JSON.parse(stored) : [
-                { id: 'tm_1', name: 'Admin User', email: 'admin@company.com', role: 'Admin', status: 'Active', joinedAt: new Date().toISOString() }
-            ];
+            try {
+                return stored ? JSON.parse(stored) : [
+                    { id: 'tm_1', name: 'Admin User', email: 'admin@company.com', role: 'Admin', status: 'Active', joinedAt: new Date().toISOString() }
+                ];
+            } catch (parseErr) {
+                console.warn("Failed to parse local storage fallback", parseErr);
+                return [
+                    { id: 'tm_1', name: 'Admin User', email: 'admin@company.com', role: 'Admin', status: 'Active', joinedAt: new Date().toISOString() }
+                ];
+            }
         }
     },
 

@@ -42,13 +42,21 @@ export const apiClient = {
 
       clearTimeout(timeoutId);
 
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = isJson ? await response.json().catch(() => ({})) : {};
         monitoringService.trackError('NETWORK', `HTTP ${response.status}: ${errorData.message || response.statusText}`);
         throw new Error(errorData.message || `Request failed with status ${response.status}`);
       }
 
-      return await response.json();
+      if (isJson) {
+        return await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Expected JSON response but got: ${text.substring(0, 50)}...`);
+      }
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {
