@@ -5,6 +5,7 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import { AIAlerts } from './AIAlerts';
 import { useCurrency } from './ui/CurrencyProvider';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
@@ -346,6 +347,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       </div>
 
       <OnboardingWidget connections={connections} invoices={invoices} />
+
+      <AIAlerts transactions={transactions} />
 
       {/* Quick Actions Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

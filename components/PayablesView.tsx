@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV } from '../services/exportService';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -140,8 +142,23 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Filtering
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
+  const filteredBills = useMemo(() => {
+    return bills.filter(bill => {
+      if (filters.vendor && !bill.vendor.toLowerCase().includes(filters.vendor.toLowerCase())) return false;
+      if (filters.status && bill.status !== filters.status) return false;
+      if (filters.amount_min && bill.amount < Number(filters.amount_min)) return false;
+      if (filters.amount_max && bill.amount > Number(filters.amount_max)) return false;
+      if (filters.start_date && new Date(bill.issueDate) < new Date(filters.start_date)) return false;
+      if (filters.end_date && new Date(bill.issueDate) > new Date(filters.end_date)) return false;
+      return true;
+    });
+  }, [bills, filters]);
+
   const summary = useMemo(() => {
-    return bills.reduce(
+    return filteredBills.reduce(
       (acc, bill) => {
         if (bill.status === 'Unpaid' || bill.status === 'Overdue') {
           acc.totalOutstanding += bill.amount;
@@ -153,7 +170,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
       },
       { totalOutstanding: 0, totalOverdue: 0 }
     );
-  }, [bills]);
+  }, [filteredBills]);
 
 
   if (isLoading) {
@@ -197,10 +214,27 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Upcoming Bills (30 days)</h3>
           <p className="text-3xl font-bold text-blue-400 mt-2">
-            {bills.filter(b => b.status === 'Unpaid' && new Date(b.dueDate) > new Date() && new Date(b.dueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
+            {filteredBills.filter(b => b.status === 'Unpaid' && new Date(b.dueDate) > new Date() && new Date(b.dueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
           </p>
         </Card>
       </div>
+
+      <AdvancedFilter
+        onFilter={setFilters}
+        onExport={() => exportToCSV('bills', filteredBills)}
+        options={[
+            { label: 'Vendor', field: 'vendor', type: 'text' },
+            { label: 'Status', field: 'status', type: 'select', options: [
+                { label: 'Draft', value: 'Draft' },
+                { label: 'Unpaid', value: 'Unpaid' },
+                { label: 'Paid', value: 'Paid' },
+                { label: 'Overdue', value: 'Overdue' }
+            ]},
+            { label: 'Start Date', field: 'start_date', type: 'date' },
+            { label: 'End Date', field: 'end_date', type: 'date' },
+            { label: 'Amount Range', field: 'amount', type: 'number-range' }
+        ]}
+      />
 
       <Card className="h-full overflow-hidden flex flex-col">
         <h3 className="text-xl font-bold text-white mb-6">Bill Details</h3>
@@ -216,7 +250,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {bills.map((bill) => (
+              {filteredBills.map((bill) => (
                 <tr key={bill.id} className="hover:bg-dark-secondary/50">
                   <td className="p-4 text-white font-medium">{bill.vendor}</td>
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
@@ -238,8 +272,8 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                   </td>
                 </tr>
               ))}
-               {bills.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No bills recorded yet.</td></tr>
+               {filteredBills.length === 0 && (
+                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No bills found matching filters.</td></tr>
                )}
             </tbody>
           </table>
