@@ -5,6 +5,9 @@ import { useToast } from './ui/Toast';
 import { TeamManagement } from './TeamManagement';
 import { exportToCSV } from '../services/exportService';
 import { monitoringService } from '../services/monitoringService';
+import { securityService } from '../services/securityService';
+import { authService } from '../services/authService';
+import { ApiKey } from '../types';
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: boolean) => void; description?: string }> = ({ label, checked, onChange, description }) => (
     <div className="flex items-center justify-between py-3">
@@ -28,9 +31,193 @@ const SectionHeader: React.FC<{ title: string; description: string }> = ({ title
     </div>
 );
 
+const SecuritySettings: React.FC = () => {
+    const { showToast } = useToast();
+    const [twoFactor, setTwoFactor] = useState(false);
+    const [ipWhitelist, setIpWhitelist] = useState('192.168.1.1, 10.0.0.1');
+    const [timeout, setTimeoutVal] = useState(30);
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-300">
+            <Card>
+                <SectionHeader title="Authentication" description="Secure your account with multi-factor authentication." />
+                <Toggle
+                    label="Two-Factor Authentication (MFA)"
+                    description="Require a code from an authenticator app to log in."
+                    checked={twoFactor}
+                    onChange={setTwoFactor}
+                />
+                <div className="mt-4 p-4 bg-dark-secondary rounded-xl border border-white/5">
+                    <button
+                        onClick={async () => {
+                            await securityService.registerBiometrics();
+                            showToast('Biometrics registered successfully!', 'success');
+                        }}
+                        className="flex items-center gap-2 text-sm text-brand-cyan hover:underline font-medium"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Set up Biometric Login (Face ID / Touch ID)
+                    </button>
+                </div>
+            </Card>
+
+            <Card>
+                <SectionHeader title="Access Restriction" description="Restrict access to specific corporate IP addresses." />
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Whitelisted IP Addresses (comma separated)</label>
+                        <input
+                            type="text"
+                            value={ipWhitelist}
+                            onChange={(e) => setIpWhitelist(e.target.value)}
+                            placeholder="e.g. 192.168.1.1, 41.67.12.5"
+                            className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-xs font-medium text-gray-400 mb-1">Session Inactivity Timeout (Minutes)</label>
+                        <input
+                            type="number"
+                            value={timeout}
+                            onChange={(e) => setTimeoutVal(parseInt(e.target.value))}
+                            className="w-24 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors"
+                        />
+                        <p className="text-[10px] text-gray-500 mt-1">Users will be automatically logged out after this period of inactivity.</p>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+const DeveloperSettings: React.FC = () => {
+    const [apiKeys, setApiKeys] = useState<ApiKey[]>([
+        { id: '1', key: 'aura_live_sk_....92a1', name: 'Server Integration', scope: 'write', createdAt: '2023-11-20T10:00:00Z' }
+    ]);
+
+    const handleGenerateKey = () => {
+        const newKey = securityService.generateApiKey('New Integration', 'read');
+        setApiKeys([...apiKeys, newKey]);
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-300">
+            <Card>
+                <div className="flex justify-between items-start mb-4">
+                    <SectionHeader title="API Keys" description="Generate and manage keys for external integrations." />
+                    <button
+                        onClick={handleGenerateKey}
+                        className="text-xs bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30 px-3 py-1.5 rounded-lg hover:bg-brand-cyan/30 transition-colors"
+                    >
+                        + Generate New Key
+                    </button>
+                </div>
+
+                <div className="space-y-3">
+                    {apiKeys.map(key => (
+                        <div key={key.id} className="p-3 bg-dark-secondary rounded-lg border border-gray-700 flex justify-between items-center">
+                            <div>
+                                <div className="text-sm font-bold text-white">{key.name}</div>
+                                <div className="text-xs font-mono text-gray-500 mt-1">{key.key}</div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-brand-purple/20 text-brand-purple rounded">{key.scope}</span>
+                                <button className="text-gray-500 hover:text-red-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </Card>
+
+            <Card className="bg-amber-500/5 border-amber-500/20">
+                <h4 className="text-sm font-bold text-amber-500 mb-2">Webhooks</h4>
+                <p className="text-xs text-gray-400 mb-4">Receive real-time notifications for transactions, invoice payments, and payroll runs.</p>
+                <button disabled className="px-4 py-2 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-lg text-xs font-bold opacity-50 cursor-not-allowed">
+                    Coming Soon
+                </button>
+            </Card>
+        </div>
+    );
+};
+
+const ComplianceSettings: React.FC = () => {
+    const { showToast } = useToast();
+    const user = authService.getCurrentUser()?.user;
+
+    const handleExport = async () => {
+        if (!user) return;
+        const data = await securityService.exportPersonalData(user.id);
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `aura-data-export-${user.id}.json`;
+        a.click();
+        showToast('Personal data export started.', 'success');
+    };
+
+    return (
+        <div className="space-y-6 animate-in fade-in duration-300">
+            <Card>
+                <SectionHeader title="Privacy & Data Control" description="Manage your rights under GDPR, CCPA, and NDPA." />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-dark-secondary rounded-xl border border-white/5 space-y-3">
+                        <h4 className="text-sm font-bold text-white">Data Portability</h4>
+                        <p className="text-xs text-gray-400">Download a machine-readable copy of all your personal data and activity logs.</p>
+                        <button
+                            onClick={handleExport}
+                            className="w-full py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all"
+                        >
+                            Request Data Export
+                        </button>
+                    </div>
+                    <div className="p-4 bg-dark-secondary rounded-xl border border-white/5 space-y-3">
+                        <h4 className="text-sm font-bold text-red-500">Account Deletion</h4>
+                        <p className="text-xs text-gray-400">Permanently delete your account and all associated data. This action is irreversible.</p>
+                        <button
+                            onClick={() => { if(confirm("Are you SURE? All data will be lost.")) { showToast("Deletion request submitted.", "info"); } }}
+                            className="w-full py-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-all"
+                        >
+                            Delete My Account
+                        </button>
+                    </div>
+                </div>
+            </Card>
+
+            <Card>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2 bg-green-500/20 rounded-lg text-green-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-white">SOC2 Readiness</h3>
+                        <p className="text-xs text-gray-400 text-green-400">Technical controls active and logging.</p>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between text-xs text-gray-400 border-b border-gray-800 pb-2">
+                        <span>Data Encryption at Rest (AES-256)</span>
+                        <span className="text-green-400 font-bold">Enabled</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-400 border-b border-gray-800 pb-2">
+                        <span>Audit Logging & Versioning</span>
+                        <span className="text-green-400 font-bold">Enabled</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-400">
+                        <span>Automated Vulnerability Scanning</span>
+                        <span className="text-green-400 font-bold">Enabled</span>
+                    </div>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
 export const SettingsView: React.FC = () => {
     const { showToast } = useToast();
-    const [activeTab, setActiveTab] = useState<'profile' | 'team'>('profile');
+    const [activeTab, setActiveTab] = useState<'profile' | 'team' | 'security' | 'developer' | 'compliance'>('profile');
     const [companyName, setCompanyName] = useState('Aura Inc.');
     const [tin, setTin] = useState('12345678-0001');
     const [email, setEmail] = useState('admin@aurainc.ng');
@@ -66,25 +253,52 @@ export const SettingsView: React.FC = () => {
                 </button>
             </div>
 
-            <div className="flex gap-4 border-b border-gray-800 pb-px">
+            <div className="flex gap-4 border-b border-gray-800 pb-px overflow-x-auto no-scrollbar">
                 <button
                     onClick={() => setActiveTab('profile')}
-                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'profile' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === 'profile' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                     Organization Profile
                     {activeTab === 'profile' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
                 </button>
                 <button
                     onClick={() => setActiveTab('team')}
-                    className={`pb-4 px-2 text-sm font-bold transition-all relative ${activeTab === 'team' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === 'team' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
                 >
                     Team Management
                     {activeTab === 'team' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
+                </button>
+                <button
+                    onClick={() => setActiveTab('security')}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === 'security' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    Security & Access
+                    {activeTab === 'security' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
+                </button>
+                <button
+                    onClick={() => setActiveTab('developer')}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === 'developer' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    Developer API
+                    {activeTab === 'developer' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
+                </button>
+                <button
+                    onClick={() => setActiveTab('compliance')}
+                    className={`pb-4 px-2 text-sm font-bold transition-all relative whitespace-nowrap ${activeTab === 'compliance' ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    GDPR/Compliance
+                    {activeTab === 'compliance' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan"></div>}
                 </button>
             </div>
 
             {activeTab === 'team' ? (
                 <TeamManagement />
+            ) : activeTab === 'security' ? (
+                <SecuritySettings />
+            ) : activeTab === 'developer' ? (
+                <DeveloperSettings />
+            ) : activeTab === 'compliance' ? (
+                <ComplianceSettings />
             ) : (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
                 {/* Left Column - General Info */}

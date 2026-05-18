@@ -156,6 +156,39 @@ export default function App(): React.ReactNode {
         loadInitialData();
     }
   }, [loadInitialData, user]);
+
+  // Session Timeout Implementation
+  useEffect(() => {
+      let timeout: ReturnType<typeof setTimeout>;
+      let lastReset = 0;
+
+      const resetTimeout = (e?: Event) => {
+          const now = Date.now();
+          // Throttle event listeners to prevent excessive timer churn
+          if (e && now - lastReset < 2000) return;
+          lastReset = now;
+
+          if (timeout) clearTimeout(timeout);
+          // Default timeout: 30 minutes, or from org settings
+          const duration = (authService.getCurrentUser()?.org.sessionTimeout || 30) * 60 * 1000;
+          timeout = setTimeout(() => {
+              if (authService.getCurrentUser()) {
+                  handleLogout();
+                  showToast('Session expired due to inactivity.', 'info');
+              }
+          }, duration);
+      };
+
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      events.forEach(name => document.addEventListener(name, resetTimeout));
+
+      resetTimeout();
+
+      return () => {
+          events.forEach(name => document.removeEventListener(name, resetTimeout));
+          if (timeout) clearTimeout(timeout);
+      };
+  }, [user]);
   
   const payrollSummary: PayrollSummary = useMemo(() => {
     return employees.reduce((acc, emp) => {

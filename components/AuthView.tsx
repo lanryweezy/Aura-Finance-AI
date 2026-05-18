@@ -12,6 +12,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
     const { showToast } = useToast();
     const [isLogin, setIsLogin] = useState(true);
     const [isLoading, setIsLoading] = useState(false);
+    const [requires2FA, setRequires2FA] = useState(false);
+    const [twoFactorCode, setTwoFactorCode] = useState('');
     
     // Form States
     const [email, setEmail] = useState('');
@@ -24,14 +26,44 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
         setIsLoading(true);
         try {
             if (isLogin) {
-                const { user, org } = await authService.login(email, password);
-                onLogin(user, org);
+                const result = await authService.login(email, password);
+                if (result.requires2FA) {
+                    setRequires2FA(true);
+                    showToast('Two-factor authentication required.', 'info');
+                } else {
+                    onLogin(result.user, result.org);
+                }
             } else {
                 const { user, org } = await authService.signup(fullName, email, password, companyName);
                 onLogin(user, org);
             }
         } catch (error) {
             showToast('Authentication failed. Please check your credentials.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleVerify2FA = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            const { user, org } = await authService.verify2FA(twoFactorCode);
+            onLogin(user, org);
+        } catch (error) {
+            showToast('Invalid 2FA code. Try 123456.', 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleBiometricLogin = async () => {
+        setIsLoading(true);
+        try {
+            const { user, org } = await authService.loginWithBiometrics();
+            onLogin(user, org);
+        } catch (error) {
+            showToast('Biometric login failed.', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -90,8 +122,62 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                 {/* Right Side - Form */}
                 <div className="w-full lg:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-dark-secondary/50 overflow-y-auto custom-scrollbar">
                     <div className="max-w-md mx-auto w-full">
-                        <h2 className="text-3xl font-bold text-white mb-2">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-                        <p className="text-gray-400 mb-6">{isLogin ? 'Choose a login method to continue.' : 'Start your 14-day free trial.'}</p>
+                        <h2 className="text-3xl font-bold text-white mb-2">
+                            {requires2FA ? '2FA Verification' : (isLogin ? 'Welcome Back' : 'Create Account')}
+                        </h2>
+                        <p className="text-gray-400 mb-6">
+                            {requires2FA ? 'Enter the code from your authenticator app.' : (isLogin ? 'Choose a login method to continue.' : 'Start your 14-day free trial.')}
+                        </p>
+
+                        {requires2FA ? (
+                            <form onSubmit={handleVerify2FA} className="space-y-6">
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-400 uppercase">Verification Code</label>
+                                    <input
+                                        type="text"
+                                        value={twoFactorCode}
+                                        onChange={(e) => setTwoFactorCode(e.target.value)}
+                                        required
+                                        className="w-full mt-1 bg-dark-primary border border-gray-700 rounded-lg p-3 text-white text-center text-2xl tracking-[1em] focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono"
+                                        placeholder="000000"
+                                        maxLength={6}
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full py-3.5 bg-brand-cyan text-black font-bold rounded-xl hover:bg-brand-cyan/90 transition-all shadow-[0_0_20px_rgba(0,245,212,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isLoading ? 'Verifying...' : 'Verify & Sign In'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRequires2FA(false)}
+                                    className="w-full text-gray-400 text-sm hover:text-white transition-colors"
+                                >
+                                    Back to Login
+                                </button>
+                            </form>
+                        ) : (
+                        <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                            <button
+                                onClick={() => handleProviderLogin('google')}
+                                disabled={isLoading}
+                                className="w-full py-2.5 bg-white text-gray-800 font-semibold rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center gap-3"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.745 12.27c0-.79-.07-1.54-.19-2.27h-11.3v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12.255 24c3.24 0 5.95-1.08 7.92-2.91l-3.86-3c-1.08.72-2.45 1.16-4.06 1.16-3.13 0-5.78-2.11-6.73-4.96h-3.98v3.09C3.515 21.3 7.565 24 12.255 24z"/><path fill="#FBBC05" d="M5.525 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62h-3.98a11.86 11.86 0 000 10.76l3.98-3.09z"/><path fill="#EA4335" d="M12.255 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C18.205 1.19 15.495 0 12.255 0 7.565 0 3.515 2.7 1.545 6.62l3.98 3.09c.95-2.85 3.6-4.96 6.73-4.96z"/></svg>
+                                Google
+                            </button>
+                             <button
+                                onClick={handleBiometricLogin}
+                                disabled={isLoading}
+                                className="w-full py-2.5 bg-dark-primary border border-brand-cyan/30 text-brand-cyan font-semibold rounded-lg hover:bg-brand-cyan/10 transition-colors flex items-center justify-center gap-3"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                Face ID / Touch ID
+                            </button>
+                        </div>
 
                         <div className="space-y-3 mb-6">
                             <button 
@@ -201,6 +287,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
                                 </button>
                             </p>
                         </div>
+                        </>
+                        )}
                     </div>
                 </div>
             </div>

@@ -1,6 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import type { CategorizedTransaction } from '../types';
+import { fraudService } from '../services/fraudService';
+import { useAppStore } from '../store/useAppStore';
 
 interface Alert {
     id: string;
@@ -13,10 +15,24 @@ interface Alert {
 
 export const AIAlerts: React.FC<{ transactions: CategorizedTransaction[] }> = ({ transactions }) => {
     const [alerts, setAlerts] = useState<Alert[]>([]);
+    const { bills, invoices } = useAppStore();
 
     useEffect(() => {
         // Simulated proactive scanning
         const newAlerts: Alert[] = [];
+
+        // 0. Fraud Detection Heuristics
+        const fraudAlerts = fraudService.runHeuristics({ invoices, bills });
+        fraudAlerts.forEach((msg, idx) => {
+            newAlerts.push({
+                id: `fraud_${idx}`,
+                type: 'anomaly',
+                title: 'Security Alert',
+                description: msg,
+                date: new Date().toISOString(),
+                severity: 'high'
+            });
+        });
 
         // 1. Check for anomalies (unusually high expenses)
         const recentExpenses = transactions.filter(t => t.type === 'debit').slice(0, 20);
