@@ -4,11 +4,31 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { CategorizedTransaction, ChatMessage } from '../types';
 import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
-import { GoogleGenAI, Chat } from "@google/genai";
+import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
 }
+
+// Define the tools the AI can use
+const fetchTransactionsTool: FunctionDeclaration = {
+    name: 'fetchTransactions',
+    description: 'Fetches the user\'s transaction data. Call this when the user asks about their spending, income, or specific transactions.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            category: {
+                type: Type.STRING,
+                description: 'Optional category to filter transactions by.'
+            }
+        }
+    }
+};
+
+const getBudgetTool: FunctionDeclaration = {
+    name: 'getBudget',
+    description: 'Fetches the user\'s budget data. Call this when the user asks about their budget or how much they have left to spend.',
+};
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
@@ -28,14 +48,17 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const systemInstruction = `You are O-Heidi, a friendly and expert financial AI assistant for Nigerian small business owners. 
-    Analyze the user's financial data to answer their questions. Be concise, helpful, and use ${currency} for currency.
-    Here is the user's transaction data in JSON format: ${JSON.stringify(transactions)}`;
+    const systemInstruction = `You are O-Heidi, a friendly, proactive, and expert financial AI assistant for Nigerian small business owners.
+    You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
+    Be concise, helpful, and use ${currency} for currency. Do not invent data; always use the provided tools to get real information.`;
 
     if(process.env.API_KEY) {
         chatInstance.current = ai.chats.create({
             model: 'gemini-2.0-flash',
-            config: { systemInstruction },
+            config: {
+                systemInstruction,
+                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool] }]
+            },
         });
 
         if (messages.length === 0) {
@@ -76,13 +99,55 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions }) => {
     setMessages(prev => [...prev, { id: modelMessageId, role: 'model', text: '' }]);
 
     try {
-      const stream = await chatInstance.current.sendMessageStream({ message: textToSend });
+      let responseStream = await chatInstance.current.sendMessageStream({ message: textToSend });
+      let fullResponseText = '';
+      let functionCallMade = false;
 
-      for await (const chunk of stream) {
-        const chunkText = chunk.text;
-        setMessages(prev => prev.map(msg => 
-            msg.id === modelMessageId ? { ...msg, text: msg.text + chunkText } : msg
-        ));
+      for await (const chunk of responseStream) {
+          if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+              functionCallMade = true;
+              const call = chunk.functionCalls[0];
+              let toolResult = {};
+
+              // Execute the requested tool
+              if (call.name === 'fetchTransactions') {
+                  const args = call.args as { category?: string };
+                  let filteredTransactions = transactions;
+                  if (args?.category) {
+                      filteredTransactions = transactions.filter(t => t.category.toLowerCase() === args.category!.toLowerCase());
+                  }
+                  toolResult = { transactions: filteredTransactions.slice(0, 50) }; // Limit to avoid massive context
+              } else if (call.name === 'getBudget') {
+                   // Mock budget data for the example since it's not passed as a prop
+                  toolResult = { budget: { total: 500000, spent: 420000, remaining: 80000 } };
+              } else {
+                  toolResult = { error: 'Unknown function' };
+              }
+
+              // Send the tool result back to the model
+               responseStream = await chatInstance.current.sendMessageStream([{
+                  functionResponse: {
+                      name: call.name,
+                      response: toolResult
+                  }
+              }]);
+
+              // Process the *new* stream after the function call
+              for await (const nextChunk of responseStream) {
+                   if (nextChunk.text) {
+                      fullResponseText += nextChunk.text;
+                      setMessages(prev => prev.map(msg =>
+                          msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
+                      ));
+                   }
+              }
+              break; // exit outer loop since we've handled the rest in the inner loop
+          } else if (chunk.text) {
+              fullResponseText += chunk.text;
+              setMessages(prev => prev.map(msg =>
+                  msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
+              ));
+          }
       }
 
     } catch (error) {
