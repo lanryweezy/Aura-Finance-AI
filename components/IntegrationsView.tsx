@@ -105,18 +105,18 @@ const integrationCategories = [
 
 const IntegrationCard: React.FC<{ integration: Integration; onClick: () => void }> = ({ integration, onClick }) => {
     return (
-        <Card onClick={onClick} className="flex flex-col justify-between group hover:border-brand-cyan transition-all duration-300 transform hover:-translate-y-1 cursor-pointer">
+        <Card onClick={onClick} className="flex flex-col justify-between group border-gray-100 dark:border-white/5 hover:border-brand-cyan transition-all duration-300 transform hover:-translate-y-1 cursor-pointer shadow-lg hover:shadow-xl">
             <div>
                 <div className="flex items-center gap-4 mb-4">
-                    <div className="h-12 w-12 bg-white rounded-lg flex items-center justify-center p-1">
+                    <div className="h-12 w-12 bg-white rounded-xl flex items-center justify-center p-2 shadow-sm border border-gray-100">
                          <img src={integration.logoUrl} alt={`${integration.name} logo`} className="h-full w-full object-contain" />
                     </div>
-                    <span className="font-bold text-lg text-white">{integration.name}</span>
+                    <span className="font-black text-lg text-gray-900 dark:text-white tracking-tight">{integration.name}</span>
                 </div>
-                <p className="text-sm text-gray-400 min-h-[40px]">{integration.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 min-h-[40px] font-medium leading-relaxed">{integration.description}</p>
             </div>
             <div className="mt-6 flex justify-end">
-                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${integration.status === 'Active' ? 'bg-green-500/20 text-green-400' : 'bg-gray-600/50 text-gray-300'}`}>
+                <span className={`px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-md border ${integration.status === 'Active' ? 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20' : 'bg-gray-100 dark:bg-gray-600/50 text-gray-500 dark:text-gray-300 border-gray-200 dark:border-gray-700'}`}>
                     {integration.status}
                 </span>
             </div>
@@ -129,10 +129,10 @@ export const IntegrationsView: React.FC = () => {
 
     if (selectedIntegration) {
         return (
-            <div className="space-y-6">
-                <button onClick={() => setSelectedIntegration(null)} className="flex items-center gap-2 text-brand-cyan hover:underline mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                    Back to Integrations
+            <div className="space-y-6 animate-in fade-in duration-300">
+                <button onClick={() => setSelectedIntegration(null)} className="flex items-center gap-2 text-brand-cyan font-black text-sm hover:underline mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    Back to Hub
                 </button>
                 <ComingSoon featureName={`${selectedIntegration} Integration`} />
             </div>
@@ -140,15 +140,18 @@ export const IntegrationsView: React.FC = () => {
     }
 
     return (
-        <div className="space-y-10">
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div>
-                <h2 className="text-3xl font-bold text-white">Integrations Hub</h2>
-                <p className="text-gray-400 mt-1">Connect Aura to your favorite tools and supercharge your workflow.</p>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Integrations Hub</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Connect O-Heidi AI to your favorite tools and supercharge your workflow.</p>
             </div>
 
             {integrationCategories.map(category => (
                 <div key={category}>
-                    <h3 className="text-xl font-bold text-white mb-4 pb-2 border-b-2 border-gray-800">{category}</h3>
+                    <h3 className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] mb-6 flex items-center gap-4">
+                        {category}
+                        <div className="h-px bg-gray-100 dark:bg-gray-800 flex-1"></div>
+                    </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {allIntegrations
                             .filter(int => int.category === category)

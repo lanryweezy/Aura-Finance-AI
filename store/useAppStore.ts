@@ -23,6 +23,7 @@ interface AppState {
     auditLog: any[];
     isLoading: boolean;
     error: string | null;
+    theme: 'light' | 'dark';
 
     setUser: (user: User | null) => void;
     setActiveView: (view: View) => void;
@@ -43,6 +44,7 @@ interface AppState {
     setAuditLog: (logs: any[]) => void;
     setIsLoading: (isLoading: boolean) => void;
     setError: (error: string | null) => void;
+    setTheme: (theme: 'light' | 'dark') => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -65,6 +67,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     auditLog: auditLogService.getLogs(),
     isLoading: true,
     error: null,
+    theme: (localStorage.getItem('aura_theme') as 'light' | 'dark') || 'dark',
 
     setUser: (user) => set({ user }),
     setActiveView: (activeView) => set({ activeView }),
@@ -85,4 +88,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     setAuditLog: (auditLog) => set({ auditLog }),
     setIsLoading: (isLoading) => set({ isLoading }),
     setError: (error) => set({ error }),
+    setTheme: (theme) => {
+        localStorage.setItem('aura_theme', theme);
+        set({ theme });
+    },
 }));
