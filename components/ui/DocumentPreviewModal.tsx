@@ -220,32 +220,32 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
     };
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-dark-primary w-full max-w-6xl h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex border border-gray-700" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-primary w-full max-w-6xl h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                 
                 {/* Sidebar Controls */}
-                <div className="w-80 bg-dark-tertiary border-r border-gray-700 p-6 flex flex-col gap-6 overflow-y-auto">
+                <div className="w-80 bg-gray-50 dark:bg-dark-tertiary border-r border-gray-100 dark:border-gray-700 p-6 flex flex-col gap-6 overflow-y-auto">
                     <div>
-                        <h2 className="text-xl font-bold text-white mb-1">Document Preview</h2>
-                        <p className="text-sm text-gray-400">Select a template and share.</p>
+                        <h2 className="text-xl font-black text-gray-900 dark:text-white mb-1 tracking-tight">Document Preview</h2>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Select a template and share.</p>
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wider">Select Template</h3>
+                        <h3 className="text-[10px] font-black text-gray-400 dark:text-gray-500 mb-4 uppercase tracking-widest">Select Template</h3>
                         <div className="grid grid-cols-2 gap-3">
                             {TEMPLATES.map(t => (
                                 <button 
                                     key={t.id}
                                     onClick={() => setSelectedTemplate(t.id)}
-                                    className={`p-3 rounded-lg border text-left transition-all ${selectedTemplate === t.id ? 'border-brand-cyan bg-brand-cyan/10' : 'border-gray-700 hover:bg-white/5'}`}
+                                    className={`p-3 rounded-xl border text-left transition-all ${selectedTemplate === t.id ? 'border-brand-cyan bg-brand-cyan/10 shadow-sm' : 'border-gray-200 dark:border-gray-700 hover:bg-white/5'}`}
                                 >
-                                    <div className="w-full h-12 rounded bg-gray-700 mb-2 overflow-hidden relative">
+                                    <div className="w-full h-12 rounded-lg bg-gray-100 dark:bg-gray-700 mb-2 overflow-hidden relative shadow-inner">
                                         <div className="absolute top-0 left-0 w-full h-2" style={{ backgroundColor: t.color }}></div>
-                                        {t.id === 'grid' && <div className="absolute inset-2 border border-gray-500 opacity-30"></div>}
-                                        {t.id === 'classic' && <div className="absolute inset-0 flex items-center justify-center font-serif text-xs text-gray-400">Serif</div>}
+                                        {t.id === 'grid' && <div className="absolute inset-2 border border-gray-300 dark:border-gray-500 opacity-30"></div>}
+                                        {t.id === 'classic' && <div className="absolute inset-0 flex items-center justify-center font-serif text-[10px] text-gray-400">Serif</div>}
                                         {t.id === 'tech' && <div className="absolute inset-0 bg-black opacity-30"></div>}
                                     </div>
-                                    <span className={`text-xs font-medium ${selectedTemplate === t.id ? 'text-brand-cyan' : 'text-gray-400'}`}>{t.name}</span>
+                                    <span className={`text-[10px] font-black uppercase tracking-tight ${selectedTemplate === t.id ? 'text-brand-cyan' : 'text-gray-500 dark:text-gray-400'}`}>{t.name}</span>
                                 </button>
                             ))}
                         </div>
@@ -254,20 +254,20 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
                     <div className="mt-auto space-y-3">
                         <button 
                             onClick={handlePrint}
-                            className="w-full py-3 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-gray-900 dark:bg-white text-white dark:text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-lg active:scale-95"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                            Print / Download PDF
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Print Document
                         </button>
                         <button 
                             onClick={handleEmail}
                             disabled={isSending}
-                            className="w-full py-3 bg-brand-cyan text-black font-bold rounded-xl hover:bg-brand-cyan/80 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                            className="w-full py-3 bg-brand-cyan text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-brand-cyan/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95"
                         >
                             {isSending ? (
-                                <span className="animate-spin">⌛</span>
+                                <span className="animate-spin text-lg">⌛</span>
                             ) : (
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
                             )}
                             {isSending ? 'Sending...' : 'Send via Email'}
                         </button>
@@ -275,7 +275,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
                 </div>
 
                 {/* Preview Area */}
-                <div className="flex-1 bg-gray-900 p-8 overflow-y-auto flex justify-center">
+                <div className="flex-1 bg-gray-100 dark:bg-gray-900 p-8 overflow-y-auto flex justify-center">
                     <div className="w-full max-w-[210mm] min-h-[297mm] bg-white text-black shadow-2xl p-10 origin-top transform scale-90 sm:scale-100 transition-transform duration-300">
                         {/* 
                             This is a visual preview only. 

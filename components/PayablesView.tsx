@@ -17,13 +17,13 @@ interface PayablesViewProps {
 
 const BillStatusBadge: React.FC<{ status: Bill['status'] }> = ({ status }) => {
   const colorClasses = {
-    Paid: 'bg-green-500/10 text-green-400',
-    Unpaid: 'bg-yellow-500/10 text-yellow-400',
-    Overdue: 'bg-red-500/10 text-red-400',
-    Draft: 'bg-gray-500/10 text-gray-400',
+    Paid: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    Unpaid: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+    Overdue: 'bg-red-500/10 text-red-600 dark:text-red-400',
+    Draft: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
   };
   return (
-    <span className={`px-3 py-1 text-sm font-semibold rounded-full ${colorClasses[status]}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-black uppercase tracking-wider rounded-md border border-current opacity-90 ${colorClasses[status]}`}>
       {status}
     </span>
   );
@@ -95,39 +95,42 @@ const NewBillModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-white mb-6">Add New Bill</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-2xl shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Add New Bill</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                        <input type="text" placeholder="Vendor Name" value={vendor} onChange={e => setVendor(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Vendor Name" value={vendor} onChange={e => setVendor(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
                     </div>
-                    <textarea placeholder="Overall Description (optional)" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" rows={2}></textarea>
+                    <textarea placeholder="Overall Description (optional)" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" rows={2}></textarea>
                     
-                    <div className="space-y-2">
-                        <label className="text-sm text-gray-400">Line Items</label>
+                    <div className="space-y-3">
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Line Items</label>
                         {lineItems.map((item, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <input type="text" placeholder="Item/Service" value={item.name} onChange={e => handleLineItemChange(index, 'name', e.target.value)} className="w-full bg-dark-secondary border border-gray-600 rounded p-2 text-sm" />
-                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-dark-secondary border border-gray-600 rounded p-2 text-sm" />
-                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-24 bg-dark-secondary border border-gray-600 rounded p-2 text-sm" />
-                                <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:text-red-400 p-1">&times;</button>
+                            <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 bg-gray-50 dark:bg-dark-secondary/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <input type="text" placeholder="Item/Service" value={item.name} onChange={e => handleLineItemChange(index, 'name', e.target.value)} className="flex-1 min-w-[200px] bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none" />
+                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
+                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
+                                <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
                             </div>
                         ))}
-                         <button type="button" onClick={addLineItem} className="text-xs text-brand-cyan hover:text-white">+ Add Line</button>
+                         <button type="button" onClick={addLineItem} className="text-xs font-bold text-brand-cyan hover:opacity-80 mt-1 flex items-center gap-1 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Line
+                        </button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 bg-dark-secondary p-3 rounded-lg">
-                         <label htmlFor="wht-bill-checkbox" className="flex items-center gap-2 cursor-pointer text-white">
-                           <input id="wht-bill-checkbox" type="checkbox" checked={whtApplies} onChange={() => setWhtApplies(!whtApplies)} className="w-5 h-5 rounded bg-dark-tertiary border-gray-600 text-brand-purple focus:ring-brand-purple"/>
+                    <div className="flex items-center justify-between gap-4 bg-gray-50 dark:bg-dark-secondary p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                         <label htmlFor="wht-bill-checkbox" className="flex items-center gap-2 cursor-pointer text-gray-700 dark:text-white text-sm font-bold select-none">
+                           <input id="wht-bill-checkbox" type="checkbox" checked={whtApplies} onChange={() => setWhtApplies(!whtApplies)} className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-purple focus:ring-brand-purple transition-all"/>
                            WHT applies to this payment
                         </label>
                     </div>
 
                     <div className="flex justify-end gap-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Save Bill</button>
+                        <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
+                        <button type="submit" className="px-8 py-2.5 rounded-xl bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Save Bill</button>
                     </div>
                 </form>
             </div>
@@ -193,23 +196,26 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
   return (
     <>
     <NewBillModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onAddBill={onAddBill} inventoryItems={inventoryItems} />
-    <div className="space-y-8">
-        <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold text-white">Accounts Payable</h2>
-            <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Accounts Payable</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Manage vendor bills, purchase orders, and outgoing payments.</p>
+            </div>
+            <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 Add New Bill
             </button>
         </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Total Outstanding</h3>
-          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatAmount(summary.totalOutstanding)}</p>
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Total Outstanding</h3>
+          <p className="text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-3">{formatAmount(summary.totalOutstanding)}</p>
         </Card>
-        <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Total Overdue</h3>
-          <p className="text-3xl font-bold text-red-400 mt-2">{formatAmount(summary.totalOverdue)}</p>
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Total Overdue</h3>
+          <p className="text-3xl font-black text-red-600 dark:text-red-400 mt-3">{formatAmount(summary.totalOverdue)}</p>
         </Card>
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Upcoming Bills (30 days)</h3>
@@ -240,13 +246,13 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
         <h3 className="text-xl font-bold text-white mb-6">Bill Details</h3>
         <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
-            <thead className="sticky top-0 bg-dark-tertiary">
+            <thead className="bg-gray-50 dark:bg-dark-tertiary">
               <tr>
-                <th className="p-4 text-sm font-semibold text-gray-400">Vendor</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Due Date</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Amount</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Status</th>
-                <th className="p-4 text-sm font-semibold text-gray-400 text-right">Actions</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Vendor</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Due Date</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Amount</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -256,8 +262,8 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
                   <td className="p-4 font-mono text-white">
                     <div className="flex items-center gap-2">
-                        <span>{formatAmount(bill.amount)}</span>
-                        {bill.whtApplies && <span className="text-xs bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-md">WHT</span>}
+                        <span className="font-black">{formatAmount(bill.amount)}</span>
+                        {bill.whtApplies && <span className="text-[9px] font-black uppercase tracking-tighter bg-purple-500/10 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">WHT</span>}
                     </div>
                   </td>
                   <td className="p-4"><BillStatusBadge status={bill.status} /></td>
@@ -265,7 +271,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                     {bill.status !== 'Paid' && (
                         <button 
                             onClick={() => onPayBill(bill.id)}
-                            className="text-brand-cyan hover:text-white font-semibold transition-colors text-sm py-1 px-3 rounded-md border border-brand-cyan hover:bg-brand-cyan/20">
+                            className="text-brand-cyan hover:bg-brand-cyan hover:text-black font-bold transition-all text-[11px] py-1.5 px-4 rounded-lg border border-brand-cyan active:scale-95">
                             Pay Bill
                         </button>
                     )}

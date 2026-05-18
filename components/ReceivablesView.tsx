@@ -19,13 +19,13 @@ interface ReceivablesViewProps {
 
 const InvoiceStatusBadge: React.FC<{ status: Invoice['status'] }> = ({ status }) => {
   const colorClasses = {
-    Paid: 'bg-green-500/10 text-green-400',
-    Unpaid: 'bg-yellow-500/10 text-yellow-400',
-    Overdue: 'bg-red-500/10 text-red-400',
-    Draft: 'bg-gray-500/10 text-gray-400',
+    Paid: 'bg-green-500/10 text-green-600 dark:text-green-400',
+    Unpaid: 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400',
+    Overdue: 'bg-red-500/10 text-red-600 dark:text-red-400',
+    Draft: 'bg-gray-500/10 text-gray-600 dark:text-gray-400',
   };
   return (
-    <span className={`px-3 py-1 text-sm font-semibold rounded-full ${colorClasses[status]}`}>
+    <span className={`px-2.5 py-1 text-[11px] font-black uppercase tracking-wider rounded-md border border-current opacity-90 ${colorClasses[status]}`}>
       {status}
     </span>
   );
@@ -119,68 +119,71 @@ const NewInvoiceModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-2xl shadow-2xl" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-white mb-6">Create New Invoice</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-2xl shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Invoice</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                     <div className="grid grid-cols-2 gap-4">
-                        <input type="text" placeholder="Customer Name" value={customer} onChange={e => setCustomer(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" placeholder="Customer Name" value={customer} onChange={e => setCustomer(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
                     </div>
                     
-                    <div className="space-y-2 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                        <label className="text-sm text-gray-400">Line Items</label>
+                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Line Items</label>
                         {lineItems.map((item, index) => (
-                             <div key={index} className="flex items-center gap-2">
-                                <select value={item.inventoryItemId} onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)} className="w-full bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan">
+                             <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 bg-gray-50 dark:bg-dark-secondary/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <select value={item.inventoryItemId} onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)} className="flex-1 min-w-[200px] bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none">
                                     <option value="">Select Item</option>
                                     {inventoryItems.map(invItem => <option key={invItem.id} value={invItem.id}>{invItem.name}</option>)}
                                 </select>
-                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan" />
-                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-24 bg-dark-secondary border border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-brand-cyan" />
-                                <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:text-red-400 p-1">&times;</button>
+                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
+                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
+                                <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
                             </div>
                         ))}
-                        <button type="button" onClick={addLineItem} className="text-xs text-brand-cyan hover:text-white mt-1">+ Add Line</button>
+                        <button type="button" onClick={addLineItem} className="text-xs font-bold text-brand-cyan hover:opacity-80 mt-1 flex items-center gap-1 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Line
+                        </button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 bg-dark-secondary/50 border border-gray-700 p-3 rounded-lg">
-                        <label htmlFor="vat-checkbox" className="flex items-center gap-2 cursor-pointer text-white text-sm select-none">
-                           <input id="vat-checkbox" type="checkbox" checked={applyVat} onChange={() => setApplyVat(!applyVat)} className="w-4 h-4 rounded bg-dark-tertiary border-gray-600 text-brand-cyan focus:ring-brand-cyan"/>
+                    <div className="flex items-center justify-between gap-4 bg-gray-50 dark:bg-dark-secondary/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl">
+                        <label htmlFor="vat-checkbox" className="flex items-center gap-2 cursor-pointer text-gray-700 dark:text-white text-sm font-bold select-none">
+                           <input id="vat-checkbox" type="checkbox" checked={applyVat} onChange={() => setApplyVat(!applyVat)} className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-cyan focus:ring-brand-cyan transition-all"/>
                            Apply VAT (7.5%)
                         </label>
-                         <label htmlFor="wht-checkbox" className="flex items-center gap-2 cursor-pointer text-white text-sm select-none">
-                           <input id="wht-checkbox" type="checkbox" checked={applyWht} onChange={() => setApplyWht(!applyWht)} className="w-4 h-4 rounded bg-dark-tertiary border-gray-600 text-brand-purple focus:ring-brand-purple"/>
+                         <label htmlFor="wht-checkbox" className="flex items-center gap-2 cursor-pointer text-gray-700 dark:text-white text-sm font-bold select-none">
+                           <input id="wht-checkbox" type="checkbox" checked={applyWht} onChange={() => setApplyWht(!applyWht)} className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-brand-purple focus:ring-brand-purple transition-all"/>
                            WHT applies
                         </label>
                     </div>
 
                     {/* Summary Section */}
-                    <div className="bg-dark-secondary/30 p-4 rounded-lg space-y-2 border border-gray-700/50 mt-2">
-                        <div className="flex justify-between text-sm text-gray-400">
+                    <div className="bg-gray-100/50 dark:bg-dark-secondary/30 p-5 rounded-2xl space-y-2 border border-gray-100 dark:border-gray-700/50 mt-4 shadow-inner">
+                        <div className="flex justify-between text-sm font-medium text-gray-500 dark:text-gray-400">
                             <span>Subtotal</span>
-                            <span>{formatAmount(calculatedSubtotal)}</span>
+                            <span className="font-mono font-bold text-gray-700 dark:text-gray-300">{formatAmount(calculatedSubtotal)}</span>
                         </div>
                         {applyVat && (
-                            <div className="flex justify-between text-sm text-brand-cyan">
+                            <div className="flex justify-between text-sm font-bold text-brand-cyan">
                                 <span>VAT (7.5%)</span>
-                                <span>{formatAmount(calculatedVat)}</span>
+                                <span className="font-mono">{formatAmount(calculatedVat)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between text-lg font-bold text-white pt-2 border-t border-gray-700/50">
+                        <div className="flex justify-between text-xl font-black text-gray-900 dark:text-white pt-3 border-t border-gray-200 dark:border-gray-700/50">
                             <span>Total</span>
-                            <span>{formatAmount(calculatedTotal)}</span>
+                            <span className="font-mono">{formatAmount(calculatedTotal)}</span>
                         </div>
                         {applyWht && (
-                             <div className="flex justify-between text-xs text-brand-purple pt-1 italic">
+                             <div className="flex justify-between text-[10px] font-bold text-brand-purple pt-2 italic uppercase tracking-wider">
                                 <span>* Withholding Tax (5%) Applicable: {formatAmount(calculatedSubtotal * 0.05)}</span>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex justify-end gap-4 pt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary transition-colors">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80 transition-colors shadow-[0_0_15px_rgba(0,245,212,0.3)]">Save Invoice</button>
+                    <div className="flex justify-end gap-4 pt-4">
+                        <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
+                        <button type="submit" className="px-8 py-2.5 rounded-xl bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Save Invoice</button>
                     </div>
                 </form>
             </div>
@@ -193,19 +196,19 @@ const ReminderModal: React.FC<{ isOpen: boolean; onClose: () => void; invoice: I
     if (!isOpen || !invoice) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-xl shadow-2xl" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-white mb-2">Send Reminder for Invoice {invoice.id.slice(-6)}</h3>
-                <p className="text-gray-400 mb-6">AI-generated reminder email to: {invoice.customer}</p>
-                <div className="bg-dark-secondary p-4 rounded-lg min-h-[200px] text-gray-200 whitespace-pre-wrap border border-gray-700">
-                    {isLoading ? <div className="flex items-center justify-center h-full"><Spinner /></div> : reminderText}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-xl shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Send Reminder for Invoice {invoice.id.slice(-6).toUpperCase()}</h3>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-6">AI-generated reminder email to: <span className="font-bold text-gray-900 dark:text-white">{invoice.customer}</span></p>
+                <div className="bg-gray-50 dark:bg-dark-secondary p-5 rounded-2xl min-h-[200px] text-gray-700 dark:text-gray-200 whitespace-pre-wrap border border-gray-200 dark:border-gray-700 font-medium text-sm leading-relaxed shadow-inner">
+                    {isLoading ? <div className="flex flex-col items-center justify-center h-full gap-3 py-10"><Spinner /><span className="text-xs font-bold animate-pulse">O-Heidi is drafting your email...</span></div> : reminderText}
                 </div>
-                <div className="flex justify-end gap-4 pt-6">
-                    <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
+                <div className="flex justify-end gap-4 pt-8">
+                    <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
                     <button type="button" onClick={() => {
                         showToast('Email sent (simulated)!', 'success');
                         onClose();
-                    }} className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Send Email</button>
+                    }} className="px-8 py-2.5 rounded-xl bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Send Email</button>
                 </div>
             </div>
         </div>
@@ -304,27 +307,30 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
         type="invoice" 
     />
 
-    <div className="space-y-8">
-        <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold text-white">Accounts Receivable</h2>
-            <button onClick={() => setIsNewInvoiceModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors shadow-[0_0_15px_rgba(0,245,212,0.2)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Accounts Receivable</h2>
+                <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Invoicing, customer payments, and revenue tracking.</p>
+            </div>
+            <button onClick={() => setIsNewInvoiceModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
                 Create New Invoice
             </button>
         </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Total Outstanding</h3>
-          <p className="text-3xl font-bold text-yellow-400 mt-2">{formatAmount(summary.totalOutstanding)}</p>
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Total Outstanding</h3>
+          <p className="text-3xl font-black text-yellow-600 dark:text-yellow-400 mt-3">{formatAmount(summary.totalOutstanding)}</p>
         </Card>
-        <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Total Overdue</h3>
-          <p className="text-3xl font-bold text-red-400 mt-2">{formatAmount(summary.totalOverdue)}</p>
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Total Overdue</h3>
+          <p className="text-3xl font-black text-red-600 dark:text-red-400 mt-3">{formatAmount(summary.totalOverdue)}</p>
         </Card>
-        <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Draft Invoices</h3>
-          <p className="text-3xl font-bold text-gray-400 mt-2">
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Draft Invoices</h3>
+          <p className="text-3xl font-black text-gray-400 mt-3">
             {summary.drafts}
           </p>
         </Card>
@@ -351,13 +357,13 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
         <h3 className="text-xl font-bold text-white mb-6">Invoice Details</h3>
         <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
-            <thead className="sticky top-0 bg-dark-tertiary">
+            <thead className="bg-gray-50 dark:bg-dark-tertiary">
               <tr>
-                <th className="p-4 text-sm font-semibold text-gray-400">Customer</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Due Date</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Total Amount</th>
-                <th className="p-4 text-sm font-semibold text-gray-400">Status</th>
-                <th className="p-4 text-sm font-semibold text-gray-400 text-right">Actions</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Due Date</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total Amount</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
@@ -367,16 +373,16 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
                   <td className="p-4 font-mono text-white">
                      <div className="flex flex-col gap-1">
-                        <span className="font-bold">{formatAmount(invoice.total)}</span>
+                        <span className="font-black">{formatAmount(invoice.total)}</span>
                         <div className="flex flex-wrap gap-1">
                             {invoice.vat > 0 && (
-                                <span className="text-[10px] font-medium bg-blue-500/10 text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/20" title={`VAT: ${formatAmount(invoice.vat)}`}>
+                                <span className="text-[9px] font-black uppercase tracking-tighter bg-blue-500/10 text-blue-600 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-500/20" title={`VAT: ${formatAmount(invoice.vat)}`}>
                                     VAT
                                 </span>
                             )}
                             {invoice.whtApplied && (
-                                <span className="text-[10px] font-medium bg-purple-500/10 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20" title="Withholding Tax (5%)">
-                                    WHT: {formatAmount(invoice.amount * 0.05)}
+                                <span className="text-[9px] font-black uppercase tracking-tighter bg-purple-500/10 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20" title="Withholding Tax (5%)">
+                                    WHT
                                 </span>
                             )}
                         </div>
@@ -386,21 +392,21 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                   <td className="p-4 text-right space-x-2">
                     <button
                         onClick={() => setPreviewInvoice(invoice)}
-                        className="text-sm py-1 px-3 rounded-md border text-gray-300 border-gray-600 hover:bg-gray-700 hover:text-white transition-colors"
+                        className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
                     >
-                        View / Print
+                        View
                     </button>
                     {(invoice.status === 'Unpaid' || invoice.status === 'Overdue') && (
                         <>
                             <button
                                 onClick={() => handleOpenReminder(invoice)}
-                                className="text-sm py-1 px-3 rounded-md border text-purple-300 border-purple-400/50 hover:bg-purple-400/20 transition-colors"
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-purple-600 dark:text-purple-300 border-purple-200 dark:border-purple-400/50 hover:bg-purple-50 dark:hover:bg-purple-400/20 transition-all active:scale-95"
                             >
                                 AI Reminder
                             </button>
                             <button 
                                 onClick={() => onRecordPayment(invoice.id)}
-                                className="text-brand-cyan hover:text-white font-semibold transition-colors text-sm py-1 px-3 rounded-md border border-brand-cyan hover:bg-brand-cyan/20">
+                                className="text-brand-cyan hover:bg-brand-cyan hover:text-black font-bold transition-all text-[11px] py-1.5 px-4 rounded-lg border border-brand-cyan active:scale-95">
                                 Pay
                             </button>
                         </>

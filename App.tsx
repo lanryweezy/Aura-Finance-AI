@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
 import { Spinner } from './components/ui/Spinner';
+import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 
 // Lazy load non-critical views
 const TransactionsView = lazy(() => import('./components/TransactionsView').then(m => ({ default: m.TransactionsView })));
@@ -76,7 +77,8 @@ export default function App(): React.ReactNode {
     contacts, setContacts,
     auditLog, setAuditLog,
     isLoading, setIsLoading,
-    error, setError
+    error, setError,
+    theme
   } = store;
   
   // Check for existing session on mount
@@ -304,12 +306,14 @@ export default function App(): React.ReactNode {
     const newProject = await apiAddProject(projectName);
     setProjects(prev => [...prev, newProject]);
     logAndRefresh(`Created new project: ${newProject.name}`, 'Projects');
+    showToast(`Project "${newProject.name}" created!`, 'success');
   }
 
   const handleAddBill = async (billData: Omit<Bill, 'id'|'status'|'issueDate'>) => {
     const newBill = await apiAddBill(billData);
     setBills(prev => [newBill, ...prev]);
     logAndRefresh(`Added new bill from ${newBill.vendor}`, 'Payables');
+    showToast(`Bill from ${newBill.vendor} recorded.`, 'success');
   }
 
   const handlePayBill = (billId: string) => {
@@ -327,12 +331,14 @@ export default function App(): React.ReactNode {
 
     setBills(prev => prev.map(b => b.id === billId ? {...b, status: 'Paid'} : b));
     logAndRefresh(`Paid bill #${bill.id.slice(-4)} from ${bill.vendor}`, 'Payables');
+    showToast(`Bill for ${bill.vendor} marked as Paid.`, 'success');
   };
 
   const handleAddInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>) => {
     const newInvoice = await apiAddInvoice(invoiceData);
     setInvoices(prev => [newInvoice, ...prev]);
     logAndRefresh(`Added new invoice for ${newInvoice.customer}`, 'Receivables');
+    showToast(`Invoice for ${newInvoice.customer} created.`, 'success');
   };
 
   const handleRecordInvoicePayment = (invoiceId: string) => {
@@ -366,24 +372,28 @@ export default function App(): React.ReactNode {
     const newEntry = await apiAddJournalEntry(entry);
     setJournalEntries(prev => [newEntry, ...prev]);
     logAndRefresh(`Created journal entry #${newEntry.id.slice(-4)}`, 'Accounting');
+    showToast('Journal entry saved successfully!', 'success');
   }
 
   const handleAddInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
     const newItem = await apiAddInventoryItem(item);
     setInventory(prev => [newItem, ...prev]);
     logAndRefresh(`Added new inventory item: ${newItem.name}`, 'Inventory');
+    showToast(`Added ${newItem.name} to inventory.`, 'success');
   };
 
   const handleUpdateInventoryItem = async (item: InventoryItem) => {
     const updatedItem = await apiUpdateInventoryItem(item);
     setInventory(prev => prev.map(i => i.id === updatedItem.id ? updatedItem : i));
     logAndRefresh(`Updated inventory item: ${updatedItem.name}`, 'Inventory');
+    showToast(`Updated ${updatedItem.name} details.`, 'success');
   };
 
   const handleAddPurchaseOrder = async (po: Omit<PurchaseOrder, 'id'|'status'|'issueDate'>) => {
     const newPO = await apiAddPurchaseOrder(po);
     setPurchaseOrders(prev => [newPO, ...prev]);
     logAndRefresh(`Created Purchase Order #${newPO.id.slice(-4)} for ${newPO.vendor}`, 'Purchases');
+    showToast(`PO #${newPO.id.slice(-6).toUpperCase()} created for ${newPO.vendor}.`, 'success');
   };
 
   const handleConvertToBill = (po: PurchaseOrder) => {
@@ -450,11 +460,8 @@ export default function App(): React.ReactNode {
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Spinner />
-            <p className="mt-4 text-lg">Connecting to financial core and analyzing data...</p>
-          </div>
+        <div className="p-8">
+            {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
         </div>
       );
     }
@@ -526,9 +533,8 @@ export default function App(): React.ReactNode {
 
     return (
         <Suspense fallback={
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-                <Spinner />
-                <p className="text-gray-400 animate-pulse">Switching modules...</p>
+            <div className="p-8">
+                 {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
             </div>
         }>
             {viewMap[activeView] || viewMap.dashboard}
@@ -541,16 +547,20 @@ export default function App(): React.ReactNode {
   }
 
   return (
-    <div className="flex h-screen bg-dark-primary font-sans text-white">
+    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'}`}>
       {user && <OnboardingTour />}
       <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header user={user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl bg-dark-secondary/30 backdrop-blur-sm border-t border-l border-white/5 shadow-2xl relative">
+        <main className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-gray-200'} backdrop-blur-sm border-t border-l shadow-2xl relative`}>
            {/* Rich gradient background for world-class depth */}
-           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
-           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/10 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-dark-primary/60 pointer-events-none -z-10"></div>
+           {theme === 'dark' && (
+               <>
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/10 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-dark-primary/60 pointer-events-none -z-10"></div>
+               </>
+           )}
           {renderContent()}
         </main>
       </div>

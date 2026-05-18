@@ -60,47 +60,47 @@ export const TeamManagement: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 max-w-5xl">
+        <div className="space-y-8 max-w-5xl animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex justify-between items-center">
                 <div>
-                    <h3 className="text-2xl font-bold text-white">Team Management</h3>
-                    <p className="text-gray-400">Invite and manage roles for your organization.</p>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Team Management</h3>
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">Invite and manage roles for your organization.</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Invite Form */}
-                <Card className="lg:col-span-1 h-fit">
-                    <h4 className="text-lg font-bold text-white mb-4">Invite Member</h4>
-                    <form onSubmit={handleInvite} className="space-y-4">
+                <Card className="lg:col-span-1 h-fit border-gray-100 dark:border-white/5 shadow-xl">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Invite Member</h4>
+                    <form onSubmit={handleInvite} className="space-y-5">
                         <div>
-                            <label className="text-xs text-gray-500 uppercase font-bold">Full Name</label>
+                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Full Name</label>
                             <input
                                 type="text"
                                 value={inviteName}
                                 onChange={e => setInviteName(e.target.value)}
                                 required
-                                className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white mt-1 text-sm focus:ring-1 focus:ring-brand-cyan"
+                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
                                 placeholder="Tunde Oke"
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-500 uppercase font-bold">Email Address</label>
+                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Email Address</label>
                             <input
                                 type="email"
                                 value={inviteEmail}
                                 onChange={e => setInviteEmail(e.target.value)}
                                 required
-                                className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white mt-1 text-sm focus:ring-1 focus:ring-brand-cyan"
+                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
                                 placeholder="colleague@company.com"
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-500 uppercase font-bold">Role</label>
+                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Role</label>
                             <select
                                 value={inviteRole}
                                 onChange={e => setInviteRole(e.target.value as UserRole)}
-                                className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white mt-1 text-sm focus:ring-1 focus:ring-brand-cyan"
+                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
                             >
                                 <option value="Viewer">Viewer (Read-only)</option>
                                 <option value="Accountant">Accountant</option>
@@ -110,7 +110,7 @@ export const TeamManagement: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isInviting}
-                            className="w-full py-3 bg-brand-cyan text-black font-bold rounded-xl hover:bg-brand-cyan/80 transition-all shadow-[0_0_15px_rgba(0,245,212,0.2)] disabled:opacity-50"
+                            className="w-full py-3.5 bg-brand-cyan text-black font-bold rounded-xl hover:bg-brand-cyan/90 transition-all shadow-lg shadow-brand-cyan/20 disabled:opacity-50 active:scale-95 mt-2"
                         >
                             {isInviting ? 'Sending...' : 'Send Invitation'}
                         </button>
@@ -118,46 +118,46 @@ export const TeamManagement: React.FC = () => {
                 </Card>
 
                 {/* Team List */}
-                <Card className="lg:col-span-2 overflow-hidden">
-                    <h4 className="text-lg font-bold text-white mb-4">Current Members</h4>
+                <Card className="lg:col-span-2 overflow-hidden border-gray-100 dark:border-white/5 shadow-xl">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Current Members</h4>
                     {isLoading ? (
-                        <div className="py-12 text-center"><Spinner /></div>
+                        <div className="py-20 text-center bg-gray-50 dark:bg-dark-secondary/20 rounded-2xl"><Spinner /></div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="border-b border-gray-800">
+                                <thead className="bg-gray-50 dark:bg-dark-tertiary">
                                     <tr>
-                                        <th className="py-3 text-xs text-gray-500 uppercase">Member</th>
-                                        <th className="py-3 text-xs text-gray-500 uppercase">Role</th>
-                                        <th className="py-3 text-xs text-gray-500 uppercase">Status</th>
-                                        <th className="py-3 text-right"></th>
+                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
+                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
+                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th className="p-4 text-right"></th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-800/50">
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
                                     {members.map(member => (
-                                        <tr key={member.id}>
-                                            <td className="py-4">
-                                                <p className="text-white font-medium text-sm">{member.name}</p>
-                                                <p className="text-xs text-gray-500">{member.email}</p>
+                                        <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                                            <td className="p-4">
+                                                <p className="text-gray-900 dark:text-white font-bold text-sm">{member.name}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{member.email}</p>
                                             </td>
-                                            <td className="py-4">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                                            <td className="p-4">
+                                                <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
                                                     member.role === 'Owner' ? 'border-brand-purple text-brand-purple bg-brand-purple/5' :
                                                     member.role === 'Admin' ? 'border-brand-cyan text-brand-cyan bg-brand-cyan/5' :
-                                                    'border-gray-600 text-gray-400'
+                                                    'border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400'
                                                 }`}>
                                                     {member.role}
                                                 </span>
                                             </td>
-                                            <td className="py-4">
-                                                <span className={`text-xs ${member.status === 'Active' ? 'text-green-400' : 'text-yellow-400'}`}>
+                                            <td className="p-4">
+                                                <span className={`text-xs font-bold ${member.status === 'Active' ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`}>
                                                     {member.status}
                                                 </span>
                                             </td>
-                                            <td className="py-4 text-right">
+                                            <td className="p-4 text-right">
                                                 {member.role !== 'Owner' && (
-                                                    <button onClick={() => handleRemove(member.id)} className="text-gray-500 hover:text-red-400 transition-colors">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                                                    <button onClick={() => handleRemove(member.id)} className="text-gray-400 hover:text-red-500 transition-all active:scale-90 p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                                                     </button>
                                                 )}
                                             </td>
