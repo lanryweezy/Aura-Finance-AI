@@ -4,6 +4,8 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV } from '../services/exportService';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -222,8 +224,23 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [reminderText, setReminderText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   
+  // Filtering
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   // Document Preview State
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
+
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter(inv => {
+      if (filters.customer && !inv.customer.toLowerCase().includes(filters.customer.toLowerCase())) return false;
+      if (filters.status && inv.status !== filters.status) return false;
+      if (filters.amount_min && inv.total < Number(filters.amount_min)) return false;
+      if (filters.amount_max && inv.total > Number(filters.amount_max)) return false;
+      if (filters.start_date && new Date(inv.issueDate) < new Date(filters.start_date)) return false;
+      if (filters.end_date && new Date(inv.issueDate) > new Date(filters.end_date)) return false;
+      return true;
+    });
+  }, [invoices, filters]);
 
   const handleOpenReminder = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -240,7 +257,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   };
 
   const summary = useMemo(() => {
-    return invoices.reduce(
+    return filteredInvoices.reduce(
       (acc, invoice) => {
         if (invoice.status === 'Unpaid' || invoice.status === 'Overdue') {
           acc.totalOutstanding += invoice.total;
@@ -255,7 +272,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
       },
       { totalOutstanding: 0, totalOverdue: 0, drafts: 0 }
     );
-  }, [invoices]);
+  }, [filteredInvoices]);
 
 
   if (isLoading) {
@@ -313,6 +330,23 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
         </Card>
       </div>
 
+      <AdvancedFilter
+        onFilter={setFilters}
+        onExport={() => exportToCSV('invoices', filteredInvoices)}
+        options={[
+            { label: 'Customer', field: 'customer', type: 'text' },
+            { label: 'Status', field: 'status', type: 'select', options: [
+                { label: 'Draft', value: 'Draft' },
+                { label: 'Unpaid', value: 'Unpaid' },
+                { label: 'Paid', value: 'Paid' },
+                { label: 'Overdue', value: 'Overdue' }
+            ]},
+            { label: 'Start Date', field: 'start_date', type: 'date' },
+            { label: 'End Date', field: 'end_date', type: 'date' },
+            { label: 'Amount Range', field: 'amount', type: 'number-range' }
+        ]}
+      />
+
       <Card className="h-full overflow-hidden flex flex-col">
         <h3 className="text-xl font-bold text-white mb-6">Invoice Details</h3>
         <div className="overflow-y-auto flex-grow">
@@ -327,7 +361,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {invoices.map((invoice) => (
+              {filteredInvoices.map((invoice) => (
                 <tr key={invoice.id} className="hover:bg-dark-secondary/50 transition-colors">
                   <td className="p-4 text-white font-medium">{invoice.customer}</td>
                   <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
@@ -374,8 +408,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                   </td>
                 </tr>
               ))}
-              {invoices.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No invoices recorded yet.</td></tr>
+              {filteredInvoices.length === 0 && (
+                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No invoices found matching filters.</td></tr>
               )}
             </tbody>
           </table>
