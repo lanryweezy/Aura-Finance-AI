@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV } from '../services/exportService';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -143,8 +145,23 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Filtering
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
+  const filteredBills = useMemo(() => {
+    return bills.filter(bill => {
+      if (filters.vendor && !bill.vendor.toLowerCase().includes(filters.vendor.toLowerCase())) return false;
+      if (filters.status && bill.status !== filters.status) return false;
+      if (filters.amount_min && bill.amount < Number(filters.amount_min)) return false;
+      if (filters.amount_max && bill.amount > Number(filters.amount_max)) return false;
+      if (filters.start_date && new Date(bill.issueDate) < new Date(filters.start_date)) return false;
+      if (filters.end_date && new Date(bill.issueDate) > new Date(filters.end_date)) return false;
+      return true;
+    });
+  }, [bills, filters]);
+
   const summary = useMemo(() => {
-    return bills.reduce(
+    return filteredBills.reduce(
       (acc, bill) => {
         if (bill.status === 'Unpaid' || bill.status === 'Overdue') {
           acc.totalOutstanding += bill.amount;
@@ -156,7 +173,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
       },
       { totalOutstanding: 0, totalOverdue: 0 }
     );
-  }, [bills]);
+  }, [filteredBills]);
 
 
   if (isLoading) {
@@ -200,17 +217,34 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
           <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Total Overdue</h3>
           <p className="text-3xl font-black text-red-600 dark:text-red-400 mt-3">{formatAmount(summary.totalOverdue)}</p>
         </Card>
-        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
-          <h3 className="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest">Upcoming (30 days)</h3>
-          <p className="text-3xl font-black text-blue-600 dark:text-blue-400 mt-3">
-            {bills.filter(b => b.status === 'Unpaid' && new Date(b.dueDate) > new Date() && new Date(b.dueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
+        <Card>
+          <h3 className="text-gray-400 text-sm font-medium">Upcoming Bills (30 days)</h3>
+          <p className="text-3xl font-bold text-blue-400 mt-2">
+            {filteredBills.filter(b => b.status === 'Unpaid' && new Date(b.dueDate) > new Date() && new Date(b.dueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
           </p>
         </Card>
       </div>
 
-      <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5 shadow-xl">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 p-4 pb-0">Bill Ledger</h3>
-        <div className="overflow-x-auto flex-grow">
+      <AdvancedFilter
+        onFilter={setFilters}
+        onExport={() => exportToCSV('bills', filteredBills)}
+        options={[
+            { label: 'Vendor', field: 'vendor', type: 'text' },
+            { label: 'Status', field: 'status', type: 'select', options: [
+                { label: 'Draft', value: 'Draft' },
+                { label: 'Unpaid', value: 'Unpaid' },
+                { label: 'Paid', value: 'Paid' },
+                { label: 'Overdue', value: 'Overdue' }
+            ]},
+            { label: 'Start Date', field: 'start_date', type: 'date' },
+            { label: 'End Date', field: 'end_date', type: 'date' },
+            { label: 'Amount Range', field: 'amount', type: 'number-range' }
+        ]}
+      />
+
+      <Card className="h-full overflow-hidden flex flex-col">
+        <h3 className="text-xl font-bold text-white mb-6">Bill Details</h3>
+        <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
             <thead className="bg-gray-50 dark:bg-dark-tertiary">
               <tr>
@@ -221,12 +255,12 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {bills.map((bill) => (
-                <tr key={bill.id} className="hover:bg-gray-50 dark:hover:bg-dark-secondary/50 transition-colors">
-                  <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{bill.vendor}</td>
-                  <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 font-mono text-sm">{new Date(bill.dueDate).toLocaleDateString()}</td>
-                  <td className="p-4 font-mono text-gray-900 dark:text-white">
+            <tbody className="divide-y divide-gray-800">
+              {filteredBills.map((bill) => (
+                <tr key={bill.id} className="hover:bg-dark-secondary/50">
+                  <td className="p-4 text-white font-medium">{bill.vendor}</td>
+                  <td className="p-4 whitespace-nowrap text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                  <td className="p-4 font-mono text-white">
                     <div className="flex items-center gap-2">
                         <span className="font-black">{formatAmount(bill.amount)}</span>
                         {bill.whtApplies && <span className="text-[9px] font-black uppercase tracking-tighter bg-purple-500/10 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">WHT</span>}
@@ -244,17 +278,8 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                   </td>
                 </tr>
               ))}
-               {bills.length === 0 && (
-                <tr>
-                    <td colSpan={5} className="text-center py-20">
-                         <div className="flex flex-col items-center justify-center">
-                             <div className="p-4 bg-gray-50 dark:bg-dark-secondary rounded-full mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h7"/><path d="M16 5V3a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M18 19v-4h2"/><path d="M22 19v-4"/></svg>
-                             </div>
-                             <p className="text-gray-500 dark:text-gray-400 font-medium">No bills recorded yet.</p>
-                         </div>
-                    </td>
-                </tr>
+               {filteredBills.length === 0 && (
+                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No bills found matching filters.</td></tr>
                )}
             </tbody>
           </table>

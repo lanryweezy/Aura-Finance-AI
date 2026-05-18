@@ -4,6 +4,8 @@ import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV } from '../services/exportService';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -225,8 +227,23 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [reminderText, setReminderText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   
+  // Filtering
+  const [filters, setFilters] = useState<Record<string, any>>({});
+
   // Document Preview State
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
+
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter(inv => {
+      if (filters.customer && !inv.customer.toLowerCase().includes(filters.customer.toLowerCase())) return false;
+      if (filters.status && inv.status !== filters.status) return false;
+      if (filters.amount_min && inv.total < Number(filters.amount_min)) return false;
+      if (filters.amount_max && inv.total > Number(filters.amount_max)) return false;
+      if (filters.start_date && new Date(inv.issueDate) < new Date(filters.start_date)) return false;
+      if (filters.end_date && new Date(inv.issueDate) > new Date(filters.end_date)) return false;
+      return true;
+    });
+  }, [invoices, filters]);
 
   const handleOpenReminder = async (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -243,7 +260,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   };
 
   const summary = useMemo(() => {
-    return invoices.reduce(
+    return filteredInvoices.reduce(
       (acc, invoice) => {
         if (invoice.status === 'Unpaid' || invoice.status === 'Overdue') {
           acc.totalOutstanding += invoice.total;
@@ -258,7 +275,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
       },
       { totalOutstanding: 0, totalOverdue: 0, drafts: 0 }
     );
-  }, [invoices]);
+  }, [filteredInvoices]);
 
 
   if (isLoading) {
@@ -319,9 +336,26 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
         </Card>
       </div>
 
-      <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5 shadow-xl">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 p-4 pb-0">Invoice Ledger</h3>
-        <div className="overflow-x-auto flex-grow">
+      <AdvancedFilter
+        onFilter={setFilters}
+        onExport={() => exportToCSV('invoices', filteredInvoices)}
+        options={[
+            { label: 'Customer', field: 'customer', type: 'text' },
+            { label: 'Status', field: 'status', type: 'select', options: [
+                { label: 'Draft', value: 'Draft' },
+                { label: 'Unpaid', value: 'Unpaid' },
+                { label: 'Paid', value: 'Paid' },
+                { label: 'Overdue', value: 'Overdue' }
+            ]},
+            { label: 'Start Date', field: 'start_date', type: 'date' },
+            { label: 'End Date', field: 'end_date', type: 'date' },
+            { label: 'Amount Range', field: 'amount', type: 'number-range' }
+        ]}
+      />
+
+      <Card className="h-full overflow-hidden flex flex-col">
+        <h3 className="text-xl font-bold text-white mb-6">Invoice Details</h3>
+        <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
             <thead className="bg-gray-50 dark:bg-dark-tertiary">
               <tr>
@@ -332,12 +366,12 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-              {invoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-dark-secondary/50 transition-colors">
-                  <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{invoice.customer}</td>
-                  <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 font-mono text-sm">{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                  <td className="p-4 font-mono text-gray-900 dark:text-white">
+            <tbody className="divide-y divide-gray-800">
+              {filteredInvoices.map((invoice) => (
+                <tr key={invoice.id} className="hover:bg-dark-secondary/50 transition-colors">
+                  <td className="p-4 text-white font-medium">{invoice.customer}</td>
+                  <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
+                  <td className="p-4 font-mono text-white">
                      <div className="flex flex-col gap-1">
                         <span className="font-black">{formatAmount(invoice.total)}</span>
                         <div className="flex flex-wrap gap-1">
@@ -380,17 +414,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                   </td>
                 </tr>
               ))}
-              {invoices.length === 0 && (
-                <tr>
-                    <td colSpan={5} className="text-center py-20">
-                         <div className="flex flex-col items-center justify-center">
-                             <div className="p-4 bg-gray-50 dark:bg-dark-secondary rounded-full mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                             </div>
-                             <p className="text-gray-500 dark:text-gray-400 font-medium">No invoices recorded yet.</p>
-                         </div>
-                    </td>
-                </tr>
+              {filteredInvoices.length === 0 && (
+                <tr><td colSpan={5} className="text-center py-10 text-gray-500">No invoices found matching filters.</td></tr>
               )}
             </tbody>
           </table>

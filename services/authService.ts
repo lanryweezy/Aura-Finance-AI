@@ -7,10 +7,14 @@ const STORAGE_KEY_USER = 'aura_user';
 const STORAGE_KEY_ORG = 'aura_org';
 
 export const authService = {
-  login: async (email: string, password: string): Promise<{ user: User; org: Organization }> => {
+  login: async (email: string, password: string): Promise<{ user: User; org: Organization; requires2FA?: boolean }> => {
     try {
         const response = await apiClient.post('/auth/login', { email, password });
-        const { user, org, token } = response;
+        const { user, org, token, requires2FA } = response;
+
+        if (requires2FA) {
+            return { user, org, requires2FA: true };
+        }
 
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
         localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
@@ -19,8 +23,54 @@ export const authService = {
         return { user, org };
     } catch (error) {
         monitoringService.trackError('AUTH', error as Error);
+        // Mock success for demo if not using real API
+        if (email.includes('demo')) {
+             const user: User = { id: 'u_demo', name: 'Demo User', email, role: 'Admin', organizationId: 'org_demo' };
+             const org: Organization = {
+               id: 'org_demo',
+               name: 'Demo Org',
+               plan: 'Enterprise',
+               twoFactorEnabled: true,
+               securitySettings: {
+                 twoFactorEnabled: true,
+                 ipWhitelist: [],
+                 sessionTimeout: 30,
+                 encryptionAtRest: true
+               }
+             };
+             return { user, org, requires2FA: org.twoFactorEnabled };
+        }
         throw error;
     }
+  },
+
+  verify2FA: async (code: string): Promise<{ user: User; org: Organization }> => {
+      return new Promise((resolve, reject) => {
+          setTimeout(() => {
+              if (code === '123456') {
+                  const user: User = { id: 'u_demo', name: 'Demo User', email: 'demo@aura.ai', role: 'Admin', organizationId: 'org_demo' };
+                  const org: Organization = { id: 'org_demo', name: 'Demo Org', plan: 'Enterprise' };
+                  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+                  localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
+                  resolve({ user, org });
+              } else {
+                  reject(new Error('Invalid 2FA code'));
+              }
+          }, 1000);
+      });
+  },
+
+  loginWithBiometrics: async (): Promise<{ user: User; org: Organization }> => {
+      // Mock biometric login
+      return new Promise((resolve) => {
+          setTimeout(() => {
+              const user: User = { id: 'u_bio', name: 'Biometric User', email: 'bio@aura.ai', role: 'Admin', organizationId: 'org_bio' };
+              const org: Organization = { id: 'org_bio', name: 'Bio Org', plan: 'Growth' };
+              localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+              localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
+              resolve({ user, org });
+          }, 1000);
+      });
   },
 
   loginWithProvider: async (provider: 'google' | 'microsoft' | 'sso'): Promise<{ user: User; org: Organization }> => {

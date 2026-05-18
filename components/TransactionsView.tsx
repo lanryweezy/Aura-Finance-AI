@@ -6,6 +6,8 @@ import { Tooltip } from './ui/Tooltip';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV } from '../services/exportService';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -235,16 +237,16 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
 
   const allAvailableCategories = useMemo(() => {
     return [...new Set(chartOfAccounts.map(a => a.name))].sort();
   }, [chartOfAccounts]);
-  
-  const categoriesForFilter = useMemo(() => ['all', ...allAvailableCategories], [allAvailableCategories]);
 
   const filteredTransactions = useMemo(() => {
     return [...transactions]
       .filter(t => {
+        // Basic filters
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
         if (projectFilter !== 'all' && t.projectId !== projectFilter) return false;
@@ -261,10 +263,19 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             if (new Date(t.date) > endDate) return false;
         }
 
+        // Advanced filters
+        if (advancedFilters.narration && !t.narration.toLowerCase().includes(advancedFilters.narration.toLowerCase())) return false;
+        if (advancedFilters.category && t.category !== advancedFilters.category) return false;
+        if (advancedFilters.projectId && t.projectId !== advancedFilters.projectId) return false;
+        if (advancedFilters.startDate && new Date(t.date) < new Date(advancedFilters.startDate)) return false;
+        if (advancedFilters.endDate && new Date(t.date) > new Date(advancedFilters.endDate)) return false;
+        if (advancedFilters.amount_min && t.amount < parseFloat(advancedFilters.amount_min)) return false;
+        if (advancedFilters.amount_max && t.amount > parseFloat(advancedFilters.amount_max)) return false;
+
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter]);
+  }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter, advancedFilters]);
 
   const { showToast } = useToast();
   const handleCategorySave = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
@@ -311,69 +322,18 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             </div>
           </div>
           
-           {/* Filter controls as a toolbar */}
-           <div className="flex flex-col gap-3 p-1">
-             <div className="flex items-center gap-3 bg-dark-secondary border border-gray-700 p-2 rounded-xl">
-                 <div className="flex-grow relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input
-                    type="text"
-                    placeholder="Search narration..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-transparent border-none pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:ring-0 text-sm"
-                    aria-label="Search by narration"
-                    />
-                 </div>
-                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
-                 <select
-                   value={typeFilter}
-                   onChange={e => setTypeFilter(e.target.value as any)}
-                   className="bg-transparent text-gray-300 text-sm focus:outline-none focus:text-white cursor-pointer"
-                   aria-label="Filter by transaction type"
-                 >
-                   <option value="all">All Types</option>
-                   <option value="credit">Income (Credit)</option>
-                   <option value="debit">Expense (Debit)</option>
-                 </select>
-            </div>
-            
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                 <select
-                   value={categoryFilter}
-                   onChange={e => setCategoryFilter(e.target.value)}
-                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                   aria-label="Filter by category"
-                 >
-                   {categoriesForFilter.map(cat => (
-                     <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
-                   ))}
-                 </select>
-                 <select
-                   value={projectFilter}
-                   onChange={e => setProjectFilter(e.target.value)}
-                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                   aria-label="Filter by project"
-                 >
-                    <option value="all">All Projects</option>
-                    {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-                 </select>
-                <input
-                  type="date"
-                  value={dateFilter.start}
-                  onChange={e => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                  aria-label="Start date filter"
-                />
-                <input
-                  type="date"
-                  value={dateFilter.end}
-                  onChange={e => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                  aria-label="End date filter"
-                />
-             </div>
-           </div>
+          <AdvancedFilter
+            options={[
+              { label: 'Narration', field: 'narration', type: 'text' },
+              { label: 'Category', field: 'category', type: 'select', options: allAvailableCategories.map(c => ({ label: c, value: c })) },
+              { label: 'Project', field: 'projectId', type: 'select', options: projects.map(p => ({ label: p.name, value: p.id })) },
+              { label: 'Start Date', field: 'startDate', type: 'date' },
+              { label: 'End Date', field: 'endDate', type: 'date' },
+              { label: 'Amount Range', field: 'amount', type: 'number-range' }
+            ]}
+            onFilter={setAdvancedFilters}
+            onExport={() => exportToCSV('transactions', filteredTransactions)}
+          />
        </div>
 
       <div className="overflow-x-auto flex-grow relative">
