@@ -8,8 +8,29 @@ interface FetchOptions extends RequestInit {
   timeout?: number;
 }
 
+const rateLimitMap = new Map<string, { count: number, reset: number }>();
+const MAX_REQUESTS = 100;
+const WINDOW_MS = 60000;
+
 export const apiClient = {
   async fetch(endpoint: string, options: FetchOptions = {}) {
+      // Simulate Rate Limiting
+      const now = Date.now();
+      const rateData = rateLimitMap.get(endpoint) || { count: 0, reset: now + WINDOW_MS };
+
+      if (now > rateData.reset) {
+          rateData.count = 0;
+          rateData.reset = now + WINDOW_MS;
+      }
+
+      rateData.count++;
+      rateLimitMap.set(endpoint, rateData);
+
+      if (rateData.count > MAX_REQUESTS) {
+          monitoringService.log('warn', 'SECURITY', `Rate limit exceeded for ${endpoint}`);
+          throw new Error('Too many requests. Please try again later.');
+      }
+
     const { timeout = 15000, ...fetchOptions } = options;
 
     const tenantId = authService.getTenantId();

@@ -238,6 +238,19 @@ export interface Organization {
     name: string;
     plan: 'Free' | 'Growth' | 'Enterprise';
     tin?: string;
+    twoFactorEnabled?: boolean;
+    ipWhitelist?: string[];
+    sessionTimeout?: number; // in minutes
+    encryptionEnabled?: boolean;
+}
+
+export interface ApiKey {
+    id: string;
+    key: string;
+    name: string;
+    scope: 'read' | 'write' | 'admin';
+    createdAt: string;
+    lastUsed?: string;
 }
 
 export interface SubscriptionTier {
