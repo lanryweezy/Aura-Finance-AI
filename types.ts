@@ -6,12 +6,15 @@ export interface RawTransaction {
   date: string;
   narration: string;
   balance?: number;
+  currency?: string;
+  exchangeRate?: number;
 }
 
 export interface CategorizedTransaction extends RawTransaction {
   category: string;
   projectId?: string;
   receiptUrl?: string;
+  entityId?: string;
 }
 
 export interface ReceiptData {
@@ -55,6 +58,11 @@ export interface Bill {
   whtApplies: boolean;
   lineItems: LineItem[];
   projectId?: string;
+  currency?: string;
+  exchangeRate?: number;
+  isRecurring?: boolean;
+  recurringSchedule?: RecurringSchedule;
+  entityId?: string;
 }
 
 export interface Invoice {
@@ -70,6 +78,11 @@ export interface Invoice {
   whtApplied: boolean;
   lineItems: LineItem[];
   projectId?: string;
+  currency?: string;
+  exchangeRate?: number;
+  isRecurring?: boolean;
+  recurringSchedule?: RecurringSchedule;
+  entityId?: string;
 }
 
 export interface Employee {
@@ -81,6 +94,7 @@ export interface Employee {
   bankName: string;
   accountNumber: string;
   grossSalary: number;
+  entityId?: string;
 }
 
 export interface PayrollSummary {
@@ -125,6 +139,7 @@ export interface PayrollRun {
         totalPension: number;
     };
     payslips: PayrollPayslip[];
+    entityId?: string;
 }
 
 
@@ -135,6 +150,8 @@ export interface BankConnection {
   accountNumber: string;
   accountName: string;
   lastSynced: string;
+  currency?: string;
+  balance?: number;
 }
 
 // ============== NEW CORE ACCOUNTING TYPES ==============
@@ -142,6 +159,7 @@ export interface Account {
     name: string;
     type: 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
     description?: string;
+    code?: string;
 }
 
 export interface JournalLine {
@@ -156,12 +174,19 @@ export interface JournalEntry {
     date: string;
     narration: string;
     lines: JournalLine[];
+    entityId?: string;
 }
 
 export interface Project {
     id: string;
     name: string;
     description?: string;
+    startDate?: string;
+    endDate?: string;
+    budget?: number;
+    manager?: string;
+    status: 'Active' | 'Completed' | 'On Hold';
+    entityId?: string;
 }
 
 export interface AuditLog {
@@ -175,6 +200,7 @@ export interface AuditLog {
 export interface Budget {
     category: string;
     amount: number; // Monthly budget amount
+    entityId?: string;
 }
 
 // ============== NEW SALES/PURCHASING/INVENTORY TYPES ==============
@@ -187,6 +213,7 @@ export interface PurchaseOrder {
     lineItems: LineItem[];
     total: number;
     projectId?: string;
+    entityId?: string;
 }
 
 export interface Estimate {
@@ -198,6 +225,15 @@ export interface Estimate {
     lineItems: LineItem[];
     total: number;
     projectId?: string;
+    entityId?: string;
+}
+
+export interface StockLot {
+    id: string;
+    purchaseDate: string;
+    quantity: number;
+    unitCost: number;
+    warehouseId?: string;
 }
 
 export interface InventoryItem {
@@ -206,9 +242,79 @@ export interface InventoryItem {
     sku: string;
     category: string;
     type: 'Product' | 'Service';
-    costPrice: number; // For COGS
+    costPrice: number; // For COGS (average or current)
     salePrice: number;
-    quantity: number; // For products
+    quantity: number; // Total quantity
+    lots?: StockLot[]; // For FIFO/LIFO tracking
+    valuationMethod: 'FIFO' | 'LIFO' | 'Average';
+    warehouseBalances?: Record<string, number>; // warehouseId -> quantity
+    lowStockThreshold?: number;
+    entityId?: string;
+}
+
+export interface Warehouse {
+    id: string;
+    name: string;
+    location: string;
+    entityId?: string;
+}
+
+// ============== FIXED ASSETS ==============
+export interface FixedAsset {
+    id: string;
+    name: string;
+    category: string;
+    purchaseDate: string;
+    purchaseCost: number;
+    salvageValue: number;
+    usefulLifeYears: number;
+    depreciationMethod: 'Straight Line' | 'Declining Balance';
+    status: 'Active' | 'Disposed';
+    disposalDate?: string;
+    disposalPrice?: number;
+    accumulatedDepreciation: number;
+    bookValue: number;
+    entityId?: string;
+}
+
+// ============== BANK RECONCILIATION ==============
+export interface BankReconciliation {
+    id: string;
+    bankAccountId: string;
+    statementDate: string;
+    statementEndingBalance: number;
+    clearedTransactions: string[]; // IDs
+    isCompleted: boolean;
+    entityId?: string;
+}
+
+// ============== RECURRING ==============
+export interface RecurringSchedule {
+    frequency: 'Weekly' | 'Monthly' | 'Quarterly' | 'Yearly';
+    startDate: string;
+    nextOccurrence: string;
+    endAfterOccurrences?: number;
+    occurrencesCount: number;
+}
+
+// ============== MULTI-ENTITY ==============
+export interface Entity {
+    id: string;
+    name: string;
+    type: 'Subsidiary' | 'Branch' | 'Department' | 'Main';
+    taxId?: string;
+    currency: string;
+    isMain: boolean;
+}
+
+// ============== YEAR-END CLOSING ==============
+export interface ClosingPeriod {
+    id: string;
+    year: number;
+    status: 'Draft' | 'Closed';
+    closedAt?: string;
+    closedBy?: string;
+    entityId?: string;
 }
 
 // ============== CRM TYPES ==============
@@ -231,6 +337,7 @@ export interface User {
     role: 'Owner' | 'Admin' | 'Viewer';
     organizationId: string;
     avatarUrl?: string;
+    currentEntityId?: string;
 }
 
 export interface Organization {
@@ -238,6 +345,20 @@ export interface Organization {
     name: string;
     plan: 'Free' | 'Growth' | 'Enterprise';
     tin?: string;
+    twoFactorEnabled?: boolean;
+    ipWhitelist?: string[];
+    sessionTimeout?: number; // in minutes
+    encryptionEnabled?: boolean;
+    entities?: Entity[];
+}
+
+export interface ApiKey {
+    id: string;
+    key: string;
+    name: string;
+    scope: 'read' | 'write' | 'admin';
+    createdAt: string;
+    lastUsed?: string;
 }
 
 export interface SubscriptionTier {
@@ -255,7 +376,9 @@ export type View =
     // New Views
     'chartOfAccounts' | 'journalEntries' | 'purchaseOrders' | 'estimates' | 'inventory' |
     'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts' |
-    'privacy' | 'terms';
+    'privacy' | 'terms' |
+    // Core Enhancements
+    'fixedAssets' | 'reconciliation' | 'recurring' | 'yearEnd';
 
 // Financial Report Types
 export interface ReportPeriod {

@@ -1,6 +1,6 @@
 
 import { Type } from "@google/genai";
-import { aiClient, API_KEY } from './aiConfig';
+import { aiClient, API_KEY, isOpenRouter, openAICompatibleRequest } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { RawTransaction, CategorizedTransaction, FinancialInsight, Invoice, ReportData, PayrollRun } from '../types';
@@ -74,15 +74,21 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
   try {
     monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: transactionSchema as any,
-      },
-    });
+    let jsonText = '';
 
-    const jsonText = (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
+    if (isOpenRouter) {
+        jsonText = await openAICompatibleRequest(prompt, "Categorize transactions into JSON.", transactionSchema);
+    } else {
+        const response = await aiClient!.models.generateContent({ model: "gemini-2.0-flash",
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            responseMimeType: "application/json",
+            responseSchema: transactionSchema as any,
+          },
+        });
+        jsonText = response.text.trim();
+    }
+
     const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
 
     batchResult.forEach(t => {
@@ -99,7 +105,12 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 };
 
 
-export const getFinancialInsights = async (transactions: CategorizedTransaction[]): Promise<FinancialInsight[]> => {
+export const getFinancialInsights = async (
+  transactions: CategorizedTransaction[],
+  bills: Bill[] = [],
+  invoices: Invoice[] = [],
+  payroll: PayrollRun[] = []
+): Promise<FinancialInsight[]> => {
   if (!aiClient || !API_KEY) {
     return [{ title: 'AI Analysis Disabled', description: 'Set your Gemini API key.', priority: 'Medium' }];
   }
@@ -108,23 +119,37 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
       return [{ title: 'Plan Limit Reached', description: 'You have reached your AI insights limit for this month. Please upgrade your plan.', priority: 'High' }];
   }
 
-  if (transactions.length === 0) return [];
+  if (transactions.length === 0 && bills.length === 0 && invoices.length === 0) return [];
 
-  const prompt = `Generate 3 concise financial insights for a Nigerian SME based on: ${JSON.stringify(transactions)}`;
+  const context = {
+    transactions: transactions.slice(0, 50),
+    pendingBills: bills.filter(b => b.status !== 'Paid'),
+    pendingInvoices: invoices.filter(i => i.status !== 'Paid'),
+    recentPayroll: payroll.slice(0, 3)
+  };
+
+  const prompt = `You are a world-class AI CFO for a Nigerian SME. Analyze this financial data and provide 3 deep, actionable insights.
+  Consider cash flow, burn rate, tax implications (VAT, WHT), and operational efficiency.
+  Data: ${JSON.stringify(context)}`;
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash",
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-            responseMimeType: "application/json",
-            responseSchema: insightsSchema as any,
-        },
-    });
+    let jsonText = '';
+
+    if (isOpenRouter) {
+        jsonText = await openAICompatibleRequest(prompt, "Provide financial insights in JSON.", insightsSchema);
+    } else {
+        const response = await aiClient!.models.generateContent({ model: "gemini-2.0-flash",
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: insightsSchema as any,
+            },
+        });
+        jsonText = response.text.trim();
+    }
     
     await usageService.trackUsage('ai_insight');
-
-    const jsonText = (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
     return JSON.parse(jsonText) as FinancialInsight[];
 
   } catch (error) {
@@ -141,9 +166,15 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+    let text = '';
+    if (isOpenRouter) {
+        text = await openAICompatibleRequest(prompt);
+    } else {
+        const response = await aiClient!.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+        text = response.text.trim();
+    }
     await usageService.trackUsage('ai_insight');
-    return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
+    return text;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return "Could not generate AI insight.";
@@ -158,9 +189,15 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
     try {
         monitoringService.trackAIUsage('report_analysis', prompt);
-        const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+        let text = '';
+        if (isOpenRouter) {
+            text = await openAICompatibleRequest(prompt);
+        } else {
+            const response = await aiClient!.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+            text = response.text.trim();
+        }
         await usageService.trackUsage('ai_insight');
-        return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
+        return text;
     } catch (error) {
         monitoringService.trackError('AI_ENGINE', error as Error);
         return "Could not generate AI analysis.";
@@ -175,9 +212,15 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
 
   try {
     monitoringService.trackAIUsage('invoice_reminder', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+    let text = '';
+    if (isOpenRouter) {
+        text = await openAICompatibleRequest(prompt);
+    } else {
+        const response = await aiClient!.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+        text = response.text.trim();
+    }
     await usageService.trackUsage('ai_chat');
-    return (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
+    return text;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return "Could not generate AI reminder.";

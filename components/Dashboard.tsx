@@ -1,19 +1,26 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
+import { Tooltip } from './ui/Tooltip';
+import { ContextualHelp } from './ui/ContextualHelp';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import { AIAlerts } from './AIAlerts';
+import { businessGraphService } from '../services/businessGraphService';
+import { treasuryService } from '../services/treasuryService';
+import { procureService } from '../services/procureService';
+import { payrollOptimizationService } from '../services/payrollOptimizationService';
+import { autonomousActionService, AutonomousAction } from '../services/autonomousActionService';
 import { useCurrency } from './ui/CurrencyProvider';
+import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
   user: { name: string } | null;
   transactions: CategorizedTransaction[];
   connections: BankConnection[];
-  bills: Bill[];
-  invoices: Invoice[];
   onQuickAction?: (view: View) => void;
   onAddTransaction?: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
 }
@@ -28,14 +35,14 @@ const InsightCard = React.memo<{ insight: FinancialInsight }>(({ insight }) => {
     return (
         <div className={`bg-gradient-to-r ${priorityColor[insight.priority]} p-4 rounded-xl border-l-4 mb-3 last:mb-0 backdrop-blur-sm`}>
             <div className="flex justify-between items-start">
-                <h4 className="font-bold text-white text-sm">{insight.title}</h4>
+                <h4 className="font-bold text-gray-900 dark:text-white text-sm">{insight.title}</h4>
                 <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded border ${
                     insight.priority === 'High' ? 'border-red-500 text-red-500' : 
                     insight.priority === 'Medium' ? 'border-yellow-500 text-yellow-500' : 
                     'border-blue-500 text-blue-500'
                 }`}>{insight.priority}</span>
             </div>
-            <p className="text-xs text-gray-300 mt-1 leading-relaxed">{insight.description}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 leading-relaxed">{insight.description}</p>
         </div>
     )
 });
@@ -46,11 +53,11 @@ const QuickActionCard = React.memo<{
     color: string;
     onClick: () => void 
 }>(({ title, icon, color, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-dark-tertiary/40 backdrop-blur-md border border-white/5 rounded-2xl hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-lg">
+    <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-white dark:bg-dark-tertiary/40 backdrop-blur-md border border-gray-200 dark:border-white/5 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-lg">
         <div className={`p-3 rounded-full bg-opacity-20 mb-3 ${color} group-hover:scale-110 transition-transform duration-300`}>
             {icon}
         </div>
-        <span className="text-xs font-semibold text-gray-300 group-hover:text-white">{title}</span>
+        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 group-hover:text-brand-cyan dark:group-hover:text-white">{title}</span>
     </button>
 ));
 
@@ -68,30 +75,30 @@ const OnboardingWidget = React.memo<{ connections: BankConnection[], invoices: I
     if (progress === 100) return null;
 
     return (
-        <div className="bg-gradient-to-r from-brand-purple/20 to-brand-cyan/10 rounded-2xl p-6 border border-white/10 mb-8 relative overflow-hidden">
+        <div className="bg-gradient-to-r from-brand-purple/10 to-brand-cyan/5 dark:from-brand-purple/20 dark:to-brand-cyan/10 rounded-2xl p-6 border border-brand-purple/10 dark:border-white/10 mb-8 relative overflow-hidden">
             <div className="absolute right-0 top-0 p-4 opacity-10">
                 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
             </div>
             <div className="relative z-10">
                 <div className="flex justify-between items-center mb-4">
                     <div>
-                        <h3 className="text-xl font-bold text-white">Get Started with Aura</h3>
-                        <p className="text-gray-400 text-sm">Complete these steps to fully automate your finances.</p>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Get Started with Aura</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">Complete these steps to fully automate your finances.</p>
                     </div>
                     <span className="text-2xl font-bold text-brand-cyan">{Math.round(progress)}%</span>
                 </div>
                 
-                <div className="w-full bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 h-2 rounded-full mb-6 overflow-hidden">
                     <div className="bg-gradient-to-r from-brand-purple to-brand-cyan h-full rounded-full transition-all duration-1000" style={{ width: `${progress}%` }}></div>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {steps.map((step, idx) => (
-                        <div key={step.id} className={`flex items-center gap-3 p-3 rounded-xl border ${step.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-dark-secondary/50 border-gray-700'}`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-500 text-black' : 'bg-gray-700 text-gray-400'}`}>
+                        <div key={step.id} className={`flex items-center gap-3 p-3 rounded-xl border ${step.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-gray-100 dark:bg-dark-secondary/50 border-gray-200 dark:border-gray-700'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-500 text-white dark:text-black' : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
                                 {step.completed ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : <span className="text-xs font-bold">{idx + 1}</span>}
                             </div>
-                            <span className={`text-xs font-medium ${step.completed ? 'text-green-300' : 'text-gray-300'}`}>{step.label}</span>
+                            <span className={`text-xs font-medium ${step.completed ? 'text-green-600 dark:text-green-300' : 'text-gray-600 dark:text-gray-300'}`}>{step.label}</span>
                         </div>
                     ))}
                 </div>
@@ -136,7 +143,7 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
 
     const iconMap: { [key: string]: React.ReactNode } = {
         transaction: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3v18" /><path d="M17 8l-5 5-5-5" /><path d="M7 16l5-5 5 5" /></svg>,
-        bill: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 17a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2Z"/><path d="M12 4v7"/><path d="m15 8-3-3-3 3"/></svg>,
+        bill: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 17a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-2Z"/><path d="M12 4v7"/><path d="m15 8-3-3-3 3"/></svg>,
         invoice: <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2Z"/><path d="M12 11v7"/><path d="m15 15-3 3-3-3"/></svg>,
     };
 
@@ -149,26 +156,26 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
     return (
         <Card className="lg:col-span-2">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-white">Recent Activity</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Recent Activity</h3>
                 <button className="text-xs text-brand-cyan hover:underline">View All</button>
             </div>
             <div className="space-y-4">
                 {combinedActivity.length > 0 ? combinedActivity.map(item => (
-                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors border border-transparent hover:border-white/5">
+                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5">
                         <div className={`p-2.5 rounded-full ${colorMap[item.type]}`}>
                             {iconMap[item.type]}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <p className="text-white font-medium truncate text-sm" title={item.description}>{item.description}</p>
+                            <p className="text-gray-900 dark:text-white font-medium truncate text-sm" title={item.description}>{item.description}</p>
                             <p className="text-xs text-gray-500">{item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
                         </div>
-                        <div className={`font-mono text-sm font-semibold ${item.isCredit ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className={`font-mono text-sm font-semibold ${item.isCredit ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {item.isCredit ? '+' : '-'}{formatAmount(item.amount)}
                         </div>
                     </div>
                 )) : (
                     <div className="flex flex-col items-center justify-center h-48 text-center">
-                        <div className="bg-dark-secondary p-4 rounded-full mb-3">
+                        <div className="bg-gray-100 dark:bg-dark-secondary p-4 rounded-full mb-3">
                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                         </div>
                         <p className="text-gray-400">No recent activity.</p>
@@ -219,67 +226,184 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
             return acc;
         }, { vatPayable: 0, whtReceivable: 0 });
 
+        // NSITF (1% of Gross Payroll)
+        const totalGrossPayroll = transactions
+            .filter(t => t.category === 'Payroll' || t.narration.toLowerCase().includes('salary'))
+            .reduce((sum, t) => sum + t.amount, 0);
+        const estimatedNSITF = totalGrossPayroll * 0.01;
+
         return {
             ...invoiceTaxes,
             estimatedCIT: Math.max(0, estimatedCIT),
             estimatedTET: Math.max(0, estimatedTET),
+            estimatedNSITF,
             citRate
         };
     }, [transactions, invoices]);
 
-    if(transactions.length === 0){
-        return (
-            <Card className="bg-dark-secondary/50 flex items-center justify-center text-center">
-                <p className="text-gray-400">Tax estimator requires transaction data. Please link a bank account.</p>
-            </Card>
-        )
-    }
-
     return (
-        <Card>
+        <Card className={transactions.length === 0 ? "opacity-60" : ""}>
           <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-bold text-lg">Tax Estimates</h3>
-              <span className="text-xs bg-gray-700/50 text-gray-300 px-2 py-1 rounded">Provisional</span>
+              <div className="flex items-center">
+                <h3 className="text-gray-900 dark:text-white font-bold text-lg">Tax Estimates</h3>
+                <ContextualHelp
+                    topic="Tax Estimates"
+                    content="Provisional tax liabilities based on current turnover and expenses. Includes CIT, TET, and VAT estimates."
+                />
+              </div>
+              <span className="text-xs bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">Provisional</span>
           </div>
           <div className="space-y-4">
-             <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
-                <p className="text-xs text-orange-400 flex justify-between items-center mb-1">
-                    <span>Est. CIT ({taxCalculations.citRate}%)</span>
+             <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+                <p className="text-xs text-orange-600 dark:text-orange-400 flex justify-between items-center mb-1">
+                    <Tooltip content="Companies Income Tax estimated based on annualized turnover and assessable profit.">
+                        <span>Est. CIT ({taxCalculations.citRate}%)</span>
+                    </Tooltip>
                 </p>
-                <p className="text-xl font-bold text-white">{formatAmount(taxCalculations.estimatedCIT)}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedCIT)}</p>
             </div>
-             <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
-                <p className="text-xs text-cyan-400 flex justify-between items-center mb-1">
-                    <span>Est. TET (3%)</span>
+             <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+                <p className="text-xs text-cyan-600 dark:text-cyan-400 flex justify-between items-center mb-1">
+                    <Tooltip content="Tertiary Education Tax estimated at 3% of assessable profit.">
+                        <span>Est. TET (3%)</span>
+                    </Tooltip>
                 </p>
-                <p className="text-xl font-bold text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
-                    <p className="text-[10px] text-blue-400 uppercase">VAT Payable</p>
-                    <p className="text-lg font-bold text-white">{formatAmount(taxCalculations.vatPayable)}</p>
+            <div className="grid grid-cols-3 gap-2">
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-blue-600 dark:text-blue-400 uppercase font-bold">VAT</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.vatPayable, { compact: true })}</p>
                 </div>
-                <div className="bg-dark-primary/50 p-3 rounded-xl border border-white/5">
-                    <p className="text-[10px] text-purple-400 uppercase">WHT Credit</p>
-                    <p className="text-lg font-bold text-white">{formatAmount(taxCalculations.whtReceivable)}</p>
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-purple-600 dark:text-purple-400 uppercase font-bold">NSITF</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedNSITF, { compact: true })}</p>
                 </div>
-            </div>
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-green-600 dark:text-green-400 uppercase font-bold">WHT Credit</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable, { compact: true })}</p>
+                </div>
+                </>
+            )}
           </div>
         </Card>
     );
 });
 
-export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+const AutonomousExecutionLog = React.memo(() => {
+    const [history, setHistory] = useState<AutonomousAction[]>([]);
+
+    useEffect(() => {
+        const fetchHistory = () => {
+            setHistory(autonomousActionService.getHistory());
+        };
+        fetchHistory();
+        const interval = setInterval(fetchHistory, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    if (history.length === 0) return null;
+
+    return (
+        <Card className="border-brand-cyan/20 bg-brand-cyan/5">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></div>
+                <h3 className="text-sm font-bold text-brand-cyan uppercase tracking-wider">Aura Autonomous Log</h3>
+            </div>
+            <div className="space-y-3">
+                {history.slice(0, 3).map(action => (
+                    <div key={action.id} className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00F5D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                             <span className="text-gray-300">{action.description}</span>
+                        </div>
+                        <span className="text-gray-500 font-mono">{new Date(action.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+});
+
+export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, onQuickAction, onAddTransaction }) => {
   const { formatAmount } = useCurrency();
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
+  const { bills, invoices, payrollHistory } = useAppStore();
+
+  useEffect(() => {
+    // Propose treasury sweep if opportunities exist
+    const insights = treasuryService.analyzeLiquidity(connections, transactions);
+    const opportunities = treasuryService.getSweepOpportunities(insights);
+
+    opportunities.forEach(opt => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'treasury_transfer' && a.status === 'pending');
+
+        if (!alreadyProposed) {
+            autonomousActionService.proposeAction(
+                'treasury_transfer',
+                { from: opt.from, to: opt.to, amount: opt.amount, currency: '₦' },
+                opt.reasoning,
+                'High'
+            );
+        }
+    });
+
+    // Propose procurement optimization
+    const procureInsights = procureService.analyzeSpend(transactions, bills);
+    procureInsights.forEach(insight => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'vendor_negotiation' && a.status === 'pending');
+        if (!alreadyProposed) {
+             autonomousActionService.proposeAction(
+                'vendor_negotiation',
+                { vendorName: insight.vendorName, savingPercent: 15 },
+                insight.recommendation,
+                'Medium'
+            );
+        }
+    });
+
+    // Propose payroll restructuring
+    const payrollOptimizations = payrollOptimizationService.analyze(employees);
+    payrollOptimizations.forEach(opt => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'payroll_restructure' && a.metadata.employeeId === opt.employeeId && a.status === 'pending');
+        if (!alreadyProposed) {
+            autonomousActionService.proposeAction(
+                'payroll_restructure',
+                { employeeId: opt.employeeId, employeeName: opt.employeeName },
+                opt.recommendation,
+                'Low'
+            );
+        }
+    });
+  }, [connections, transactions, bills, employees]);
+
+  const graphIntelligence = useMemo(() => {
+    return businessGraphService.generateGraph(transactions, bills, invoices, []);
+  }, [transactions, bills, invoices]);
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoadingInsights(true);
-      if (transactions.length > 0) {
-        const fetchedInsights = await getFinancialInsights(transactions);
+      if (transactions.length > 0 || bills.length > 0 || invoices.length > 0) {
+        let fetchedInsights = await getFinancialInsights(transactions, bills, invoices, payrollHistory);
+
+        // Inject graph intelligence insights
+        if (graphIntelligence.dependencyAlerts.length > 0) {
+            graphIntelligence.dependencyAlerts.forEach(alert => {
+                fetchedInsights.unshift({
+                    title: 'Strategic Dependency Alert',
+                    description: alert,
+                    priority: 'High'
+                });
+            });
+        }
+
         setInsights(fetchedInsights);
       } else {
         setInsights([]);
@@ -287,7 +411,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       setLoadingInsights(false);
     };
     fetchAllData();
-  }, [transactions]);
+  }, [transactions, bills, invoices, payrollHistory, graphIntelligence]);
 
 
   const summary = useMemo(() => {
@@ -333,12 +457,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-3xl font-bold text-white">Dashboard</h2>
-            <p className="text-gray-400">Welcome back, {user?.name || 'Tunde'}. Here's your financial overview.</p>
+          <div id="dashboard-welcome">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
+            <p className="text-gray-600 dark:text-gray-400">Welcome back, {user?.name || 'Tunde'}. Here's your financial overview.</p>
           </div>
           {lastSyncTime && (
-            <div className="flex items-center gap-2 text-sm text-gray-400 bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-white/5">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span>Synced: {lastSyncTime}</span>
             </div>
@@ -347,8 +471,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
       <OnboardingWidget connections={connections} invoices={invoices} />
 
+      <AIAlerts transactions={transactions} />
+
+      <AutonomousExecutionLog />
+
       {/* Quick Actions Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div id="quick-actions-bar" className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <QuickActionCard 
             title="Scan Receipt" 
             color="bg-brand-cyan text-brand-cyan" 
@@ -378,29 +506,35 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 dark:text-white"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
           </div>
-          <h3 className="text-gray-400 text-sm font-medium">Total Income</h3>
-          <p className="text-3xl font-bold text-white mt-2">{formatAmount(summary.income)}</p>
-          <div className="mt-2 flex items-center text-xs text-green-400 font-medium bg-green-500/10 w-fit px-2 py-1 rounded-full border border-green-500/20">
+          <Tooltip content="Sum of all credit transactions in the current period.">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Income</h3>
+          </Tooltip>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{formatAmount(summary.income)}</p>
+          <div className="mt-2 flex items-center text-xs text-green-600 dark:text-green-400 font-medium bg-green-500/10 w-fit px-2 py-1 rounded-full border border-green-500/20">
              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +12.5% vs last month
           </div>
         </Card>
         <Card className="relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 dark:text-white"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
           </div>
-          <h3 className="text-gray-400 text-sm font-medium">Total Expenses</h3>
-          <p className="text-3xl font-bold text-white mt-2">{formatAmount(summary.expenses)}</p>
-          <div className="mt-2 flex items-center text-xs text-red-400 font-medium bg-red-500/10 w-fit px-2 py-1 rounded-full border border-red-500/20">
+          <Tooltip content="Sum of all debit transactions in the current period.">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Expenses</h3>
+          </Tooltip>
+          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{formatAmount(summary.expenses)}</p>
+          <div className="mt-2 flex items-center text-xs text-red-600 dark:text-red-400 font-medium bg-red-500/10 w-fit px-2 py-1 rounded-full border border-red-500/20">
              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +5.2% vs last month
           </div>
         </Card>
         <Card>
-          <h3 className="text-gray-400 text-sm font-medium">Net Flow</h3>
-          <p className={`text-3xl font-bold mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-400'}`}>
+          <Tooltip content="Net difference between your Income and Expenses.">
+            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Net Flow</h3>
+          </Tooltip>
+          <p className={`text-3xl font-bold mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-600 dark:text-red-400'}`}>
             {formatAmount(summary.income - summary.expenses)}
           </p>
           <div className="mt-2 text-xs text-gray-500">
@@ -413,8 +547,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <Card className="lg:col-span-3">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-white">Cash Flow Overview</h3>
-            <select className="bg-dark-primary/50 border border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-300">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cash Flow Overview</h3>
+            <select className="bg-gray-50 dark:bg-dark-primary/50 border border-gray-200 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300">
                 <option>This Month</option>
                 <option>Last Quarter</option>
             </select>
@@ -425,7 +559,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
                         <XAxis type="number" stroke="#888888" tickFormatter={(value: any) => formatAmount(value as number, { compact: true })} axisLine={false} tickLine={false} />
                         <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
-                        <Tooltip 
+                        <RechartsTooltip
                             cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                             contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
                             formatter={(value: any) => formatAmount(value as number)}
@@ -444,12 +578,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             </div>
           )}
         </Card>
-        <Card className="lg:col-span-2 flex flex-col">
+        <Card id="ai-advisor-panel" className="lg:col-span-2 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
                  <div className="p-1.5 bg-gradient-to-br from-brand-cyan to-brand-purple rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
                  </div>
-                <h3 className="text-lg font-bold text-white">AI Advisor</h3>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">AI Advisor</h3>
             </div>
             <div className="flex-grow overflow-y-auto pr-1 custom-scrollbar">
                 {loadingInsights ? (

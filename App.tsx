@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
 import { Spinner } from './components/ui/Spinner';
+import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 
 // Lazy load non-critical views
 const TransactionsView = lazy(() => import('./components/TransactionsView').then(m => ({ default: m.TransactionsView })));
@@ -29,9 +30,20 @@ const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+const ApprovalQueueView = lazy(() => import('./components/ApprovalQueueView').then(m => ({ default: m.ApprovalQueueView })));
+const ConsolidatedReportsView = lazy(() => import('./components/ConsolidatedReportsView').then(m => ({ default: m.ConsolidatedReportsView })));
+const WhatsAppInboxView = lazy(() => import('./components/WhatsAppInboxView').then(m => ({ default: m.WhatsAppInboxView })));
+const ScenarioPlannerView = lazy(() => import('./components/ScenarioPlannerView').then(m => ({ default: m.ScenarioPlannerView })));
+
+const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
+const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
+const RecurringTransactionsView = lazy(() => import('./components/RecurringTransactionsView').then(m => ({ default: m.RecurringTransactionsView })));
+const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').then(m => ({ default: m.YearEndClosingView })));
 
 import { OnboardingTour } from './components/ui/OnboardingTour';
+import { UpgradeOverlay } from './components/ui/UpgradeOverlay';
 import { useToast } from './components/ui/Toast';
+import { useHotkeys } from './services/hooks/useHotkeys';
 import { monitoringService } from './services/monitoringService';
 
 import { fetchTransactions as mockFetchTransactions } from './services/monoService';
@@ -48,6 +60,10 @@ import { fetchPurchaseOrders, addPurchaseOrder as apiAddPurchaseOrder } from './
 import { fetchEstimates, addEstimate as apiAddEstimate } from './services/estimateService';
 import { fetchJournalEntries, addJournalEntry as apiAddJournalEntry } from './services/journalEntryService';
 import { fetchBudgets, saveBudgets as apiSaveBudgets } from './services/budgetService';
+import { fixedAssetService } from './services/fixedAssetService';
+import { entityService } from './services/entityService';
+import { billingService } from './services/billingService';
+import { usageService } from './services/usageService';
 import { authService } from './services/authService';
 import { fetchContacts, addContact as apiAddContact, updateContact as apiUpdateContact } from './services/contactService';
 import { DEFAULT_CATEGORIES } from './constants/accounting';
@@ -74,9 +90,14 @@ export default function App(): React.ReactNode {
     estimates, setEstimates,
     budgets, setBudgets,
     contacts, setContacts,
+        fixedAssets, setFixedAssets,
+        reconciliations, setReconciliations,
+        entities, setEntities,
+        closingHistory, setClosingHistory,
     auditLog, setAuditLog,
     isLoading, setIsLoading,
-    error, setError
+    error, setError,
+    theme, highContrast
   } = store;
   
   // Check for existing session on mount
@@ -116,11 +137,13 @@ export default function App(): React.ReactNode {
       const [
           fetchedConnections, fetchedEmployees, fetchedBills, fetchedInvoices, 
           fetchedProjects, fetchedInventory, fetchedPOs, fetchedEstimates,
-          fetchedJEs, fetchedBudgets, fetchedContacts
+          fetchedJEs, fetchedBudgets, fetchedContacts,
+          fetchedAssets, fetchedEntities
         ] = await Promise.all([
         fetchConnections(), fetchEmployees(), fetchBills(), fetchInvoices(),
         fetchProjects(), fetchInventoryItems(), fetchPurchaseOrders(), fetchEstimates(),
-        fetchJournalEntries(), fetchBudgets(), fetchContacts()
+        fetchJournalEntries(), fetchBudgets(), fetchContacts(),
+        fixedAssetService.fetchAssets(), entityService.fetchEntities()
       ]);
 
       setConnections(fetchedConnections);
@@ -134,6 +157,8 @@ export default function App(): React.ReactNode {
       setJournalEntries(fetchedJEs);
       setBudgets(fetchedBudgets);
       setContacts(fetchedContacts);
+      setFixedAssets(fetchedAssets);
+      setEntities(fetchedEntities);
 
       if (fetchedConnections.length > 0) {
         const rawTransactions = await mockFetchTransactions();
@@ -156,6 +181,50 @@ export default function App(): React.ReactNode {
         loadInitialData();
     }
   }, [loadInitialData, user]);
+
+  // Global Hotkeys
+  useHotkeys({
+    'mod+k': () => setActiveView('chat'),
+    'mod+i': () => setActiveView('receivables'),
+    'mod+b': () => setActiveView('payables'),
+    'mod+s': () => setActiveView('settings'),
+    'mod+d': () => setActiveView('dashboard'),
+    'mod+t': () => setActiveView('transactions'),
+    'mod+p': () => setActiveView('payroll'),
+  });
+
+  // Session Timeout Implementation
+  useEffect(() => {
+      let timeout: ReturnType<typeof setTimeout>;
+      let lastReset = 0;
+
+      const resetTimeout = (e?: Event) => {
+          const now = Date.now();
+          // Throttle event listeners to prevent excessive timer churn
+          if (e && now - lastReset < 2000) return;
+          lastReset = now;
+
+          if (timeout) clearTimeout(timeout);
+          // Default timeout: 30 minutes, or from org settings
+          const duration = (authService.getCurrentUser()?.org.sessionTimeout || 30) * 60 * 1000;
+          timeout = setTimeout(() => {
+              if (authService.getCurrentUser()) {
+                  handleLogout();
+                  showToast('Session expired due to inactivity.', 'info');
+              }
+          }, duration);
+      };
+
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      events.forEach(name => document.addEventListener(name, resetTimeout));
+
+      resetTimeout();
+
+      return () => {
+          events.forEach(name => document.removeEventListener(name, resetTimeout));
+          if (timeout) clearTimeout(timeout);
+      };
+  }, [user]);
   
   const payrollSummary: PayrollSummary = useMemo(() => {
     return employees.reduce((acc, emp) => {
@@ -252,7 +321,13 @@ export default function App(): React.ReactNode {
     );
   };
   
-  const handleAddNewTransaction = (newTransactionData: Omit<CategorizedTransaction, 'id' | 'balance'>) => {
+  const handleAddNewTransaction = async (newTransactionData: Omit<CategorizedTransaction, 'id' | 'balance'>) => {
+    const isLimited = await usageService.isRateLimited('txn_volume');
+    if (isLimited) {
+        showToast("Monthly transaction limit reached. Please upgrade your plan.", "error");
+        return;
+    }
+
     const newTransaction: CategorizedTransaction = {
       ...newTransactionData,
       id: `manual_txn_${Date.now()}`,
@@ -260,6 +335,7 @@ export default function App(): React.ReactNode {
     setTransactions(prev => 
         [...prev, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     );
+    usageService.trackUsage('txn_volume');
     logAndRefresh(`Added transaction: ${newTransaction.narration} for ${newTransaction.amount}`, 'Transactions');
   };
 
@@ -271,12 +347,14 @@ export default function App(): React.ReactNode {
     const newProject = await apiAddProject(projectName);
     setProjects(prev => [...prev, newProject]);
     logAndRefresh(`Created new project: ${newProject.name}`, 'Projects');
+    showToast(`Project "${newProject.name}" created!`, 'success');
   }
 
   const handleAddBill = async (billData: Omit<Bill, 'id'|'status'|'issueDate'>) => {
     const newBill = await apiAddBill(billData);
     setBills(prev => [newBill, ...prev]);
     logAndRefresh(`Added new bill from ${newBill.vendor}`, 'Payables');
+    showToast(`Bill from ${newBill.vendor} recorded.`, 'success');
   }
 
   const handlePayBill = (billId: string) => {
@@ -294,12 +372,21 @@ export default function App(): React.ReactNode {
 
     setBills(prev => prev.map(b => b.id === billId ? {...b, status: 'Paid'} : b));
     logAndRefresh(`Paid bill #${bill.id.slice(-4)} from ${bill.vendor}`, 'Payables');
+    showToast(`Bill for ${bill.vendor} marked as Paid.`, 'success');
   };
 
   const handleAddInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>) => {
+    const isLimited = await usageService.isRateLimited('invoices_sent');
+    if (isLimited) {
+        showToast("Monthly invoice limit reached. Please upgrade your plan.", "error");
+        return;
+    }
+
     const newInvoice = await apiAddInvoice(invoiceData);
     setInvoices(prev => [newInvoice, ...prev]);
+    usageService.trackUsage('invoices_sent');
     logAndRefresh(`Added new invoice for ${newInvoice.customer}`, 'Receivables');
+    showToast(`Invoice for ${newInvoice.customer} created.`, 'success');
   };
 
   const handleRecordInvoicePayment = (invoiceId: string) => {
@@ -333,24 +420,28 @@ export default function App(): React.ReactNode {
     const newEntry = await apiAddJournalEntry(entry);
     setJournalEntries(prev => [newEntry, ...prev]);
     logAndRefresh(`Created journal entry #${newEntry.id.slice(-4)}`, 'Accounting');
+    showToast('Journal entry saved successfully!', 'success');
   }
 
   const handleAddInventoryItem = async (item: Omit<InventoryItem, 'id'>) => {
     const newItem = await apiAddInventoryItem(item);
     setInventory(prev => [newItem, ...prev]);
     logAndRefresh(`Added new inventory item: ${newItem.name}`, 'Inventory');
+    showToast(`Added ${newItem.name} to inventory.`, 'success');
   };
 
   const handleUpdateInventoryItem = async (item: InventoryItem) => {
     const updatedItem = await apiUpdateInventoryItem(item);
     setInventory(prev => prev.map(i => i.id === updatedItem.id ? updatedItem : i));
     logAndRefresh(`Updated inventory item: ${updatedItem.name}`, 'Inventory');
+    showToast(`Updated ${updatedItem.name} details.`, 'success');
   };
 
   const handleAddPurchaseOrder = async (po: Omit<PurchaseOrder, 'id'|'status'|'issueDate'>) => {
     const newPO = await apiAddPurchaseOrder(po);
     setPurchaseOrders(prev => [newPO, ...prev]);
     logAndRefresh(`Created Purchase Order #${newPO.id.slice(-4)} for ${newPO.vendor}`, 'Purchases');
+    showToast(`PO #${newPO.id.slice(-6).toUpperCase()} created for ${newPO.vendor}.`, 'success');
   };
 
   const handleConvertToBill = (po: PurchaseOrder) => {
@@ -414,14 +505,35 @@ export default function App(): React.ReactNode {
       logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts');
   }
 
+  const handleAddFixedAsset = async (asset: any) => {
+      const newItem = await fixedAssetService.addAsset(asset);
+      setFixedAssets(prev => [newItem, ...prev]);
+      logAndRefresh(`Registered fixed asset: ${newItem.name}`, 'Accounting');
+  };
+
+  const handleDisposeAsset = async (id: string, price: number) => {
+      setFixedAssets(prev => prev.map(a => a.id === id ? { ...a, status: 'Disposed', disposalDate: new Date().toISOString(), disposalPrice: price, bookValue: 0 } : a));
+      logAndRefresh(`Disposed of asset #${id.slice(-4)}`, 'Accounting');
+  };
+
+  const handleCloseYear = (year: number) => {
+      const newClosing = {
+          id: `close_${year}`,
+          year,
+          status: 'Closed' as const,
+          closedAt: new Date().toISOString(),
+          closedBy: user?.name || 'Admin'
+      };
+      setClosingHistory(prev => [newClosing, ...prev]);
+      logAndRefresh(`Closed fiscal year ${year}`, 'Accounting');
+      showToast(`Fiscal year ${year} has been successfully closed.`, 'success');
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center h-full">
-          <div className="text-center">
-            <Spinner />
-            <p className="mt-4 text-lg">Connecting to financial core and analyzing data...</p>
-          </div>
+        <div className="p-8">
+            {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
         </div>
       );
     }
@@ -443,6 +555,27 @@ export default function App(): React.ReactNode {
       );
     }
 
+    const userPlan = authService.getCurrentUser()?.org.plan || 'Free';
+
+    const withUpgrade = (view: View, requiredPlan: 'Growth' | 'Enterprise', title: string, description: string, component: React.ReactNode) => {
+        if (!billingService.hasFeature(userPlan, view)) {
+            return (
+                <div className="relative h-full">
+                    <UpgradeOverlay
+                        title={title}
+                        description={description}
+                        requiredPlan={requiredPlan}
+                        onUpgrade={() => setActiveView('subscription')}
+                    />
+                    <div className="opacity-20 pointer-events-none filter blur-sm h-full overflow-hidden">
+                        {component}
+                    </div>
+                </div>
+            );
+        }
+        return component;
+    };
+
     const viewMap: Record<View, React.ReactNode> = {
       dashboard: <Dashboard
                     user={user}
@@ -463,9 +596,9 @@ export default function App(): React.ReactNode {
       reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
       payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
       receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
-      estimates: <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />,
-      purchaseOrders: <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />,
-      payroll: <PayrollView
+      estimates: withUpgrade('estimates', 'Growth', 'Professional Estimates', 'Create and send branded estimates to your customers to win more business.', <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />),
+      purchaseOrders: withUpgrade('purchaseOrders', 'Growth', 'Purchase Orders', 'Streamline your procurement process with professional purchase orders.', <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />),
+      payroll: withUpgrade('payroll', 'Growth', 'Automated Payroll', 'Run payroll for your team in minutes. Automated tax calculations and payslips.', <PayrollView
                     employees={employees} 
                     payrollSummary={payrollSummary}
                     payrollHistory={payrollHistory}
@@ -473,29 +606,36 @@ export default function App(): React.ReactNode {
                     onUpdateEmployee={handleUpdateEmployee}
                     onRemoveEmployee={handleRemoveEmployee}
                     onRunPayroll={handleRunPayroll}
-                />,
-      inventory: <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />,
+                />),
+      inventory: withUpgrade('inventory', 'Growth', 'Inventory Management', 'Track stock levels, set low-stock alerts, and manage products across multiple warehouses.', <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />),
       contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
-      taxFiling: <TaxFilingView transactions={transactions} />,
+      taxFiling: withUpgrade('taxFiling', 'Growth', 'Tax Compliance', 'Automatically calculate VAT, WHT, and PAYE. Stay compliant with local tax laws.', <TaxFilingView transactions={transactions} />),
       connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
       integrations: <IntegrationsView />,
       chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
       journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
-      budgeting: <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />,
-      auditTrail: <AuditTrailView logs={auditLog} />,
-      projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
+      budgeting: withUpgrade('budgeting', 'Growth', 'Smart Budgeting', 'Plan your spending and stay on track with real-time budget vs actual reporting.', <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />),
+      auditTrail: withUpgrade('auditTrail', 'Enterprise', 'Compliance Audit Trail', 'Maintain a detailed history of all changes for full accountability and audit readiness.', <AuditTrailView logs={auditLog} />),
+      projects: withUpgrade('projects', 'Growth', 'Project Accounting', 'Track profitability and expenses for specific projects or departments.', <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />),
+      fixedAssets: withUpgrade('fixedAssets', 'Enterprise', 'Fixed Assets Registry', 'Track depreciation and manage the lifecycle of your company\'s physical assets.', <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />),
+      reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
+      recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
+      yearEnd: withUpgrade('yearEnd', 'Enterprise', 'Year-End Closing', 'Guided wizard for closing your books and preparing for the next fiscal year.', <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />),
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} />,
+      chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
+      approvalQueue: <ApprovalQueueView />,
+      whatsappInbox: <WhatsAppInboxView />,
+      consolidatedReports: <ConsolidatedReportsView />,
+      scenarioPlanner: <ScenarioPlannerView />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };
 
     return (
         <Suspense fallback={
-            <div className="flex flex-col items-center justify-center h-full gap-4">
-                <Spinner />
-                <p className="text-gray-400 animate-pulse">Switching modules...</p>
+            <div className="p-8">
+                 {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
             </div>
         }>
             {viewMap[activeView] || viewMap.dashboard}
@@ -508,16 +648,20 @@ export default function App(): React.ReactNode {
   }
 
   return (
-    <div className="flex h-screen bg-dark-primary font-sans text-white">
+    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'} ${highContrast ? 'high-contrast' : ''}`}>
       {user && <OnboardingTour />}
       <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header user={user} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl bg-dark-secondary/30 backdrop-blur-sm border-t border-l border-white/5 shadow-2xl relative">
+        <main className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-gray-200'} backdrop-blur-sm border-t border-l shadow-2xl relative`}>
            {/* Rich gradient background for world-class depth */}
-           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
-           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/10 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-dark-primary/60 pointer-events-none -z-10"></div>
+           {theme === 'dark' && (
+               <>
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-cyan/10 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-transparent to-dark-primary/60 pointer-events-none -z-10"></div>
+               </>
+           )}
           {renderContent()}
         </main>
       </div>

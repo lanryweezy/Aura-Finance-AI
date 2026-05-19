@@ -12,7 +12,12 @@ export const fetchBills = async (): Promise<Bill[]> => {
       console.warn("API failed, falling back to local simulation", err);
       // Fallback for demo/dev purposes
       const stored = localStorage.getItem(`aura_bills_local_dev`);
-      return stored ? JSON.parse(stored) : [];
+      try {
+          return stored ? JSON.parse(stored) : [];
+      } catch (parseErr) {
+          console.warn("Failed to parse local storage fallback", parseErr);
+          return [];
+      }
   }
 };
 

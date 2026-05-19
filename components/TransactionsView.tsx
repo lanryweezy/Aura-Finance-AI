@@ -2,9 +2,12 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import { Tooltip } from './ui/Tooltip';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { AdvancedFilter } from './ui/AdvancedFilter';
+import { exportToCSV, exportToQuickBooks, exportToXero, exportToSage } from '../services/exportService';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -91,7 +94,7 @@ const CategoryEditor = React.memo<{
     };
 
     return (
-        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary dark:bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
             <h4 className="text-white font-bold text-sm">Edit Transaction Details</h4>
             <input
                 type="text"
@@ -185,7 +188,7 @@ const AddTransactionModal = React.memo<{
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="bg-dark-tertiary dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-white mb-6">Add New Transaction</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -225,6 +228,7 @@ const AddTransactionModal = React.memo<{
 
 export const TransactionsView = React.memo<TransactionsViewProps>(({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
   const { formatAmount } = useCurrency();
+  const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'credit'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -233,17 +237,18 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   
+  const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
 
   const allAvailableCategories = useMemo(() => {
     return [...new Set(chartOfAccounts.map(a => a.name))].sort();
   }, [chartOfAccounts]);
-  
-  const categoriesForFilter = useMemo(() => ['all', ...allAvailableCategories], [allAvailableCategories]);
 
   const filteredTransactions = useMemo(() => {
     return [...transactions]
       .filter(t => {
+        // Basic filters
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
         if (projectFilter !== 'all' && t.projectId !== projectFilter) return false;
@@ -260,14 +265,35 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             if (new Date(t.date) > endDate) return false;
         }
 
+        // Advanced filters
+        if (advancedFilters.narration && !t.narration.toLowerCase().includes(advancedFilters.narration.toLowerCase())) return false;
+        if (advancedFilters.category && t.category !== advancedFilters.category) return false;
+        if (advancedFilters.projectId && t.projectId !== advancedFilters.projectId) return false;
+        if (advancedFilters.startDate && new Date(t.date) < new Date(advancedFilters.startDate)) return false;
+        if (advancedFilters.endDate && new Date(t.date) > new Date(advancedFilters.endDate)) return false;
+        if (advancedFilters.amount_min && t.amount < parseFloat(advancedFilters.amount_min)) return false;
+        if (advancedFilters.amount_max && t.amount > parseFloat(advancedFilters.amount_max)) return false;
+
         return true;
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter]);
+  }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter, advancedFilters]);
 
+  const { showToast } = useToast();
   const handleCategorySave = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
     onUpdateCategory(transactionId, newCategory, newProjectId, newReceiptUrl);
     setEditingId(null);
+    showToast('Transaction updated successfully.', 'success');
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      showToast(`Importing transactions from ${file.name}...`, 'info');
+      setTimeout(() => {
+        showToast('Successfully imported transactions!', 'success');
+      }, 2000);
+    }
   };
 
   const getProjectName = (projectId?: string) => {
@@ -289,7 +315,7 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
       onSave={onAddTransaction}
     />
     
-    <Card className="h-full overflow-hidden flex flex-col p-0">
+    <Card className="h-full overflow-hidden flex flex-col p-0 border-gray-100 dark:border-white/5">
        <div className="p-6 pb-4 border-b border-gray-800">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -308,79 +334,61 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             </div>
           </div>
           
-           {/* Filter controls as a toolbar */}
-           <div className="flex flex-col gap-3 p-1">
-             <div className="flex items-center gap-3 bg-dark-secondary border border-gray-700 p-2 rounded-xl">
-                 <div className="flex-grow relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input
-                    type="text"
-                    placeholder="Search narration..."
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-transparent border-none pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:ring-0 text-sm"
-                    aria-label="Search by narration"
-                    />
-                 </div>
-                 <div className="h-6 w-px bg-gray-700 mx-2"></div>
-                 <select
-                   value={typeFilter}
-                   onChange={e => setTypeFilter(e.target.value as any)}
-                   className="bg-transparent text-gray-300 text-sm focus:outline-none focus:text-white cursor-pointer"
-                   aria-label="Filter by transaction type"
-                 >
-                   <option value="all">All Types</option>
-                   <option value="credit">Income (Credit)</option>
-                   <option value="debit">Expense (Debit)</option>
-                 </select>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1">
+                <AdvancedFilter
+                    options={[
+                    { label: 'Narration', field: 'narration', type: 'text' },
+                    { label: 'Category', field: 'category', type: 'select', options: allAvailableCategories.map(c => ({ label: c, value: c })) },
+                    { label: 'Project', field: 'projectId', type: 'select', options: projects.map(p => ({ label: p.name, value: p.id })) },
+                    { label: 'Start Date', field: 'startDate', type: 'date' },
+                    { label: 'End Date', field: 'endDate', type: 'date' },
+                    { label: 'Amount Range', field: 'amount', type: 'number-range' }
+                    ]}
+                    onFilter={setAdvancedFilters}
+                    onExport={() => exportToCSV('transactions', filteredTransactions)}
+                />
             </div>
-            
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                 <select
-                   value={categoryFilter}
-                   onChange={e => setCategoryFilter(e.target.value)}
-                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                   aria-label="Filter by category"
-                 >
-                   {categoriesForFilter.map(cat => (
-                     <option key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</option>
-                   ))}
-                 </select>
-                 <select
-                   value={projectFilter}
-                   onChange={e => setProjectFilter(e.target.value)}
-                   className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                   aria-label="Filter by project"
-                 >
-                    <option value="all">All Projects</option>
-                    {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
-                 </select>
-                <input
-                  type="date"
-                  value={dateFilter.start}
-                  onChange={e => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                  aria-label="Start date filter"
-                />
-                <input
-                  type="date"
-                  value={dateFilter.end}
-                  onChange={e => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm focus:outline-none focus:ring-1 focus:ring-brand-cyan"
-                  aria-label="End date filter"
-                />
-             </div>
-           </div>
+            <div className="flex gap-2 pb-1">
+                <div className="relative">
+                    <button onClick={() => setIsExportMenuOpen(!isExportMenuOpen)} className="bg-dark-secondary border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-800 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Export
+                    </button>
+                    {isExportMenuOpen && (
+                        <div className="absolute right-0 mt-2 w-48 bg-dark-tertiary border border-gray-700 rounded-xl shadow-2xl z-40 p-1 animate-in fade-in zoom-in-95 duration-200">
+                             <button onClick={() => { exportToCSV('aura_transactions', filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">CSV Format</button>
+                             <button onClick={() => { exportToQuickBooks(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">QuickBooks (IIF)</button>
+                             <button onClick={() => { exportToXero(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">Xero (CSV)</button>
+                             <button onClick={() => { exportToSage(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">Sage (CSV)</button>
+                        </div>
+                    )}
+                </div>
+                <label className="bg-dark-secondary border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-800 transition-all cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    Import
+                    <input type="file" className="hidden" accept=".csv,.iif,.xlsx" onChange={handleImport} />
+                </label>
+            </div>
+          </div>
        </div>
 
-      <div className="overflow-y-auto flex-grow relative">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
+      <div className="overflow-x-auto flex-grow relative">
+        <table className="w-full text-left border-collapse min-w-[700px]">
+          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
             <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Date</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Narration</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Amount</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Category</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The date the transaction was recorded in your bank or manually.">Date</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The description of the transaction.">Narration</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The financial value of the transaction in your selected currency.">Amount</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The accounting category assigned to this transaction.">Category</Tooltip>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">

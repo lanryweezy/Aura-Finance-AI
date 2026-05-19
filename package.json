@@ -9,9 +9,11 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"
+    "mcp:build": "cd mcp-server && npm run build",
+    "mcp:start": "cd mcp-server && npm start"
   },
   "dependencies": {
-    "@google/genai": "^1.8.0",
+    "@google/genai": "^1.52.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^3.0.2",
