@@ -8,6 +8,7 @@ import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
 import { useCurrency } from './ui/CurrencyProvider';
+import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
@@ -275,17 +276,19 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
     );
 });
 
-export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills: propsBills, invoices: propsInvoices, onQuickAction, onAddTransaction }) => {
   const { formatAmount } = useCurrency();
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
+  const { bills, invoices, payrollHistory } = useAppStore();
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoadingInsights(true);
-      if (transactions.length > 0) {
-        const fetchedInsights = await getFinancialInsights(transactions);
+      if (transactions.length > 0 || bills.length > 0 || invoices.length > 0) {
+        const fetchedInsights = await getFinancialInsights(transactions, bills, invoices, payrollHistory);
         setInsights(fetchedInsights);
       } else {
         setInsights([]);
@@ -293,7 +296,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       setLoadingInsights(false);
     };
     fetchAllData();
-  }, [transactions]);
+  }, [transactions, bills, invoices, payrollHistory]);
 
 
   const summary = useMemo(() => {
