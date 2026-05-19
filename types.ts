@@ -369,6 +369,7 @@ export interface SubscriptionTier {
     highlighted?: boolean;
 }
 
+export type FeatureId = 'inventory' | 'payroll' | 'taxFiling' | 'multi_entity' | 'fixedAssets' | 'auditTrail' | 'budgeting' | 'projects' | 'estimates' | 'purchaseOrders' | 'yearEnd';
 
 export type View = 
     'dashboard' | 'transactions' | 'chat' | 'connections' | 'integrations' | 'taxFiling' | 'reports' |

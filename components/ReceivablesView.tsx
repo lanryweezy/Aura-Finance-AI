@@ -9,6 +9,7 @@ import { exportToCSV } from '../services/exportService';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { usageService } from '../services/usageService';
 
 interface ReceivablesViewProps {
     invoices: Invoice[];
@@ -72,10 +73,16 @@ const NewInvoiceModal: React.FC<{
     const calculatedVat = applyVat ? calculatedSubtotal * 0.075 : 0;
     const calculatedTotal = calculatedSubtotal + calculatedVat;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if(!customer || !dueDate) {
             showToast("Please fill customer and due date.", "error");
+            return;
+        }
+
+        const isLimited = await usageService.isRateLimited('invoices_sent');
+        if (isLimited) {
+            showToast("Monthly invoice limit reached. Please upgrade your plan.", "error");
             return;
         }
 
@@ -108,6 +115,8 @@ const NewInvoiceModal: React.FC<{
             lineItems: finalLineItems
         });
         
+        usageService.trackUsage('invoices_sent');
+
         setCustomer('');
         setLineItems([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
         setDueDate('');
@@ -208,7 +217,7 @@ const NewInvoiceModal: React.FC<{
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                             Add Line
                         </button>
-                    </div>
+                    </fieldset>
 
                     <div className="flex items-center justify-between gap-4 bg-gray-50 dark:bg-dark-secondary/50 border border-gray-100 dark:border-gray-700 p-4 rounded-xl">
                         <label htmlFor="vat-checkbox" className="flex items-center gap-2 cursor-pointer text-gray-700 dark:text-white text-sm font-bold select-none">
