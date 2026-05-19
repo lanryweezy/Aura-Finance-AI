@@ -147,87 +147,87 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-white">Tax Filing Assistant</h2>
-                    <p className="text-gray-400 mt-1">Generate reports for your VAT, WHT, and CIT filings.</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Tax Filing Assistant</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Generate reports for your VAT, WHT, and CIT filings.</p>
                 </div>
-                <button onClick={handlePrint} disabled={!period.start || !period.end} className="bg-brand-cyan text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors hover:bg-brand-cyan/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                <button onClick={handlePrint} disabled={!period.start || !period.end} className="bg-brand-cyan text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-brand-cyan/90 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
                     Print Report
                 </button>
             </div>
 
-            <Card>
-                <div className="flex flex-col md:flex-row items-center gap-4">
-                    <div className="flex-1">
-                        <label htmlFor="start-date" className="text-sm font-medium text-gray-300">Start Date</label>
-                        <input id="start-date" type="date" value={period.start} onChange={e => setPeriod(p => ({...p, start: e.target.value}))} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+            <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="flex-1 w-full">
+                        <label htmlFor="start-date" className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">Start Date</label>
+                        <input id="start-date" type="date" value={period.start} onChange={e => setPeriod(p => ({...p, start: e.target.value}))} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium" />
                     </div>
-                    <div className="flex-1">
-                        <label htmlFor="end-date" className="text-sm font-medium text-gray-300">End Date</label>
-                        <input id="end-date" type="date" value={period.end} onChange={e => setPeriod(p => ({...p, end: e.target.value}))} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                    <div className="flex-1 w-full">
+                        <label htmlFor="end-date" className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
+                        <input id="end-date" type="date" value={period.end} onChange={e => setPeriod(p => ({...p, end: e.target.value}))} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium" />
                     </div>
                 </div>
             </Card>
 
-            <div ref={printRef}>
-                 <h2 className="text-2xl font-bold text-white mb-4">
-                    Tax Report: {period.start && period.end ? `${new Date(period.start).toLocaleDateString()} - ${new Date(period.end).toLocaleDateString()}` : 'Select a period'}
+            <div ref={printRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                    Tax Report: {period.start && period.end ? `${new Date(period.start).toLocaleDateString()} - ${new Date(period.end).toLocaleDateString()}` : <span className="text-gray-400 font-medium">Select a period to generate results</span>}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <Card className="summary-card">
-                        <h3 className="text-gray-400 text-sm font-medium">Total Sales (VAT-exclusive)</h3>
-                        <p className="text-3xl font-bold text-brand-cyan mt-2">{formatAmount(filteredData.totalSales)}</p>
+                    <Card className="border-gray-100 dark:border-white/5 shadow-lg">
+                        <h3 className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Sales</h3>
+                        <p className="text-2xl font-black text-brand-cyan mt-3">{formatAmount(filteredData.totalSales)}</p>
                     </Card>
-                    <Card className="summary-card">
-                        <h3 className="text-gray-400 text-sm font-medium">Total VAT Collected</h3>
-                        <p className="text-3xl font-bold text-blue-400 mt-2">{formatAmount(filteredData.totalVAT)}</p>
+                    <Card className="border-gray-100 dark:border-white/5 shadow-lg">
+                        <h3 className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">VAT Collected</h3>
+                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-3">{formatAmount(filteredData.totalVAT)}</p>
                     </Card>
-                    <Card className="summary-card">
-                        <h3 className="text-gray-400 text-sm font-medium">Total WHT Suffered</h3>
-                        <p className="text-3xl font-bold text-purple-400 mt-2">{formatAmount(filteredData.totalWHT)}</p>
+                    <Card className="border-gray-100 dark:border-white/5 shadow-lg">
+                        <h3 className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">WHT Suffered</h3>
+                        <p className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-3">{formatAmount(filteredData.totalWHT)}</p>
                     </Card>
-                    <Card className="summary-card">
-                        <h3 className="text-gray-400 text-sm font-medium">Total PAYE Estimated</h3>
-                        <p className="text-3xl font-bold text-green-400 mt-2">{formatAmount(filteredData.totalPAYE)}</p>
+                    <Card className="border-gray-100 dark:border-white/5 shadow-lg">
+                        <h3 className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">PAYE Estimated</h3>
+                        <p className="text-2xl font-black text-green-600 dark:text-green-400 mt-3">{formatAmount(filteredData.totalPAYE)}</p>
                     </Card>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <Card>
-                        <h3 className="text-xl font-bold text-white mb-6">Invoice Schedule (VAT)</h3>
-                        <div className="overflow-y-auto max-h-96">
+                    <Card className="border-gray-100 dark:border-white/5 shadow-xl overflow-hidden">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 p-4 pb-0">Invoice Schedule (VAT)</h3>
+                        <div className="overflow-x-auto max-h-96">
                         <table className="w-full text-left">
-                            <thead>
+                            <thead className="bg-gray-50 dark:bg-dark-tertiary">
                             <tr>
-                                <th className="p-4 text-sm font-semibold text-gray-400">Issue Date</th>
-                                <th className="p-4 text-sm font-semibold text-gray-400">Customer</th>
-                                <th className="p-4 text-sm font-semibold text-gray-400">VAT</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Issue Date</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">VAT</th>
                             </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-800">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                             {filteredData.invoices.length > 0 ? filteredData.invoices.map((invoice) => (
-                                <tr key={invoice.id}>
-                                    <td className="p-4 text-gray-300">{new Date(invoice.issueDate).toLocaleDateString()}</td>
-                                    <td className="p-4 text-white font-medium">{invoice.customer}</td>
-                                    <td className="p-4 font-mono text-blue-400">{formatAmount(invoice.vat)}</td>
+                                <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                                    <td className="p-4 text-gray-500 dark:text-gray-400 font-mono text-sm">{new Date(invoice.issueDate).toLocaleDateString()}</td>
+                                    <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{invoice.customer}</td>
+                                    <td className="p-4 font-mono font-bold text-blue-600 dark:text-blue-400">{formatAmount(invoice.vat)}</td>
                                 </tr>
                             )) : (
-                                <tr><td colSpan={3} className="text-center p-8 text-gray-400">No invoices.</td></tr>
+                                <tr><td colSpan={3} className="text-center py-20 text-gray-400 font-medium">No invoices found for this period.</td></tr>
                             )}
                             </tbody>
                         </table>
                         </div>
                     </Card>
-                    <Card>
-                        <h3 className="text-xl font-bold text-white mb-6">CIT Estimator (Period)</h3>
+                    <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">CIT Estimator</h3>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Revenue:</span> <span className="font-mono text-green-400">{formatAmount(filteredData.revenue)}</span></div>
-                            <div className="flex justify-between items-center text-lg"><span className="text-gray-300">Total Expenses:</span> <span className="font-mono text-red-400">({formatAmount(filteredData.expenses)})</span></div>
-                             <hr className="border-gray-700 !my-3"/>
-                            <div className="flex justify-between items-center text-lg font-bold"><span className="text-white">Assessable Profit:</span> <span className="font-mono text-white">{formatAmount(filteredData.assessableProfit)}</span></div>
-                             <hr className="border-gray-700 !my-3"/>
-                            <div className="flex justify-between items-center"><span className="text-gray-300">Applicable CIT Rate:</span> <span className="font-mono text-orange-400">{filteredData.citRate}%</span></div>
-                            <div className="flex justify-between items-center text-xl font-bold bg-dark-secondary p-3 rounded-lg"><span className="text-orange-300">Est. CIT Payable:</span> <span className="font-mono text-orange-300">{formatAmount(filteredData.estimatedCIT)}</span></div>
+                            <div className="flex justify-between items-center text-sm font-medium"><span className="text-gray-500 dark:text-gray-400">Total Revenue:</span> <span className="font-mono font-bold text-green-600 dark:text-green-400">{formatAmount(filteredData.revenue)}</span></div>
+                            <div className="flex justify-between items-center text-sm font-medium"><span className="text-gray-500 dark:text-gray-400">Total Expenses:</span> <span className="font-mono font-bold text-red-600 dark:text-red-400">({formatAmount(filteredData.expenses)})</span></div>
+                             <hr className="border-gray-100 dark:border-gray-800 !my-4"/>
+                            <div className="flex justify-between items-center text-lg font-black"><span className="text-gray-900 dark:text-white">Assessable Profit:</span> <span className="font-mono text-gray-900 dark:text-white">{formatAmount(filteredData.assessableProfit)}</span></div>
+                             <hr className="border-gray-100 dark:border-gray-800 !my-4"/>
+                            <div className="flex justify-between items-center text-sm font-medium"><span className="text-gray-500 dark:text-gray-400">Applicable CIT Rate:</span> <span className="font-mono font-bold text-orange-600 dark:text-orange-400">{filteredData.citRate}%</span></div>
+                            <div className="flex justify-between items-center text-xl font-black bg-orange-50 dark:bg-orange-500/10 p-5 rounded-2xl border border-orange-100 dark:border-orange-500/20"><span className="text-orange-700 dark:text-orange-300">Est. CIT Payable:</span> <span className="font-mono text-orange-700 dark:text-orange-300">{formatAmount(filteredData.estimatedCIT)}</span></div>
                         </div>
                     </Card>
                 </div>

@@ -57,8 +57,8 @@ const NavMenu: React.FC<{
               onClick={handleClick}
               className={`flex items-center justify-between gap-4 p-3 w-full rounded-xl transition-all duration-300 group ${
                 isParentActive 
-                ? 'bg-gradient-to-r from-brand-cyan/10 to-transparent backdrop-blur-md text-brand-cyan font-semibold border-l-4 border-brand-cyan shadow-[0_0_20px_rgba(0,245,212,0.15)]' 
-                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-gradient-to-r from-brand-cyan/10 to-transparent backdrop-blur-md text-brand-cyan font-semibold border-l-4 border-brand-cyan shadow-[0_0_20px_rgba(0,245,212,0.15)] dark:bg-gradient-to-r dark:from-brand-cyan/10 dark:to-transparent'
+                : 'text-gray-400 dark:text-gray-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-4">
@@ -83,20 +83,50 @@ const NavMenu: React.FC<{
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout }) => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
-    <div className="w-20 lg:w-64 bg-dark-primary p-4 lg:p-6 flex flex-col justify-between border-r border-white/5 relative z-20">
+    <>
+    {/* Mobile Hamburger Button */}
+    <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-dark-secondary/80 dark:bg-dark-secondary/80 rounded-lg border border-white/10 text-white"
+        aria-label="Toggle navigation menu"
+    >
+        {isMobileMenuOpen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        )}
+    </button>
+
+    {/* Backdrop for mobile */}
+    {isMobileMenuOpen && (
+        <div
+            className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[50]"
+            onClick={() => setIsMobileMenuOpen(false)}
+        />
+    )}
+
+    <div
+        id="sidebar-nav"
+        className={`
+            fixed inset-y-0 left-0 z-[55] w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 bg-dark-primary dark:bg-dark-primary p-4 lg:p-6 flex flex-col justify-between border-r border-white/5
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+    >
       <div>
         <div className="flex items-center gap-3 mb-10 pl-2">
           <div className="bg-gradient-to-br from-brand-cyan to-brand-purple p-2 rounded-xl shadow-[0_0_20px_rgba(0,245,212,0.2)]">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
           </div>
-          <h1 className="text-2xl font-black hidden lg:block tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan via-white to-brand-purple drop-shadow-[0_0_15px_rgba(0,245,212,0.3)]">
+          <h1 className="text-2xl font-black hidden lg:block tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-brand-cyan via-white to-brand-purple dark:from-brand-cyan dark:via-white dark:to-brand-purple drop-shadow-[0_0_15px_rgba(0,245,212,0.3)]">
             Aura
           </h1>
         </div>
         <nav className="flex flex-col gap-1 overflow-y-auto max-h-[calc(100vh-200px)] scrollbar-hide">
           {NAV_ITEMS.map((item) => (
-            <NavMenu key={item.id} item={item} activeView={activeView} setActiveView={setActiveView} />
+            <NavMenu key={item.id} item={item} activeView={activeView} setActiveView={(v) => { setActiveView(v); setIsMobileMenuOpen(false); }} />
           ))}
         </nav>
       </div>
@@ -114,5 +144,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onL
           </button>
       </div>
     </div>
+    </>
   );
 };

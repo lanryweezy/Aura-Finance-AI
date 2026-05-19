@@ -45,13 +45,13 @@ export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDeta
 
             <div className="overflow-y-auto flex-grow -mr-6 pr-4">
                 <table className="w-full text-left">
-                    <thead className="sticky top-0 bg-dark-tertiary z-10">
+                    <thead className="bg-gray-50 dark:bg-dark-tertiary">
                         <tr>
-                            <th className="p-3 text-sm font-semibold text-gray-400">Period</th>
-                            <th className="p-3 text-sm font-semibold text-gray-400">Net Payout</th>
-                            <th className="p-3 text-sm font-semibold text-gray-400">Employees</th>
-                            <th className="p-3 text-sm font-semibold text-gray-400">Run Date</th>
-                            <th className="p-3 text-sm font-semibold text-gray-400 text-right">Actions</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Period</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Net Payout</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Employees</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Run Date</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">

@@ -59,6 +59,17 @@ export const apiClient = {
         ...fetchOptions,
         headers,
         signal: controller.signal,
+      }).catch(err => {
+          if (!navigator.onLine) {
+              const cached = localStorage.getItem(`aura_cache_${endpoint}`);
+              if (cached && options.method === 'GET') {
+                  return new Response(cached, {
+                      status: 200,
+                      headers: { 'Content-Type': 'application/json', 'X-Offline-Cache': 'true' }
+                  });
+              }
+          }
+          throw err;
       });
 
       clearTimeout(timeoutId);
@@ -73,7 +84,12 @@ export const apiClient = {
       }
 
       if (isJson) {
-        return await response.json();
+        const data = await response.json();
+        // Cache successful GET responses for offline use
+        if (options.method === 'GET' || !options.method) {
+            localStorage.setItem(`aura_cache_${endpoint}`, JSON.stringify(data));
+        }
+        return data;
       } else {
         const text = await response.text();
         throw new Error(`Expected JSON response but got: ${text.substring(0, 50)}...`);

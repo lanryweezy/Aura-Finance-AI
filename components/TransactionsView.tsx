@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
+import { Tooltip } from './ui/Tooltip';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -93,7 +94,7 @@ const CategoryEditor = React.memo<{
     };
 
     return (
-        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary dark:bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
             <h4 className="text-white font-bold text-sm">Edit Transaction Details</h4>
             <input
                 type="text"
@@ -187,7 +188,7 @@ const AddTransactionModal = React.memo<{
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
+            <div className="bg-dark-tertiary dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-white mb-6">Add New Transaction</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -278,9 +279,11 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter, advancedFilters]);
 
+  const { showToast } = useToast();
   const handleCategorySave = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
     onUpdateCategory(transactionId, newCategory, newProjectId, newReceiptUrl);
     setEditingId(null);
+    showToast('Transaction updated successfully.', 'success');
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -312,7 +315,7 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
       onSave={onAddTransaction}
     />
     
-    <Card className="h-full overflow-hidden flex flex-col p-0">
+    <Card className="h-full overflow-hidden flex flex-col p-0 border-gray-100 dark:border-white/5">
        <div className="p-6 pb-4 border-b border-gray-800">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
@@ -370,14 +373,22 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
           </div>
        </div>
 
-      <div className="overflow-y-auto flex-grow relative">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
+      <div className="overflow-x-auto flex-grow relative">
+        <table className="w-full text-left border-collapse min-w-[700px]">
+          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
             <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Date</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Narration</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Amount</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Category</th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The date the transaction was recorded in your bank or manually.">Date</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The description of the transaction.">Narration</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The financial value of the transaction in your selected currency.">Amount</Tooltip>
+              </th>
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+                <Tooltip content="The accounting category assigned to this transaction.">Category</Tooltip>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-800/50">
