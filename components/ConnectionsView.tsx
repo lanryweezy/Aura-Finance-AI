@@ -3,7 +3,7 @@ import { monitoringService } from '../services/monitoringService';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
-import { fetchConnections, simulateConnect, unlinkConnection, syncConnection } from '../services/connectionService';
+import { fetchConnections, simulateConnect, unlinkConnection, syncConnection, connectPlaid, processBankStatement } from '../services/connectionService';
 import type { BankConnection } from '../types';
 import { useToast } from './ui/Toast';
 
@@ -11,10 +11,75 @@ interface ConnectionsViewProps {
     onConnectionsUpdated: () => void;
 }
 
+const StatementUploadModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onUpload: (file: File, password?: string) => Promise<void>;
+    isUploading: boolean;
+}> = ({ isOpen, onClose, onUpload, isUploading }) => {
+    const [file, setFile] = useState<File | null>(null);
+    const [password, setPassword] = useState('');
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={onClose}>
+            <div className="bg-dark-tertiary rounded-2xl p-8 w-full max-w-lg shadow-2xl" onClick={e => e.stopPropagation()}>
+                <h3 className="text-2xl font-bold text-white mb-2 text-center">Upload Bank Statement</h3>
+                <p className="text-gray-400 mb-6 text-center text-sm">Upload your PDF or CSV statement for automated ingestion. We support password-protected statements from all major Nigerian banks.</p>
+
+                <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-brand-cyan transition-colors cursor-pointer" onClick={() => document.getElementById('statement-upload')?.click()}>
+                        <input
+                            type="file"
+                            id="statement-upload"
+                            className="hidden"
+                            accept=".pdf,.csv"
+                            onChange={(e) => setFile(e.target.files?.[0] || null)}
+                        />
+                        {file ? (
+                            <div className="flex items-center justify-center gap-2 text-brand-cyan">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <span className="font-medium text-xs truncate max-w-[200px]">{file.name}</span>
+                            </div>
+                        ) : (
+                            <div className="text-gray-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                <p className="text-sm">Click or drag to upload statement</p>
+                                <p className="text-[10px] mt-1">PDF or CSV formats supported</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Statement Password (Optional)</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Enter password if PDF is protected"
+                            className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-xs"
+                        />
+                    </div>
+
+                    <button
+                        onClick={() => file && onUpload(file, password)}
+                        disabled={!file || isUploading}
+                        className="w-full bg-brand-cyan text-black font-bold py-2.5 rounded-lg flex items-center justify-center gap-2 text-sm"
+                    >
+                        {isUploading ? <Spinner /> : 'Process Statement'}
+                    </button>
+                    <button onClick={onClose} className="w-full text-gray-500 text-xs hover:text-white">Cancel</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const ConnectionModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    onConnect: (provider: 'mono' | 'okra') => Promise<void>;
+    onConnect: (provider: 'mono' | 'okra' | 'plaid') => Promise<void>;
     isConnecting: boolean;
 }> = ({ isOpen, onClose, onConnect, isConnecting }) => {
 
@@ -81,8 +146,10 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
     const [connections, setConnections] = useState<BankConnection[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isConnecting, setIsConnecting] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [syncingId, setSyncingId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
     const loadConnections = useCallback(async () => {
         setIsLoading(true);
@@ -101,10 +168,14 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
         loadConnections();
     }, [loadConnections]);
     
-    const handleConnect = async (provider: 'mono' | 'okra') => {
+    const handleConnect = async (provider: 'mono' | 'okra' | 'plaid') => {
         setIsConnecting(true);
         try {
-            await simulateConnect(provider);
+            if (provider === 'plaid') {
+                await connectPlaid();
+            } else {
+                await simulateConnect(provider);
+            }
             onConnectionsUpdated(); // Notify App.tsx to reload all data
             setIsModalOpen(false); // Close modal on success
             await loadConnections(); // Refresh local list
@@ -113,6 +184,20 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
             showToast((error as Error).message, 'error');
         } finally {
             setIsConnecting(false);
+        }
+    };
+
+    const handleUploadStatement = async (file: File, password?: string) => {
+        setIsUploading(true);
+        try {
+            await processBankStatement(file, password);
+            onConnectionsUpdated();
+            setIsUploadModalOpen(false);
+            showToast(`Successfully processed statement: ${file.name}`, 'success');
+        } catch (error) {
+            showToast((error as Error).message, 'error');
+        } finally {
+            setIsUploading(false);
         }
     };
 
