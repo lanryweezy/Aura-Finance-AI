@@ -96,7 +96,7 @@ export const ocrService = {
                 }
             });
 
-            const jsonText = response.text.trim();
+            const jsonText = (typeof response.text === 'function' ? (response.text as any)() : String(response.text)).trim();
             const data = JSON.parse(jsonText) as ReceiptData;
 
             await usageService.trackUsage('ocr_scan');

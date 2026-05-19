@@ -156,7 +156,7 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
         try {
             const data = await fetchConnections();
             setConnections(data);
-        } catch (error) {
+        } catch (error: any) {
             monitoringService.trackError('UI', error, { message: "Failed to fetch connections:" });
             // Handle error UI
         } finally {
@@ -180,7 +180,7 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
             setIsModalOpen(false); // Close modal on success
             await loadConnections(); // Refresh local list
             showToast('Account linked successfully!', 'success');
-        } catch (error) {
+        } catch (error: any) {
             showToast((error as Error).message, 'error');
         } finally {
             setIsConnecting(false);
@@ -216,7 +216,7 @@ export const ConnectionsView: React.FC<ConnectionsViewProps> = ({ onConnectionsU
             onConnectionsUpdated();
             await loadConnections();
             showToast('Account synced successfully!', 'success');
-        } catch (error) {
+        } catch (error: any) {
             showToast('Sync failed. Please try again.', 'error');
         } finally {
             setSyncingId(null);

@@ -557,12 +557,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
                <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
-                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => formatAmount(value, { compact: true })} axisLine={false} tickLine={false} />
+                        <XAxis type="number" stroke="#888888" tickFormatter={(value: any) => formatAmount(value as number, { compact: true })} axisLine={false} tickLine={false} />
                         <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
                         <RechartsTooltip
                             cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
                             contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
-                            formatter={(value: number) => formatAmount(value)}
+                            formatter={(value: any) => formatAmount(value as number)}
                         />
                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
                             {chartData.map((entry, index) => (
