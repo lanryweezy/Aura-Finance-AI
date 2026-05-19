@@ -581,7 +581,7 @@ export default function App(): React.ReactNode {
       yearEnd: <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />,
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} />,
+      chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };

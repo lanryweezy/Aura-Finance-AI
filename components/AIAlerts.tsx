@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import type { CategorizedTransaction } from '../types';
 import { fraudService } from '../services/fraudService';
 import { useAppStore } from '../store/useAppStore';
+import { forecastingService } from '../services/forecastingService';
 
 interface Alert {
     id: string;
@@ -15,11 +16,26 @@ interface Alert {
 
 export const AIAlerts: React.FC<{ transactions: CategorizedTransaction[] }> = ({ transactions }) => {
     const [alerts, setAlerts] = useState<Alert[]>([]);
-    const { bills, invoices } = useAppStore();
+    const { bills, invoices, payrollHistory } = useAppStore();
 
     useEffect(() => {
         // Simulated proactive scanning
         const newAlerts: Alert[] = [];
+
+        // -1. Predictive Forecasting
+        if (transactions.length > 0) {
+            const forecast = forecastingService.calculateForecast(transactions, bills, invoices, payrollHistory);
+            if (forecast.riskLevel === 'High' || forecast.riskLevel === 'Medium') {
+                newAlerts.push({
+                    id: 'forecast_risk',
+                    type: 'insight',
+                    title: 'Cashflow Risk Detected',
+                    description: forecast.recommendations[0] || `Your projected runway is ${forecast.predictedRunwayDays} days.`,
+                    date: new Date().toISOString(),
+                    severity: forecast.riskLevel === 'High' ? 'high' : 'medium'
+                });
+            }
+        }
 
         // 0. Fraud Detection Heuristics
         const fraudAlerts = fraudService.runHeuristics({ invoices, bills });
