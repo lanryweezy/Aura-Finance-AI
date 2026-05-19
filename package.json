@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "mcp:build": "cd mcp-server && npm run build",
+    "mcp:start": "cd mcp-server && npm start"
   },
   "dependencies": {
     "@google/genai": "^1.52.0",
