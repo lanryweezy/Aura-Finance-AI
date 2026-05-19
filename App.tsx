@@ -5,6 +5,7 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
+import { LandingView } from './components/LandingView';
 import { Spinner } from './components/ui/Spinner';
 import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 
@@ -68,6 +69,8 @@ import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnec
 
 export default function App(): React.ReactNode {
   const { showToast } = useToast();
+  const [showLanding, setShowLanding] = useState(true);
+  const [isLoginFlow, setIsLoginFlow] = useState(true);
   const store = useAppStore();
   const {
     user, setUser,
@@ -636,7 +639,21 @@ export default function App(): React.ReactNode {
   };
 
   if (!user) {
-    return <AuthView onLogin={handleLogin} />;
+    if (showLanding) {
+      return (
+        <LandingView
+          onGetStarted={() => {
+            setIsLoginFlow(false);
+            setShowLanding(false);
+          }}
+          onLogin={() => {
+            setIsLoginFlow(true);
+            setShowLanding(false);
+          }}
+        />
+      );
+    }
+    return <AuthView onLogin={handleLogin} initialIsLogin={isLoginFlow} />;
   }
 
   return (
