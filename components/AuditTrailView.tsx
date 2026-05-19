@@ -67,7 +67,27 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                                         </span>
                                     </td>
                                     <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{log.user}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</td>
+                                    <td className="p-4">
+                                        <div className="text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</div>
+                                        {(log.before || log.after) && (
+                                            <div className="mt-2 p-2 bg-gray-100 dark:bg-black/20 rounded border border-gray-200 dark:border-white/5 text-[10px] font-mono overflow-hidden">
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <div className="text-gray-400 uppercase font-black mb-1">Before</div>
+                                                        <pre className="text-red-600 dark:text-red-400 break-words whitespace-pre-wrap">
+                                                            {JSON.stringify(log.before, null, 2) || 'None'}
+                                                        </pre>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-gray-400 uppercase font-black mb-1">After</div>
+                                                        <pre className="text-green-600 dark:text-green-400 break-words whitespace-pre-wrap">
+                                                            {JSON.stringify(log.after, null, 2) || 'None'}
+                                                        </pre>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {filteredLogs.length === 0 && (

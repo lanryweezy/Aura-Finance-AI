@@ -1,7 +1,14 @@
 
 import { apiClient } from './apiClient';
 
-export type UserRole = 'Owner' | 'Admin' | 'Accountant' | 'Viewer';
+export type UserRole = 'Owner' | 'Admin' | 'Accountant' | 'Viewer' | string;
+
+export interface PermissionSet {
+    id: string;
+    name: string;
+    permissions: string[];
+    isCustom: boolean;
+}
 
 export interface TeamMember {
     id: string;
@@ -42,5 +49,34 @@ export const teamService = {
 
     updateRole: async (id: string, role: UserRole): Promise<TeamMember> => {
         return await apiClient.put(`/team/${id}/role`, { role });
+    },
+
+    fetchCustomRoles: async (): Promise<PermissionSet[]> => {
+        try {
+            return await apiClient.get('/team/roles');
+        } catch {
+            const stored = localStorage.getItem('aura_custom_roles');
+            return stored ? JSON.parse(stored) : [];
+        }
+    },
+
+    saveCustomRole: async (role: Omit<PermissionSet, 'id' | 'isCustom'>): Promise<PermissionSet> => {
+        try {
+            return await apiClient.post('/team/roles', role);
+        } catch {
+            const roles = await teamService.fetchCustomRoles();
+            const newRole = { ...role, id: `role_${Date.now()}`, isCustom: true };
+            localStorage.setItem('aura_custom_roles', JSON.stringify([...roles, newRole]));
+            return newRole;
+        }
+    },
+
+    deleteCustomRole: async (id: string): Promise<void> => {
+        try {
+            await apiClient.delete(`/team/roles/${id}`);
+        } catch {
+            const roles = await teamService.fetchCustomRoles();
+            localStorage.setItem('aura_custom_roles', JSON.stringify(roles.filter(r => r.id !== id)));
+        }
     }
 };

@@ -9,6 +9,8 @@ import { ProfitAndLossReport } from './reports/ProfitAndLossReport';
 import { BalanceSheetReport } from './reports/BalanceSheetReport';
 import { CashFlowStatement } from './reports/CashFlowStatement';
 import { TrialBalanceReport } from './reports/TrialBalanceReport';
+import { reportSharingService } from '../services/reportSharingService';
+import { useToast } from './ui/Toast';
 import { AICFOInsights } from './reports/AICFOInsights';
 import { DrillDownModal } from './reports/DrillDownModal';
 import { CashFlowForecast } from './reports/CashFlowForecast';
@@ -25,6 +27,14 @@ interface FinancialReportsViewProps {
   chartOfAccounts: Account[];
 }
 
+const TABS = [
+    { id: 'p&l', label: 'P&L Statement' },
+    { id: 'balance_sheet', label: 'Balance Sheet' },
+    { id: 'cash_flow', label: 'Cash Flow' },
+    { id: 'trial_balance', label: 'Trial Balance' },
+    { id: 'forecast', label: 'Forecast' },
+] as const;
+
 const getDefaultPeriod = (): ReportPeriod => {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -35,6 +45,7 @@ const getDefaultPeriod = (): ReportPeriod => {
 }
 
 export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ transactions, payrollSummary, bills, invoices, inventory, projects, chartOfAccounts }) => {
+    const { showToast } = useToast();
     const [reportPeriod, setReportPeriod] = useState<ReportPeriod>(getDefaultPeriod());
     const [comparePeriod, setComparePeriod] = useState<ReportPeriod | null>(null);
     const [activeReport, setActiveReport] = useState<'p&l' | 'balance_sheet' | 'cash_flow' | 'trial_balance' | 'forecast'>('p&l');
@@ -44,6 +55,8 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ tran
     const [isLoadingAnalysis, setIsLoadingAnalysis] = useState(false);
     
     const [drillDown, setDrillDown] = useState<{title: string, transactions: CategorizedTransaction[]} | null>(null);
+    const [isSharing, setIsSharing] = useState(false);
+    const [sharedLink, setSharedLink] = useState<string | null>(null);
 
     const printRef = useRef<HTMLDivElement>(null);
 
@@ -100,6 +113,21 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ tran
         generateAnalysis();
     }, [reportData, comparisonReportData]);
     
+    const handleShare = async () => {
+        setIsSharing(true);
+        try {
+            const reportName = TABS.find(t => t.id === activeReport)?.label || 'Financial Report';
+            const link = await reportSharingService.generateLink(reportName);
+            const fullUrl = `${window.location.origin}/shared/report?token=${link.token}`;
+            setSharedLink(fullUrl);
+            showToast('Secure link generated successfully', 'success');
+        } catch (e) {
+            showToast('Failed to generate sharing link', 'error');
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
     const handlePrint = () => {
         const printContent = printRef.current;
         if (printContent) {
@@ -147,10 +175,39 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({ tran
                     comparePeriod={comparePeriod}
                     setComparePeriod={setComparePeriod}
                     onPrint={handlePrint}
+                    onShare={handleShare}
                     projects={projects}
                     projectFilter={projectFilter}
                     setProjectFilter={setProjectFilter}
                 />
+
+                {sharedLink && (
+                    <div className="bg-brand-cyan/10 border border-brand-cyan/20 rounded-2xl p-6 animate-in zoom-in duration-300">
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-brand-cyan font-bold uppercase tracking-widest text-xs">Secure Shareable Link</h4>
+                            <button onClick={() => setSharedLink(null)} className="text-gray-400 hover:text-white transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
+                        </div>
+                        <div className="flex gap-3">
+                            <input
+                                readOnly
+                                value={sharedLink}
+                                className="flex-1 bg-black/20 border border-white/10 rounded-xl p-3 text-sm font-mono text-brand-cyan outline-none"
+                            />
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(sharedLink);
+                                    showToast('Copied to clipboard', 'success');
+                                }}
+                                className="bg-brand-cyan text-black font-black px-6 rounded-xl hover:bg-brand-cyan/80 transition-all active:scale-95"
+                            >
+                                COPY
+                            </button>
+                        </div>
+                        <p className="text-[10px] text-gray-500 mt-3 font-bold uppercase tracking-tighter italic">This link is secure, encrypted, and will expire in 7 days.</p>
+                    </div>
+                )}
 
                 <div ref={printRef} className="print-container">
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
