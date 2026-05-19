@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+.high-contrast {
+    @apply bg-hc-bg text-hc-text !important;
+}
+
+.high-contrast * {
+    @apply border-hc-border text-hc-text !important;
+    background-image: none !important;
+}
+
+.high-contrast button, .high-contrast a, .high-contrast select, .high-contrast input {
+    @apply border-2 border-hc-border bg-hc-bg text-hc-text !important;
+    outline: 2px solid transparent !important;
+}
+
+.high-contrast button:hover, .high-contrast a:hover {
+    @apply bg-hc-accent text-hc-bg !important;
+}
+
+.high-contrast .bg-brand-cyan, .high-contrast .text-brand-cyan {
+    @apply bg-hc-accent text-hc-bg border-hc-accent !important;
+}
+
 @layer base {
   /* Custom Scrollbar */
   ::-webkit-scrollbar {

@@ -108,10 +108,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onL
         />
     )}
 
-    <div className={`
-        fixed inset-y-0 left-0 z-[55] w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 bg-dark-primary dark:bg-dark-primary p-4 lg:p-6 flex flex-col justify-between border-r border-white/5
-        ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
-    `}>
+    <div
+        id="sidebar-nav"
+        className={`
+            fixed inset-y-0 left-0 z-[55] w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 bg-dark-primary dark:bg-dark-primary p-4 lg:p-6 flex flex-col justify-between border-r border-white/5
+            ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+    >
       <div>
         <div className="flex items-center gap-3 mb-10 pl-2">
           <div className="bg-gradient-to-br from-brand-cyan to-brand-purple p-2 rounded-xl shadow-[0_0_20px_rgba(0,245,212,0.2)]">

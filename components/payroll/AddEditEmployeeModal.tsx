@@ -67,26 +67,56 @@ export const AddEditEmployeeModal: React.FC<AddEditEmployeeModalProps> = ({ isOp
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="emp-modal-title"
+        >
             <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-lg shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{employee ? 'Edit Employee' : 'Add New Employee'}</h3>
+                <h3 id="emp-modal-title" className="text-xl font-bold text-gray-900 dark:text-white mb-6">{employee ? 'Edit Employee' : 'Add New Employee'}</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <input type="text" name="name" placeholder="Full Name" value={formData.name} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                         <input type="text" name="jobTitle" placeholder="Job Title" value={formData.jobTitle} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                    <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <legend className="sr-only">Basic Information</legend>
+                         <div className="flex flex-col gap-1">
+                            <label htmlFor="emp-name" className="text-[10px] font-black text-gray-400 uppercase ml-1">Full Name</label>
+                            <input id="emp-name" type="text" name="name" placeholder="Tunde Okechukwu" value={formData.name} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                         </div>
+                         <div className="flex flex-col gap-1">
+                            <label htmlFor="emp-job" className="text-[10px] font-black text-gray-400 uppercase ml-1">Job Title</label>
+                            <input id="emp-job" type="text" name="jobTitle" placeholder="Software Engineer" value={formData.jobTitle} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                         </div>
+                    </fieldset>
+
+                    <div className="flex flex-col gap-1">
+                        <label htmlFor="emp-email" className="text-[10px] font-black text-gray-400 uppercase ml-1">Email Address</label>
+                        <input id="emp-email" type="email" name="email" placeholder="tunde@company.ng" value={formData.email} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
                     </div>
-                    <input type="email" name="email" placeholder="Email Address" value={formData.email} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <legend className="sr-only">Compensation Details</legend>
                         <div>
-                             <label className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider ml-1">Hire Date</label>
-                             <input type="date" name="hireDate" value={formData.hireDate} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                             <label htmlFor="emp-hire-date" className="text-[10px] font-black text-gray-400 uppercase ml-1">Hire Date</label>
+                             <input id="emp-hire-date" type="date" name="hireDate" value={formData.hireDate} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
                         </div>
-                        <input type="number" name="grossSalary" placeholder="Gross Monthly Salary" value={formData.grossSalary || ''} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold self-end" />
-                    </div>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" name="bankName" placeholder="Bank Name" value={formData.bankName} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                        <input type="text" name="accountNumber" placeholder="Account Number" value={formData.accountNumber} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold" />
-                    </div>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="emp-salary" className="text-[10px] font-black text-gray-400 uppercase ml-1">Gross Salary</label>
+                            <input id="emp-salary" type="number" name="grossSalary" placeholder="e.g. 500000" value={formData.grossSalary || ''} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold" />
+                        </div>
+                    </fieldset>
+
+                    <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <legend className="sr-only">Bank Account Details</legend>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="emp-bank" className="text-[10px] font-black text-gray-400 uppercase ml-1">Bank Name</label>
+                            <input id="emp-bank" type="text" name="bankName" placeholder="Access Bank" value={formData.bankName} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="emp-account" className="text-[10px] font-black text-gray-400 uppercase ml-1">Account Number</label>
+                            <input id="emp-account" type="text" name="accountNumber" placeholder="0123456789" value={formData.accountNumber} onChange={handleChange} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold" />
+                        </div>
+                    </fieldset>
 
                     <div className="flex justify-end gap-4 pt-4">
                         <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
