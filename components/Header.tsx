@@ -10,20 +10,38 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ user }) => {
   const { currency, setCurrency } = useCurrency();
-  const { theme, setTheme } = useAppStore();
+  const { theme, setTheme, entities, selectedEntityId, setSelectedEntityId } = useAppStore();
 
   return (
     <header className="p-4 md:p-8 flex justify-between items-center">
-      <div className="flex items-center gap-2 bg-dark-secondary/50 p-1 rounded-lg border border-white/5">
-        {['NGN', 'USD', 'GBP'].map(c => (
-            <button
-                key={c}
-                onClick={() => setCurrency(c)}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${currency === c ? 'bg-brand-cyan text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
-            >
-                {c}
-            </button>
-        ))}
+      <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 bg-dark-secondary/50 p-1 rounded-lg border border-white/5">
+            {['NGN', 'USD', 'GBP'].map(c => (
+                <button
+                    key={c}
+                    onClick={() => setCurrency(c)}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${currency === c ? 'bg-brand-cyan text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                    {c}
+                </button>
+            ))}
+          </div>
+
+          {user && (
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-dark-secondary/50 rounded-xl border border-white/5 group cursor-pointer hover:border-brand-cyan/50 transition-all">
+                <div className="w-6 h-6 rounded bg-brand-cyan flex items-center justify-center text-black font-black text-[10px]">
+                    {user.name.charAt(0)}
+                </div>
+                <select
+                    value={selectedEntityId || ''}
+                    onChange={(e) => setSelectedEntityId(e.target.value)}
+                    className="bg-transparent border-none outline-none text-xs font-bold text-gray-300 cursor-pointer"
+                >
+                    {entities.map(e => <option key={e.id} value={e.id} className="bg-dark-primary">{e.name}</option>)}
+                    {entities.length === 0 && <option value="" className="bg-dark-primary">Personal Workspace</option>}
+                </select>
+              </div>
+          )}
       </div>
 
       <div className="flex items-center gap-4">
