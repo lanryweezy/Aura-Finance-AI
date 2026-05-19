@@ -8,6 +8,9 @@ import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
 import { businessGraphService } from '../services/businessGraphService';
+import { treasuryService } from '../services/treasuryService';
+import { procureService } from '../services/procureService';
+import { payrollOptimizationService } from '../services/payrollOptimizationService';
 import { autonomousActionService, AutonomousAction } from '../services/autonomousActionService';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
@@ -329,6 +332,56 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const { bills, invoices, payrollHistory } = useAppStore();
+
+  useEffect(() => {
+    // Propose treasury sweep if opportunities exist
+    const insights = treasuryService.analyzeLiquidity(connections, transactions);
+    const opportunities = treasuryService.getSweepOpportunities(insights);
+
+    opportunities.forEach(opt => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'treasury_transfer' && a.status === 'pending');
+
+        if (!alreadyProposed) {
+            autonomousActionService.proposeAction(
+                'treasury_transfer',
+                { from: opt.from, to: opt.to, amount: opt.amount, currency: '₦' },
+                opt.reasoning,
+                'High'
+            );
+        }
+    });
+
+    // Propose procurement optimization
+    const procureInsights = procureService.analyzeSpend(transactions, bills);
+    procureInsights.forEach(insight => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'vendor_negotiation' && a.status === 'pending');
+        if (!alreadyProposed) {
+             autonomousActionService.proposeAction(
+                'vendor_negotiation',
+                { vendorName: insight.vendorName, savingPercent: 15 },
+                insight.recommendation,
+                'Medium'
+            );
+        }
+    });
+
+    // Propose payroll restructuring
+    const payrollOptimizations = payrollOptimizationService.analyze(employees);
+    payrollOptimizations.forEach(opt => {
+        const history = autonomousActionService.getHistory();
+        const alreadyProposed = history.some(a => a.type === 'payroll_restructure' && a.metadata.employeeId === opt.employeeId && a.status === 'pending');
+        if (!alreadyProposed) {
+            autonomousActionService.proposeAction(
+                'payroll_restructure',
+                { employeeId: opt.employeeId, employeeName: opt.employeeName },
+                opt.recommendation,
+                'Low'
+            );
+        }
+    });
+  }, [connections, transactions, bills, employees]);
 
   const graphIntelligence = useMemo(() => {
     return businessGraphService.generateGraph(transactions, bills, invoices, []);

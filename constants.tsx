@@ -127,6 +127,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
         { id: 'reports', label: 'Standard Reports', icon: <></> },
         { id: 'consolidatedReports', label: 'Group Consolidation', icon: <></> },
+        { id: 'scenarioPlanner', label: 'AI Scenario Planner', icon: <></> },
     ]
   },
   {

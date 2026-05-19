@@ -6,7 +6,7 @@ import { useAppStore } from '../store/useAppStore';
 export interface AutonomousAction {
     id: string;
     timestamp: string;
-    type: 'invoice_reminder' | 'payment_schedule' | 'tax_filing' | 'reconciliation' | 'payroll_disbursement';
+    type: 'invoice_reminder' | 'payment_schedule' | 'tax_filing' | 'reconciliation' | 'payroll_disbursement' | 'treasury_transfer' | 'vendor_negotiation' | 'payroll_restructure';
     description: string;
     status: 'completed' | 'pending' | 'failed' | 'rejected' | 'authorized';
     metadata?: any;
@@ -29,6 +29,12 @@ class AutonomousActionService {
                 return `Auto-reconcile ${metadata.count} transactions`;
             case 'payroll_disbursement':
                 return `Disburse salaries to ${metadata.employeeCount} employees`;
+            case 'treasury_transfer':
+                return `Transfer ${metadata.currency}${metadata.amount} from ${metadata.from} to ${metadata.to}`;
+            case 'vendor_negotiation':
+                return `Initiate negotiation with ${metadata.vendorName} for ${metadata.savingPercent}% saving`;
+            case 'payroll_restructure':
+                return `Restructure payroll for ${metadata.employeeName} to optimize tax`;
             default:
                 return "Autonomous Action";
         }
@@ -60,7 +66,7 @@ class AutonomousActionService {
         monitoringService.log('info', 'AUTONOMOUS_ENGINE', `Authorized: ${action.description}`);
 
         // Handle Intercompany Logic
-        if (action.type === 'tax_filing' && action.metadata?.isIntercompany) {
+        if (action.type === 'invoice_reminder' && action.metadata?.isIntercompany) {
             // Suggest matching bill in the other entity
             this.proposeAction(
                 'payment_schedule',
@@ -73,7 +79,14 @@ class AutonomousActionService {
         // Simulate execution delay
         setTimeout(() => {
             action.status = 'completed';
-            action.description = action.description.replace('Send', 'Sent').replace('Schedule', 'Scheduled').replace('File', 'Filed').replace('Disburse', 'Disbursed').replace('Auto-reconcile', 'Auto-reconciled');
+            action.description = action.description
+                .replace('Send', 'Sent')
+                .replace('Schedule', 'Scheduled')
+                .replace('File', 'Filed')
+                .replace('Disburse', 'Disbursed')
+                .replace('Auto-reconcile', 'Auto-reconciled')
+                .replace('Transfer', 'Transferred')
+                .replace('Initiate', 'Initiated');
             auditLogService.add(`AUTONOMOUS_EXECUTION: ${action.description}`, 'User Authorized (AI Executed)', 'AI');
         }, 2000);
 

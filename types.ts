@@ -270,7 +270,7 @@ export type View =
     // New Views
     'chartOfAccounts' | 'journalEntries' | 'purchaseOrders' | 'estimates' | 'inventory' |
     'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts' |
-    'privacy' | 'terms' | 'approvalQueue' | 'consolidatedReports' | 'whatsappInbox';
+    'privacy' | 'terms' | 'approvalQueue' | 'consolidatedReports' | 'whatsappInbox' | 'scenarioPlanner';
 
 // Financial Report Types
 export interface ReportPeriod {

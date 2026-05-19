@@ -33,6 +33,7 @@ const LegalView = lazy(() => import('./components/LegalView').then(m => ({ defau
 const ApprovalQueueView = lazy(() => import('./components/ApprovalQueueView').then(m => ({ default: m.ApprovalQueueView })));
 const ConsolidatedReportsView = lazy(() => import('./components/ConsolidatedReportsView').then(m => ({ default: m.ConsolidatedReportsView })));
 const WhatsAppInboxView = lazy(() => import('./components/WhatsAppInboxView').then(m => ({ default: m.WhatsAppInboxView })));
+const ScenarioPlannerView = lazy(() => import('./components/ScenarioPlannerView').then(m => ({ default: m.ScenarioPlannerView })));
 
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
@@ -533,6 +534,7 @@ export default function App(): React.ReactNode {
       approvalQueue: <ApprovalQueueView />,
       whatsappInbox: <WhatsAppInboxView />,
       consolidatedReports: <ConsolidatedReportsView />,
+      scenarioPlanner: <ScenarioPlannerView />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };
