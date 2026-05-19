@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { Tooltip } from './ui/Tooltip';
+import { ContextualHelp } from './ui/ContextualHelp';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
@@ -240,18 +241,16 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
         };
     }, [transactions, invoices]);
 
-    if(transactions.length === 0){
-        return (
-            <Card className="bg-dark-secondary/50 flex items-center justify-center text-center">
-                <p className="text-gray-400">Tax estimator requires transaction data. Please link a bank account.</p>
-            </Card>
-        )
-    }
-
     return (
-        <Card>
+        <Card className={transactions.length === 0 ? "opacity-60" : ""}>
           <div className="flex justify-between items-center mb-4">
-              <h3 className="text-gray-900 dark:text-white font-bold text-lg">Tax Estimates</h3>
+              <div className="flex items-center">
+                <h3 className="text-gray-900 dark:text-white font-bold text-lg">Tax Estimates</h3>
+                <ContextualHelp
+                    topic="Tax Estimates"
+                    content="Provisional tax liabilities based on current turnover and expenses. Includes CIT, TET, and VAT estimates."
+                />
+              </div>
               <span className="text-xs bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">Provisional</span>
           </div>
           <div className="space-y-4">
@@ -284,7 +283,8 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
                     <p className="text-[9px] text-green-600 dark:text-green-400 uppercase font-bold">WHT Credit</p>
                     <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable, { compact: true })}</p>
                 </div>
-            </div>
+                </>
+            )}
           </div>
         </Card>
     );
@@ -457,7 +457,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
     <div className="space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
+          <div id="dashboard-welcome">
             <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
             <p className="text-gray-600 dark:text-gray-400">Welcome back, {user?.name || 'Tunde'}. Here's your financial overview.</p>
           </div>
@@ -476,7 +476,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <AutonomousExecutionLog />
 
       {/* Quick Actions Bar */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div id="quick-actions-bar" className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <QuickActionCard 
             title="Scan Receipt" 
             color="bg-brand-cyan text-brand-cyan" 
@@ -578,7 +578,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             </div>
           )}
         </Card>
-        <Card className="lg:col-span-2 flex flex-col">
+        <Card id="ai-advisor-panel" className="lg:col-span-2 flex flex-col">
             <div className="flex items-center gap-2 mb-4">
                  <div className="p-1.5 bg-gradient-to-br from-brand-cyan to-brand-purple rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>

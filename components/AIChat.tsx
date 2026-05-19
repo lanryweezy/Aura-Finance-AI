@@ -75,6 +75,7 @@ const proposeActionTool: FunctionDeclaration = {
 };
 
 const ai = !isOpenRouter && API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const suggestedPrompts = [
     "What was my biggest expense?",
@@ -163,6 +164,14 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                 },
             });
         }
+    if(process.env.API_KEY) {
+        chatInstance.current = ai.chats.create({
+            model: 'gemini-2.0-flash',
+            config: {
+                systemInstruction,
+                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool] }]
+            },
+        });
 
         if (messages.length === 0) {
             setMessages([{

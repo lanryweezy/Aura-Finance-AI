@@ -10,6 +10,10 @@ export default {
   theme: {
     extend: {
       colors: {
+        'hc-bg': '#000000',
+        'hc-text': '#FFFFFF',
+        'hc-accent': '#FFFF00',
+        'hc-border': '#FFFFFF',
         'brand-cyan': '#00F5D4',
         'brand-purple': '#9B5DE5',
         'brand-pink': '#F15BB5',
