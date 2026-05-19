@@ -30,6 +30,9 @@ const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+const ApprovalQueueView = lazy(() => import('./components/ApprovalQueueView').then(m => ({ default: m.ApprovalQueueView })));
+const ConsolidatedReportsView = lazy(() => import('./components/ConsolidatedReportsView').then(m => ({ default: m.ConsolidatedReportsView })));
+const WhatsAppInboxView = lazy(() => import('./components/WhatsAppInboxView').then(m => ({ default: m.WhatsAppInboxView })));
 
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
@@ -526,7 +529,10 @@ export default function App(): React.ReactNode {
       projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} />,
+      chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
+      approvalQueue: <ApprovalQueueView />,
+      whatsappInbox: <WhatsAppInboxView />,
+      consolidatedReports: <ConsolidatedReportsView />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };

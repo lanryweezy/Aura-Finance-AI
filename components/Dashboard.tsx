@@ -7,15 +7,16 @@ import { Tooltip } from './ui/Tooltip';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
+import { businessGraphService } from '../services/businessGraphService';
+import { autonomousActionService, AutonomousAction } from '../services/autonomousActionService';
 import { useCurrency } from './ui/CurrencyProvider';
+import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
 
 interface DashboardProps {
   user: { name: string } | null;
   transactions: CategorizedTransaction[];
   connections: BankConnection[];
-  bills: Bill[];
-  invoices: Invoice[];
   onQuickAction?: (view: View) => void;
   onAddTransaction?: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
 }
@@ -221,10 +222,17 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
             return acc;
         }, { vatPayable: 0, whtReceivable: 0 });
 
+        // NSITF (1% of Gross Payroll)
+        const totalGrossPayroll = transactions
+            .filter(t => t.category === 'Payroll' || t.narration.toLowerCase().includes('salary'))
+            .reduce((sum, t) => sum + t.amount, 0);
+        const estimatedNSITF = totalGrossPayroll * 0.01;
+
         return {
             ...invoiceTaxes,
             estimatedCIT: Math.max(0, estimatedCIT),
             estimatedTET: Math.max(0, estimatedTET),
+            estimatedNSITF,
             citRate
         };
     }, [transactions, invoices]);
@@ -260,14 +268,18 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
                 </p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
             </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] text-blue-600 dark:text-blue-400 uppercase">VAT Payable</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.vatPayable)}</p>
+            <div className="grid grid-cols-3 gap-2">
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-blue-600 dark:text-blue-400 uppercase font-bold">VAT</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.vatPayable, { compact: true })}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
-                    <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase">WHT Credit</p>
-                    <p className="text-lg font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable)}</p>
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-purple-600 dark:text-purple-400 uppercase font-bold">NSITF</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedNSITF, { compact: true })}</p>
+                </div>
+                <div className="bg-gray-50 dark:bg-dark-primary/50 p-2 rounded-xl border border-gray-100 dark:border-white/5">
+                    <p className="text-[9px] text-green-600 dark:text-green-400 uppercase font-bold">WHT Credit</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable, { compact: true })}</p>
                 </div>
             </div>
           </div>
@@ -275,17 +287,70 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
     );
 });
 
-export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills, invoices, onQuickAction, onAddTransaction }) => {
+const AutonomousExecutionLog = React.memo(() => {
+    const [history, setHistory] = useState<AutonomousAction[]>([]);
+
+    useEffect(() => {
+        const fetchHistory = () => {
+            setHistory(autonomousActionService.getHistory());
+        };
+        fetchHistory();
+        const interval = setInterval(fetchHistory, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    if (history.length === 0) return null;
+
+    return (
+        <Card className="border-brand-cyan/20 bg-brand-cyan/5">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-brand-cyan animate-pulse"></div>
+                <h3 className="text-sm font-bold text-brand-cyan uppercase tracking-wider">Aura Autonomous Log</h3>
+            </div>
+            <div className="space-y-3">
+                {history.slice(0, 3).map(action => (
+                    <div key={action.id} className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-2">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00F5D4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                             <span className="text-gray-300">{action.description}</span>
+                        </div>
+                        <span className="text-gray-500 font-mono">{new Date(action.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                ))}
+            </div>
+        </Card>
+    );
+});
+
+export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, onQuickAction, onAddTransaction }) => {
   const { formatAmount } = useCurrency();
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
+  const { bills, invoices, payrollHistory } = useAppStore();
+
+  const graphIntelligence = useMemo(() => {
+    return businessGraphService.generateGraph(transactions, bills, invoices, []);
+  }, [transactions, bills, invoices]);
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoadingInsights(true);
-      if (transactions.length > 0) {
-        const fetchedInsights = await getFinancialInsights(transactions);
+      if (transactions.length > 0 || bills.length > 0 || invoices.length > 0) {
+        let fetchedInsights = await getFinancialInsights(transactions, bills, invoices, payrollHistory);
+
+        // Inject graph intelligence insights
+        if (graphIntelligence.dependencyAlerts.length > 0) {
+            graphIntelligence.dependencyAlerts.forEach(alert => {
+                fetchedInsights.unshift({
+                    title: 'Strategic Dependency Alert',
+                    description: alert,
+                    priority: 'High'
+                });
+            });
+        }
+
         setInsights(fetchedInsights);
       } else {
         setInsights([]);
@@ -293,7 +358,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       setLoadingInsights(false);
     };
     fetchAllData();
-  }, [transactions]);
+  }, [transactions, bills, invoices, payrollHistory, graphIntelligence]);
 
 
   const summary = useMemo(() => {
@@ -354,6 +419,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <OnboardingWidget connections={connections} invoices={invoices} />
 
       <AIAlerts transactions={transactions} />
+
+      <AutonomousExecutionLog />
 
       {/* Quick Actions Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -99,7 +99,12 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 };
 
 
-export const getFinancialInsights = async (transactions: CategorizedTransaction[]): Promise<FinancialInsight[]> => {
+export const getFinancialInsights = async (
+  transactions: CategorizedTransaction[],
+  bills: Bill[] = [],
+  invoices: Invoice[] = [],
+  payroll: PayrollRun[] = []
+): Promise<FinancialInsight[]> => {
   if (!aiClient || !API_KEY) {
     return [{ title: 'AI Analysis Disabled', description: 'Set your Gemini API key.', priority: 'Medium' }];
   }
@@ -108,9 +113,18 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
       return [{ title: 'Plan Limit Reached', description: 'You have reached your AI insights limit for this month. Please upgrade your plan.', priority: 'High' }];
   }
 
-  if (transactions.length === 0) return [];
+  if (transactions.length === 0 && bills.length === 0 && invoices.length === 0) return [];
 
-  const prompt = `Generate 3 concise financial insights for a Nigerian SME based on: ${JSON.stringify(transactions)}`;
+  const context = {
+    transactions: transactions.slice(0, 50),
+    pendingBills: bills.filter(b => b.status !== 'Paid'),
+    pendingInvoices: invoices.filter(i => i.status !== 'Paid'),
+    recentPayroll: payroll.slice(0, 3)
+  };
+
+  const prompt = `You are a world-class AI CFO for a Nigerian SME. Analyze this financial data and provide 3 deep, actionable insights.
+  Consider cash flow, burn rate, tax implications (VAT, WHT), and operational efficiency.
+  Data: ${JSON.stringify(context)}`;
 
   try {
     monitoringService.trackAIUsage('insight', prompt);

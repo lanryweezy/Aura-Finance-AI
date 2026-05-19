@@ -183,10 +183,47 @@ server.registerTool(
     async () => {
       const insights = [
           { title: "High Pending Payables", description: "You have several unpaid bills totaling 195,000 NGN.", priority: "High" },
-          { title: "Revenue Growth Opportunity", description: "Your revenue from TechCorp Solutions is consistent.", priority: "Medium" }
+          { title: "Revenue Growth Opportunity", description: "Your revenue from TechCorp Solutions is consistent.", priority: "Medium" },
+          { title: "Cashflow Forecast", description: "Based on current trends, your cash position will remain stable for the next 45 days.", priority: "Low" }
       ];
       return { content: [{ type: "text", text: JSON.stringify(insights, null, 2) }] };
     }
+);
+
+server.registerTool(
+  "run_payroll",
+  {
+    description: "Execute payroll for all employees",
+    inputSchema: z.object({
+      period: z.string().describe("The payroll period, e.g., 'March 2025'"),
+    }),
+  },
+  async ({ period }) => {
+    return { content: [{ type: "text", text: `Payroll for ${period} has been executed successfully for ${mockEmployees.length} employees.` }] };
+  }
+);
+
+server.registerTool(
+  "generate_tax_report",
+  {
+    description: "Generate a Nigerian tax compliance report",
+    inputSchema: z.object({
+      taxType: z.enum(['VAT', 'PAYE', 'WHT', 'CIT']),
+      period: z.string(),
+    }),
+  },
+  async ({ taxType, period }) => {
+    const report = {
+      taxType,
+      period,
+      totalLiability: 125000,
+      status: 'Draft',
+      breakdown: [
+        { description: 'Standard Rate', amount: 125000 }
+      ]
+    };
+    return { content: [{ type: "text", text: JSON.stringify(report, null, 2) }] };
+  }
 );
 
 // --- Write Tools ---
