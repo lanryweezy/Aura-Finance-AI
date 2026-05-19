@@ -7,6 +7,7 @@ import { exportToCSV } from '../services/exportService';
 import { monitoringService } from '../services/monitoringService';
 import { securityService } from '../services/securityService';
 import { authService } from '../services/authService';
+import { useAppStore } from '../store/useAppStore';
 import { ApiKey } from '../types';
 
 const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: boolean) => void; description?: string }> = ({ label, checked, onChange, description }) => (
@@ -33,6 +34,7 @@ const SectionHeader: React.FC<{ title: string; description: string }> = ({ title
 
 const SecuritySettings: React.FC = () => {
     const { showToast } = useToast();
+    const { highContrast, setHighContrast } = useAppStore();
     const [twoFactor, setTwoFactor] = useState(false);
     const [ipWhitelist, setIpWhitelist] = useState('192.168.1.1, 10.0.0.1');
     const [timeout, setTimeoutVal] = useState(30);
@@ -46,6 +48,12 @@ const SecuritySettings: React.FC = () => {
                     description="Require a code from an authenticator app to log in."
                     checked={twoFactor}
                     onChange={setTwoFactor}
+                />
+                <Toggle
+                    label="High Contrast Mode"
+                    description="Optimize colors for better visibility."
+                    checked={highContrast}
+                    onChange={setHighContrast}
                 />
                 <div className="mt-4 p-4 bg-dark-secondary rounded-xl border border-white/5">
                     <button

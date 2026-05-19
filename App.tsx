@@ -31,8 +31,15 @@ const SubscriptionView = lazy(() => import('./components/SubscriptionView').then
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
 
+const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
+const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
+const RecurringTransactionsView = lazy(() => import('./components/RecurringTransactionsView').then(m => ({ default: m.RecurringTransactionsView })));
+const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').then(m => ({ default: m.YearEndClosingView })));
+
 import { OnboardingTour } from './components/ui/OnboardingTour';
+import { UpgradeOverlay } from './components/ui/UpgradeOverlay';
 import { useToast } from './components/ui/Toast';
+import { useHotkeys } from './services/hooks/useHotkeys';
 import { monitoringService } from './services/monitoringService';
 
 import { fetchTransactions as mockFetchTransactions } from './services/monoService';
@@ -49,6 +56,10 @@ import { fetchPurchaseOrders, addPurchaseOrder as apiAddPurchaseOrder } from './
 import { fetchEstimates, addEstimate as apiAddEstimate } from './services/estimateService';
 import { fetchJournalEntries, addJournalEntry as apiAddJournalEntry } from './services/journalEntryService';
 import { fetchBudgets, saveBudgets as apiSaveBudgets } from './services/budgetService';
+import { fixedAssetService } from './services/fixedAssetService';
+import { entityService } from './services/entityService';
+import { billingService } from './services/billingService';
+import { usageService } from './services/usageService';
 import { authService } from './services/authService';
 import { fetchContacts, addContact as apiAddContact, updateContact as apiUpdateContact } from './services/contactService';
 import { DEFAULT_CATEGORIES } from './constants/accounting';
@@ -75,10 +86,14 @@ export default function App(): React.ReactNode {
     estimates, setEstimates,
     budgets, setBudgets,
     contacts, setContacts,
+        fixedAssets, setFixedAssets,
+        reconciliations, setReconciliations,
+        entities, setEntities,
+        closingHistory, setClosingHistory,
     auditLog, setAuditLog,
     isLoading, setIsLoading,
     error, setError,
-    theme
+    theme, highContrast
   } = store;
   
   // Check for existing session on mount
@@ -118,11 +133,13 @@ export default function App(): React.ReactNode {
       const [
           fetchedConnections, fetchedEmployees, fetchedBills, fetchedInvoices, 
           fetchedProjects, fetchedInventory, fetchedPOs, fetchedEstimates,
-          fetchedJEs, fetchedBudgets, fetchedContacts
+          fetchedJEs, fetchedBudgets, fetchedContacts,
+          fetchedAssets, fetchedEntities
         ] = await Promise.all([
         fetchConnections(), fetchEmployees(), fetchBills(), fetchInvoices(),
         fetchProjects(), fetchInventoryItems(), fetchPurchaseOrders(), fetchEstimates(),
-        fetchJournalEntries(), fetchBudgets(), fetchContacts()
+        fetchJournalEntries(), fetchBudgets(), fetchContacts(),
+        fixedAssetService.fetchAssets(), entityService.fetchEntities()
       ]);
 
       setConnections(fetchedConnections);
@@ -136,6 +153,8 @@ export default function App(): React.ReactNode {
       setJournalEntries(fetchedJEs);
       setBudgets(fetchedBudgets);
       setContacts(fetchedContacts);
+      setFixedAssets(fetchedAssets);
+      setEntities(fetchedEntities);
 
       if (fetchedConnections.length > 0) {
         const rawTransactions = await mockFetchTransactions();
@@ -158,6 +177,17 @@ export default function App(): React.ReactNode {
         loadInitialData();
     }
   }, [loadInitialData, user]);
+
+  // Global Hotkeys
+  useHotkeys({
+    'mod+k': () => setActiveView('chat'),
+    'mod+i': () => setActiveView('receivables'),
+    'mod+b': () => setActiveView('payables'),
+    'mod+s': () => setActiveView('settings'),
+    'mod+d': () => setActiveView('dashboard'),
+    'mod+t': () => setActiveView('transactions'),
+    'mod+p': () => setActiveView('payroll'),
+  });
 
   // Session Timeout Implementation
   useEffect(() => {
@@ -287,7 +317,13 @@ export default function App(): React.ReactNode {
     );
   };
   
-  const handleAddNewTransaction = (newTransactionData: Omit<CategorizedTransaction, 'id' | 'balance'>) => {
+  const handleAddNewTransaction = async (newTransactionData: Omit<CategorizedTransaction, 'id' | 'balance'>) => {
+    const isLimited = await usageService.isRateLimited('txn_volume');
+    if (isLimited) {
+        showToast("Monthly transaction limit reached. Please upgrade your plan.", "error");
+        return;
+    }
+
     const newTransaction: CategorizedTransaction = {
       ...newTransactionData,
       id: `manual_txn_${Date.now()}`,
@@ -295,6 +331,7 @@ export default function App(): React.ReactNode {
     setTransactions(prev => 
         [...prev, newTransaction].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     );
+    usageService.trackUsage('txn_volume');
     logAndRefresh(`Added transaction: ${newTransaction.narration} for ${newTransaction.amount}`, 'Transactions');
   };
 
@@ -335,8 +372,15 @@ export default function App(): React.ReactNode {
   };
 
   const handleAddInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>) => {
+    const isLimited = await usageService.isRateLimited('invoices_sent');
+    if (isLimited) {
+        showToast("Monthly invoice limit reached. Please upgrade your plan.", "error");
+        return;
+    }
+
     const newInvoice = await apiAddInvoice(invoiceData);
     setInvoices(prev => [newInvoice, ...prev]);
+    usageService.trackUsage('invoices_sent');
     logAndRefresh(`Added new invoice for ${newInvoice.customer}`, 'Receivables');
     showToast(`Invoice for ${newInvoice.customer} created.`, 'success');
   };
@@ -457,6 +501,30 @@ export default function App(): React.ReactNode {
       logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts');
   }
 
+  const handleAddFixedAsset = async (asset: any) => {
+      const newItem = await fixedAssetService.addAsset(asset);
+      setFixedAssets(prev => [newItem, ...prev]);
+      logAndRefresh(`Registered fixed asset: ${newItem.name}`, 'Accounting');
+  };
+
+  const handleDisposeAsset = async (id: string, price: number) => {
+      setFixedAssets(prev => prev.map(a => a.id === id ? { ...a, status: 'Disposed', disposalDate: new Date().toISOString(), disposalPrice: price, bookValue: 0 } : a));
+      logAndRefresh(`Disposed of asset #${id.slice(-4)}`, 'Accounting');
+  };
+
+  const handleCloseYear = (year: number) => {
+      const newClosing = {
+          id: `close_${year}`,
+          year,
+          status: 'Closed' as const,
+          closedAt: new Date().toISOString(),
+          closedBy: user?.name || 'Admin'
+      };
+      setClosingHistory(prev => [newClosing, ...prev]);
+      logAndRefresh(`Closed fiscal year ${year}`, 'Accounting');
+      showToast(`Fiscal year ${year} has been successfully closed.`, 'success');
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -483,6 +551,27 @@ export default function App(): React.ReactNode {
       );
     }
 
+    const userPlan = authService.getCurrentUser()?.org.plan || 'Free';
+
+    const withUpgrade = (view: View, requiredPlan: 'Growth' | 'Enterprise', title: string, description: string, component: React.ReactNode) => {
+        if (!billingService.hasFeature(userPlan, view)) {
+            return (
+                <div className="relative h-full">
+                    <UpgradeOverlay
+                        title={title}
+                        description={description}
+                        requiredPlan={requiredPlan}
+                        onUpgrade={() => setActiveView('subscription')}
+                    />
+                    <div className="opacity-20 pointer-events-none filter blur-sm h-full overflow-hidden">
+                        {component}
+                    </div>
+                </div>
+            );
+        }
+        return component;
+    };
+
     const viewMap: Record<View, React.ReactNode> = {
       dashboard: <Dashboard
                     user={user}
@@ -503,9 +592,9 @@ export default function App(): React.ReactNode {
       reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
       payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
       receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
-      estimates: <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />,
-      purchaseOrders: <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />,
-      payroll: <PayrollView
+      estimates: withUpgrade('estimates', 'Growth', 'Professional Estimates', 'Create and send branded estimates to your customers to win more business.', <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />),
+      purchaseOrders: withUpgrade('purchaseOrders', 'Growth', 'Purchase Orders', 'Streamline your procurement process with professional purchase orders.', <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />),
+      payroll: withUpgrade('payroll', 'Growth', 'Automated Payroll', 'Run payroll for your team in minutes. Automated tax calculations and payslips.', <PayrollView
                     employees={employees} 
                     payrollSummary={payrollSummary}
                     payrollHistory={payrollHistory}
@@ -513,20 +602,24 @@ export default function App(): React.ReactNode {
                     onUpdateEmployee={handleUpdateEmployee}
                     onRemoveEmployee={handleRemoveEmployee}
                     onRunPayroll={handleRunPayroll}
-                />,
-      inventory: <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />,
+                />),
+      inventory: withUpgrade('inventory', 'Growth', 'Inventory Management', 'Track stock levels, set low-stock alerts, and manage products across multiple warehouses.', <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />),
       contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
-      taxFiling: <TaxFilingView transactions={transactions} />,
+      taxFiling: withUpgrade('taxFiling', 'Growth', 'Tax Compliance', 'Automatically calculate VAT, WHT, and PAYE. Stay compliant with local tax laws.', <TaxFilingView transactions={transactions} />),
       connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
       integrations: <IntegrationsView />,
       chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
       journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
-      budgeting: <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />,
-      auditTrail: <AuditTrailView logs={auditLog} />,
-      projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
+      budgeting: withUpgrade('budgeting', 'Growth', 'Smart Budgeting', 'Plan your spending and stay on track with real-time budget vs actual reporting.', <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />),
+      auditTrail: withUpgrade('auditTrail', 'Enterprise', 'Compliance Audit Trail', 'Maintain a detailed history of all changes for full accountability and audit readiness.', <AuditTrailView logs={auditLog} />),
+      projects: withUpgrade('projects', 'Growth', 'Project Accounting', 'Track profitability and expenses for specific projects or departments.', <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />),
+      fixedAssets: withUpgrade('fixedAssets', 'Enterprise', 'Fixed Assets Registry', 'Track depreciation and manage the lifecycle of your company\'s physical assets.', <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />),
+      reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
+      recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
+      yearEnd: withUpgrade('yearEnd', 'Enterprise', 'Year-End Closing', 'Guided wizard for closing your books and preparing for the next fiscal year.', <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />),
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} />,
+      chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };
@@ -547,7 +640,7 @@ export default function App(): React.ReactNode {
   }
 
   return (
-    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'} ${highContrast ? 'high-contrast' : ''}`}>
       {user && <OnboardingTour />}
       <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">

@@ -63,11 +63,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
             const projectTxns = transactions.filter(t => t.projectId === project.id);
             const income = projectTxns.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
             const expenses = projectTxns.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0);
+            const net = income - expenses;
+            const margin = income > 0 ? (net / income) * 100 : 0;
+            const progress = project.budget ? (expenses / project.budget) * 100 : 0;
+
             return {
                 ...project,
                 income,
                 expenses,
-                net: income - expenses
+                net,
+                margin,
+                progress
             };
         });
     }, [projects, transactions]);
@@ -99,6 +105,17 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
                                 
                                 <div className="mt-6 space-y-4">
                                     <div className="flex justify-between items-center">
+                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-widest">Profit Margin</span>
+                                        <span className={`text-xs font-black ${proj.margin >= 20 ? 'text-green-400' : 'text-yellow-400'}`}>{proj.margin.toFixed(1)}%</span>
+                                    </div>
+                                    <div className="w-full bg-gray-100 dark:bg-gray-800 h-1.5 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full transition-all duration-1000 ${proj.margin >= 20 ? 'bg-green-500' : 'bg-yellow-500'}`}
+                                            style={{ width: `${Math.min(100, Math.max(0, proj.margin))}%` }}
+                                        ></div>
+                                    </div>
+
+                                    <div className="flex justify-between items-center pt-2">
                                         <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Income</span>
                                         <span className="font-mono text-green-600 dark:text-green-400 font-bold">{formatAmount(proj.income)}</span>
                                     </div>
@@ -106,6 +123,22 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
                                         <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">Total Expenses</span>
                                         <span className="font-mono text-red-600 dark:text-red-400 font-bold">{formatAmount(proj.expenses)}</span>
                                     </div>
+
+                                    {proj.budget && (
+                                        <div className="space-y-1">
+                                            <div className="flex justify-between text-[10px] font-bold text-gray-400 uppercase">
+                                                <span>Budget Usage</span>
+                                                <span>{proj.progress.toFixed(0)}%</span>
+                                            </div>
+                                            <div className="w-full bg-gray-100 dark:bg-gray-800 h-1 rounded-full overflow-hidden">
+                                                <div
+                                                    className={`h-full transition-all duration-1000 ${proj.progress > 90 ? 'bg-brand-pink' : 'bg-brand-cyan'}`}
+                                                    style={{ width: `${Math.min(100, proj.progress)}%` }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <div className="h-px bg-gray-100 dark:bg-gray-700/50 my-2"></div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-bold text-gray-900 dark:text-white">Net Profit</span>
