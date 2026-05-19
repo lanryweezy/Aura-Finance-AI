@@ -38,6 +38,7 @@ const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').
 
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
+import { useHotkeys } from './services/hooks/useHotkeys';
 import { monitoringService } from './services/monitoringService';
 
 import { fetchTransactions as mockFetchTransactions } from './services/monoService';
@@ -89,7 +90,7 @@ export default function App(): React.ReactNode {
     auditLog, setAuditLog,
     isLoading, setIsLoading,
     error, setError,
-    theme
+    theme, highContrast
   } = store;
   
   // Check for existing session on mount
@@ -173,6 +174,17 @@ export default function App(): React.ReactNode {
         loadInitialData();
     }
   }, [loadInitialData, user]);
+
+  // Global Hotkeys
+  useHotkeys({
+    'mod+k': () => setActiveView('chat'),
+    'mod+i': () => setActiveView('receivables'),
+    'mod+b': () => setActiveView('payables'),
+    'mod+s': () => setActiveView('settings'),
+    'mod+d': () => setActiveView('dashboard'),
+    'mod+t': () => setActiveView('transactions'),
+    'mod+p': () => setActiveView('payroll'),
+  });
 
   // Session Timeout Implementation
   useEffect(() => {
@@ -590,7 +602,7 @@ export default function App(): React.ReactNode {
   }
 
   return (
-    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'}`}>
+    <div className={`flex h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'} ${highContrast ? 'high-contrast' : ''}`}>
       {user && <OnboardingTour />}
       <Sidebar activeView={activeView} setActiveView={setActiveView} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">

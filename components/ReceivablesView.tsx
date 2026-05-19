@@ -119,26 +119,89 @@ const NewInvoiceModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="invoice-modal-title"
+        >
             <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-2xl shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Invoice</h3>
+                <h3 id="invoice-modal-title" className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Invoice</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Customer Name" value={customer} onChange={e => setCustomer(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                    </div>
+                    <fieldset className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <legend className="sr-only">Customer and Date Information</legend>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="inv-customer" className="text-[10px] font-black text-gray-400 uppercase ml-1">Customer Name</label>
+                            <input
+                                id="inv-customer"
+                                type="text"
+                                placeholder="e.g. Dangote Group"
+                                value={customer}
+                                onChange={e => setCustomer(e.target.value)}
+                                required
+                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium"
+                            />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                            <label htmlFor="inv-due-date" className="text-[10px] font-black text-gray-400 uppercase ml-1">Due Date</label>
+                            <input
+                                id="inv-due-date"
+                                type="date"
+                                value={dueDate}
+                                onChange={e => setDueDate(e.target.value)}
+                                required
+                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium"
+                            />
+                        </div>
+                    </fieldset>
                     
-                    <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
-                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Line Items</label>
+                    <fieldset className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                        <legend className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Line Items</legend>
                         {lineItems.map((item, index) => (
                              <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 bg-gray-50 dark:bg-dark-secondary/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <select value={item.inventoryItemId} onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)} className="flex-1 min-w-[200px] bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none">
-                                    <option value="">Select Item</option>
-                                    {inventoryItems.map(invItem => <option key={invItem.id} value={invItem.id}>{invItem.name}</option>)}
-                                </select>
-                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
-                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
-                                <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
+                                <div className="flex-1 min-w-[200px]">
+                                    <label htmlFor={`item-select-${index}`} className="sr-only">Select Item</label>
+                                    <select
+                                        id={`item-select-${index}`}
+                                        value={item.inventoryItemId}
+                                        onChange={e => handleLineItemChange(index, 'inventoryItemId', e.target.value)}
+                                        className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none"
+                                    >
+                                        <option value="">Select Item</option>
+                                        {inventoryItems.map(invItem => <option key={invItem.id} value={invItem.id}>{invItem.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="w-20">
+                                    <label htmlFor={`item-qty-${index}`} className="sr-only">Quantity</label>
+                                    <input
+                                        id={`item-qty-${index}`}
+                                        type="number"
+                                        placeholder="Qty"
+                                        value={item.quantity}
+                                        onChange={e => handleLineItemChange(index, 'quantity', e.target.value)}
+                                        className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold"
+                                    />
+                                </div>
+                                <div className="w-28">
+                                    <label htmlFor={`item-price-${index}`} className="sr-only">Unit Price</label>
+                                    <input
+                                        id={`item-price-${index}`}
+                                        type="number"
+                                        placeholder="Price"
+                                        value={item.unitPrice}
+                                        onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)}
+                                        className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold"
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => removeLineItem(index)}
+                                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90"
+                                    aria-label={`Remove line item ${index + 1}`}
+                                >
+                                    &times;
+                                </button>
                             </div>
                         ))}
                         <button type="button" onClick={addLineItem} className="text-xs font-bold text-brand-cyan hover:opacity-80 mt-1 flex items-center gap-1 transition-all">
@@ -159,7 +222,10 @@ const NewInvoiceModal: React.FC<{
                     </div>
 
                     {/* Summary Section */}
-                    <div className="bg-gray-100/50 dark:bg-dark-secondary/30 p-5 rounded-2xl space-y-2 border border-gray-100 dark:border-gray-700/50 mt-4 shadow-inner">
+                    <div
+                        className="bg-gray-100/50 dark:bg-dark-secondary/30 p-5 rounded-2xl space-y-2 border border-gray-100 dark:border-gray-700/50 mt-4 shadow-inner"
+                        aria-live="polite"
+                    >
                         <div className="flex justify-between text-sm font-medium text-gray-500 dark:text-gray-400">
                             <span>Subtotal</span>
                             <span className="font-mono font-bold text-gray-700 dark:text-gray-300">{formatAmount(calculatedSubtotal)}</span>
