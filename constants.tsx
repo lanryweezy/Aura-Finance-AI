@@ -60,6 +60,7 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
         { id: 'estimates', label: 'Estimates', icon: <></> },
         { id: 'receivables', label: 'Invoices', icon: <></> },
+        { id: 'recurring', label: 'Recurring Sales', icon: <></> },
     ]
   },
   {
@@ -141,7 +142,10 @@ export const NAV_ITEMS: NavItem[] = [
     children: [
         { id: 'chartOfAccounts', label: 'Chart of Accounts', icon: <></> },
         { id: 'journalEntries', label: 'Journal Entries', icon: <></> },
+        { id: 'fixedAssets', label: 'Fixed Assets', icon: <></> },
+        { id: 'reconciliation', label: 'Bank Recon', icon: <></> },
         { id: 'budgeting', label: 'Budgeting', icon: <></> },
+        { id: 'yearEnd', label: 'Year-End Closing', icon: <></> },
         { id: 'auditTrail', label: 'Audit Trail', icon: <></> }
     ]
   },

@@ -31,6 +31,11 @@ const SubscriptionView = lazy(() => import('./components/SubscriptionView').then
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
 
+const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
+const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
+const RecurringTransactionsView = lazy(() => import('./components/RecurringTransactionsView').then(m => ({ default: m.RecurringTransactionsView })));
+const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').then(m => ({ default: m.YearEndClosingView })));
+
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
 import { monitoringService } from './services/monitoringService';
@@ -49,6 +54,8 @@ import { fetchPurchaseOrders, addPurchaseOrder as apiAddPurchaseOrder } from './
 import { fetchEstimates, addEstimate as apiAddEstimate } from './services/estimateService';
 import { fetchJournalEntries, addJournalEntry as apiAddJournalEntry } from './services/journalEntryService';
 import { fetchBudgets, saveBudgets as apiSaveBudgets } from './services/budgetService';
+import { fixedAssetService } from './services/fixedAssetService';
+import { entityService } from './services/entityService';
 import { authService } from './services/authService';
 import { fetchContacts, addContact as apiAddContact, updateContact as apiUpdateContact } from './services/contactService';
 import { DEFAULT_CATEGORIES } from './constants/accounting';
@@ -75,6 +82,10 @@ export default function App(): React.ReactNode {
     estimates, setEstimates,
     budgets, setBudgets,
     contacts, setContacts,
+        fixedAssets, setFixedAssets,
+        reconciliations, setReconciliations,
+        entities, setEntities,
+        closingHistory, setClosingHistory,
     auditLog, setAuditLog,
     isLoading, setIsLoading,
     error, setError,
@@ -118,11 +129,13 @@ export default function App(): React.ReactNode {
       const [
           fetchedConnections, fetchedEmployees, fetchedBills, fetchedInvoices, 
           fetchedProjects, fetchedInventory, fetchedPOs, fetchedEstimates,
-          fetchedJEs, fetchedBudgets, fetchedContacts
+          fetchedJEs, fetchedBudgets, fetchedContacts,
+          fetchedAssets, fetchedEntities
         ] = await Promise.all([
         fetchConnections(), fetchEmployees(), fetchBills(), fetchInvoices(),
         fetchProjects(), fetchInventoryItems(), fetchPurchaseOrders(), fetchEstimates(),
-        fetchJournalEntries(), fetchBudgets(), fetchContacts()
+        fetchJournalEntries(), fetchBudgets(), fetchContacts(),
+        fixedAssetService.fetchAssets(), entityService.fetchEntities()
       ]);
 
       setConnections(fetchedConnections);
@@ -136,6 +149,8 @@ export default function App(): React.ReactNode {
       setJournalEntries(fetchedJEs);
       setBudgets(fetchedBudgets);
       setContacts(fetchedContacts);
+      setFixedAssets(fetchedAssets);
+      setEntities(fetchedEntities);
 
       if (fetchedConnections.length > 0) {
         const rawTransactions = await mockFetchTransactions();
@@ -457,6 +472,30 @@ export default function App(): React.ReactNode {
       logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts');
   }
 
+  const handleAddFixedAsset = async (asset: any) => {
+      const newItem = await fixedAssetService.addAsset(asset);
+      setFixedAssets(prev => [newItem, ...prev]);
+      logAndRefresh(`Registered fixed asset: ${newItem.name}`, 'Accounting');
+  };
+
+  const handleDisposeAsset = async (id: string, price: number) => {
+      setFixedAssets(prev => prev.map(a => a.id === id ? { ...a, status: 'Disposed', disposalDate: new Date().toISOString(), disposalPrice: price, bookValue: 0 } : a));
+      logAndRefresh(`Disposed of asset #${id.slice(-4)}`, 'Accounting');
+  };
+
+  const handleCloseYear = (year: number) => {
+      const newClosing = {
+          id: `close_${year}`,
+          year,
+          status: 'Closed' as const,
+          closedAt: new Date().toISOString(),
+          closedBy: user?.name || 'Admin'
+      };
+      setClosingHistory(prev => [newClosing, ...prev]);
+      logAndRefresh(`Closed fiscal year ${year}`, 'Accounting');
+      showToast(`Fiscal year ${year} has been successfully closed.`, 'success');
+  };
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -524,6 +563,10 @@ export default function App(): React.ReactNode {
       budgeting: <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />,
       auditTrail: <AuditTrailView logs={auditLog} />,
       projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
+      fixedAssets: <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />,
+      reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
+      recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
+      yearEnd: <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />,
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
       chat: <AIChat transactions={transactions} />,

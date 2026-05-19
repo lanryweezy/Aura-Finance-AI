@@ -60,6 +60,31 @@ const NewAccountModal: React.FC<{
 export const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({ accounts, setAccounts }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const applyTemplate = (industry: string) => {
+        const templates: Record<string, any[]> = {
+            'SaaS': [
+                { name: 'Subscription Revenue', type: 'Revenue' },
+                { name: 'Cloud Infrastructure', type: 'Expense' },
+                { name: 'Customer Acquisition Cost', type: 'Expense' }
+            ],
+            'Retail': [
+                { name: 'Merchandise Sales', type: 'Revenue' },
+                { name: 'Inventory Asset', type: 'Asset' },
+                { name: 'Freight & Shipping', type: 'Expense' }
+            ],
+            'Professional Services': [
+                { name: 'Billable Hours', type: 'Revenue' },
+                { name: 'Subcontractors', type: 'Expense' },
+                { name: 'Travel Reimbursements', type: 'Revenue' }
+            ]
+        };
+        const template = templates[industry];
+        if (template) {
+            setAccounts(prev => [...prev, ...template]);
+            alert(`Applied ${industry} template!`);
+        }
+    };
+
     const handleAddAccount = (account: Account) => {
         setAccounts(prev => [...prev, account].sort((a,b) => a.name.localeCompare(b.name)));
     };
@@ -75,10 +100,21 @@ export const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({ accoun
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Chart of Accounts</h2>
                     <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Manage the categories for your financial records.</p>
                 </div>
-                <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                    New Account
-                </button>
+                <div className="flex gap-4">
+                    <select
+                        onChange={(e) => applyTemplate(e.target.value)}
+                        className="bg-white dark:bg-dark-tertiary border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs font-bold outline-none"
+                    >
+                        <option value="">Apply Template...</option>
+                        <option value="SaaS">SaaS / Tech</option>
+                        <option value="Retail">Retail / E-commerce</option>
+                        <option value="Professional Services">Professional Services</option>
+                    </select>
+                    <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        New Account
+                    </button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

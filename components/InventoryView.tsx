@@ -119,7 +119,12 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, 
                                     <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-dark-secondary/50 transition-colors">
                                         <td className="p-4 text-gray-900 dark:text-white font-bold">
                                             <div className="flex flex-col">
-                                                <span>{item.name}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <span>{item.name}</span>
+                                                    {item.quantity <= (item.lowStockThreshold || 10) && item.type === 'Product' && (
+                                                        <span className="px-1.5 py-0.5 bg-brand-pink/10 text-brand-pink text-[8px] font-black uppercase rounded border border-brand-pink/20 animate-pulse">Low Stock</span>
+                                                    )}
+                                                </div>
                                                 <span className="text-gray-400 dark:text-gray-500 text-xs font-mono font-bold tracking-tight">{item.sku}</span>
                                             </div>
                                         </td>
