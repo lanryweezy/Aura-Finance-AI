@@ -6,6 +6,8 @@ import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
 import { Bill, Invoice } from '../types';
+import { autonomousActionService } from '../services/autonomousActionService';
+import { API_KEY, isOpenRouter, openAICompatibleRequest } from '../services/aiConfig';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
@@ -43,6 +45,36 @@ const getBillsTool: FunctionDeclaration = {
     description: 'Fetches the user\'s bills. Call this when the user asks about expenses, vendors, or upcoming payments.',
 };
 
+const proposeActionTool: FunctionDeclaration = {
+    name: 'proposeAction',
+    description: 'Proposes an autonomous financial action for the user to approve. Call this when the user asks to send a reminder, pay a bill, file a tax, or run payroll.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            actionType: {
+                type: Type.STRING,
+                enum: ['invoice_reminder', 'payment_schedule', 'tax_filing', 'payroll_disbursement'],
+                description: 'The type of action to propose.'
+            },
+            metadata: {
+                type: Type.OBJECT,
+                description: 'Additional data for the action (e.g., invoiceId, amount, vendorName).'
+            },
+            reasoning: {
+                type: Type.STRING,
+                description: 'Detailed explanation of why this action is being proposed.'
+            },
+            priority: {
+                type: Type.STRING,
+                enum: ['High', 'Medium', 'Low'],
+                description: 'The urgency of the action.'
+            }
+        },
+        required: ['actionType', 'reasoning']
+    }
+};
+
+const ai = !isOpenRouter && API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const suggestedPrompts = [
@@ -52,7 +84,7 @@ const suggestedPrompts = [
     "Forecast my cashflow for next month.",
 ];
 
-type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations';
+type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations' | 'Audit' | 'Procurement';
 
 interface Agent {
     id: AgentType;
@@ -99,6 +131,20 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
         role: 'Finance Operations',
         color: 'from-pink-400 to-brand-purple',
         instruction: `You are OpsBot AI. Focus on bills, invoices, vendor payments, and day-to-day transaction management. Use ${currency}.`
+    },
+    {
+        id: 'Audit',
+        name: 'Audit Shield AI',
+        role: 'Risk & Internal Audit',
+        color: 'from-yellow-400 to-orange-500',
+        instruction: `You are Audit Shield AI. Focus on finding inconsistencies, duplicate transactions, and potential fraud patterns. Be extremely thorough and detail-oriented. Use ${currency}.`
+    },
+    {
+        id: 'Procurement',
+        name: 'Procure AI',
+        role: 'Vendor Intelligence',
+        color: 'from-indigo-400 to-brand-cyan',
+        instruction: `You are Procure AI. Focus on vendor payment intelligence, identifying better pricing, and managing vendor relationships. Use ${currency}.`
     }
   ];
 
@@ -108,6 +154,16 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
     Be concise, helpful. Do not invent data; always use the provided tools to get real information.`;
 
+    if(API_KEY) {
+        if (!isOpenRouter && ai) {
+            chatInstance.current = ai.chats.create({
+                model: 'gemini-2.0-flash',
+                config: {
+                    systemInstruction,
+                    tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool, proposeActionTool] }]
+                },
+            });
+        }
     if(process.env.API_KEY) {
         chatInstance.current = ai.chats.create({
             model: 'gemini-2.0-flash',
@@ -144,7 +200,47 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
 
   const handleSend = async (messageText?: string) => {
     const textToSend = messageText || input;
-    if (!textToSend.trim() || isLoading || !chatInstance.current) return;
+    if (!textToSend.trim() || isLoading) return;
+
+    // If no API key, use mock logic for demo/testing
+    if (!API_KEY || (!chatInstance.current && !isOpenRouter)) {
+        const userMessage: ChatMessage = { id: Date.now().toString(), role: 'user', text: textToSend };
+        setMessages(prev => [...prev, userMessage]);
+        setInput('');
+        setIsLoading(true);
+
+        setTimeout(async () => {
+            let responseText = "I'm currently in Demo Mode because no API Key was found. However, I can still simulate autonomous action proposals!";
+            let actionTriggered = false;
+
+            const lowerText = textToSend.toLowerCase();
+            if (lowerText.includes('remind') || lowerText.includes('invoice')) {
+                await autonomousActionService.proposeAction('invoice_reminder', { invoiceId: 'INV-001' }, "Customer is 5 days overdue.", "Medium");
+                responseText = "I've proposed a reminder for Invoice #001. You can review and authorize it in the Approval Queue.";
+                actionTriggered = true;
+            } else if (lowerText.includes('pay') || lowerText.includes('bill')) {
+                await autonomousActionService.proposeAction('payment_schedule', { amount: 50000, currency: '₦', vendorName: 'Mainland Power' }, "Bill is due tomorrow.", "High");
+                responseText = "Understood. I've proposed a payment for Mainland Power. Please authorize it in your queue.";
+                actionTriggered = true;
+            } else if (lowerText.includes('tax') || lowerText.includes('file')) {
+                await autonomousActionService.proposeAction('tax_filing', { taxType: 'VAT', period: 'October 2023' }, "Monthly VAT deadline is approaching.", "Medium");
+                responseText = "I've prepared the draft VAT filing for October 2023 and added it to the Approval Queue.";
+                actionTriggered = true;
+            } else if (lowerText.includes('payroll') || lowerText.includes('salary')) {
+                await autonomousActionService.proposeAction('payroll_disbursement', { employeeCount: 12 }, "Monthly payroll is due for disbursement.", "High");
+                responseText = "Payroll has been calculated. I've sent the disbursement proposal to the Approval Queue.";
+                actionTriggered = true;
+            }
+
+            setMessages(prev => [...prev, {
+                id: Date.now().toString(),
+                role: 'model',
+                text: responseText
+            }]);
+            setIsLoading(false);
+        }, 1000);
+        return;
+    }
 
     const userMessage: ChatMessage = { id: Date.now().toString(), role: 'user', text: textToSend };
     setMessages(prev => [...prev, userMessage]);
@@ -155,6 +251,22 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     setMessages(prev => [...prev, { id: modelMessageId, role: 'model', text: '' }]);
 
     try {
+      if (isOpenRouter) {
+          const selectedAgent = agents.find(a => a.id === activeAgent) || agents[0];
+          const systemInstruction = `${selectedAgent.instruction}
+          You should proactively analyze the user's situation and offer actionable advice.
+          Be concise, helpful. Note: Tool usage is currently simulated in OpenRouter mode.`;
+
+          const response = await openAICompatibleRequest(textToSend, systemInstruction);
+          setMessages(prev => prev.map(msg =>
+              msg.id === modelMessageId ? { ...msg, text: response } : msg
+          ));
+          setIsLoading(false);
+          return;
+      }
+
+      if (!chatInstance.current) throw new Error("Chat instance not initialized");
+
       let responseStream = await chatInstance.current.sendMessageStream({ message: textToSend });
       let fullResponseText = '';
       let functionCallMade = false;
@@ -180,6 +292,10 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                   toolResult = { invoices: invoices.slice(0, 20) };
               } else if (call.name === 'getBills') {
                   toolResult = { bills: bills.slice(0, 20) };
+              } else if (call.name === 'proposeAction') {
+                  const args = call.args as { actionType: any, metadata?: any, reasoning: string, priority?: any };
+                  const result = await autonomousActionService.proposeAction(args.actionType, args.metadata || {}, args.reasoning, args.priority);
+                  toolResult = { success: true, action: result };
               } else {
                   toolResult = { error: 'Unknown function' };
               }
@@ -279,13 +395,13 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Ask about your finances..."
+            placeholder={!API_KEY ? "Demo Mode: Type 'remind', 'pay', 'tax', or 'payroll'..." : "Ask about your finances..."}
             className="w-full bg-dark-tertiary border-2 border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
-            disabled={isLoading || !chatInstance.current}
+            disabled={isLoading}
             />
             <button
             onClick={() => handleSend()}
-            disabled={isLoading || !input.trim() || !chatInstance.current}
+            disabled={isLoading || !input.trim()}
             className="bg-brand-cyan text-black font-bold p-3 rounded-lg disabled:bg-gray-600 disabled:cursor-not-allowed hover:bg-brand-cyan/80 transition-colors"
             >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>

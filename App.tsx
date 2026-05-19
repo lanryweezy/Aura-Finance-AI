@@ -30,6 +30,10 @@ const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+const ApprovalQueueView = lazy(() => import('./components/ApprovalQueueView').then(m => ({ default: m.ApprovalQueueView })));
+const ConsolidatedReportsView = lazy(() => import('./components/ConsolidatedReportsView').then(m => ({ default: m.ConsolidatedReportsView })));
+const WhatsAppInboxView = lazy(() => import('./components/WhatsAppInboxView').then(m => ({ default: m.WhatsAppInboxView })));
+const ScenarioPlannerView = lazy(() => import('./components/ScenarioPlannerView').then(m => ({ default: m.ScenarioPlannerView })));
 
 const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
 const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
@@ -620,6 +624,10 @@ export default function App(): React.ReactNode {
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
       chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
+      approvalQueue: <ApprovalQueueView />,
+      whatsappInbox: <WhatsAppInboxView />,
+      consolidatedReports: <ConsolidatedReportsView />,
+      scenarioPlanner: <ScenarioPlannerView />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };

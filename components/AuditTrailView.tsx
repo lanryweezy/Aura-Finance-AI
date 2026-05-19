@@ -47,8 +47,9 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                             <tr>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Timestamp</th>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Module</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">User</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Entity</th>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Action</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">AI Reasoning</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -68,6 +69,17 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                                     </td>
                                     <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{log.user}</td>
                                     <td className="p-4 text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</td>
+                                    <td className="p-4 max-w-xs">
+                                        {log.user.includes('AI') ? (
+                                            <div className="text-[10px] text-brand-cyan bg-brand-cyan/5 p-2 rounded-lg border border-brand-cyan/10 italic leading-relaxed">
+                                                {log.action.includes('reconciled') ? 'Deterministic matching based on amount, date, and vendor pattern.' :
+                                                 log.action.includes('reminder') ? 'Automated follow-up triggered by payment due date expiration.' :
+                                                 'Autonomous optimization based on business graph intelligence.'}
+                                            </div>
+                                        ) : (
+                                            <span className="text-[10px] text-gray-500">Manual User Action</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {filteredLogs.length === 0 && (

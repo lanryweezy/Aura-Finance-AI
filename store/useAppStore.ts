@@ -35,7 +35,8 @@ interface AppState {
     isLoading: boolean;
     error: string | null;
     theme: 'light' | 'dark';
-    highContrast: boolean;
+    isConsolidatedMode: boolean;
+    subsidiaries: { id: string, name: string }[];
 
     setUser: (user: User | null) => void;
     setActiveView: (view: View) => void;
@@ -63,7 +64,8 @@ interface AppState {
     setIsLoading: (isLoading: boolean) => void;
     setError: (error: string | null) => void;
     setTheme: (theme: 'light' | 'dark') => void;
-    setHighContrast: (enabled: boolean) => void;
+    setConsolidatedMode: (enabled: boolean) => void;
+    setSubsidiaries: (subsidiaries: { id: string, name: string }[]) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -93,7 +95,11 @@ export const useAppStore = create<AppState>((set, get) => ({
     isLoading: true,
     error: null,
     theme: (localStorage.getItem('aura_theme') as 'light' | 'dark') || 'dark',
-    highContrast: localStorage.getItem('aura_high_contrast') === 'true',
+    isConsolidatedMode: false,
+    subsidiaries: [
+        { id: 'sub_1', name: 'Aura Logistics South' },
+        { id: 'sub_2', name: 'Aura Manufacturing' }
+    ],
 
     setUser: (user) => set({ user }),
     setActiveView: (activeView) => set({ activeView }),
@@ -124,8 +130,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         localStorage.setItem('aura_theme', theme);
         set({ theme });
     },
-    setHighContrast: (highContrast) => {
-        localStorage.setItem('aura_high_contrast', String(highContrast));
-        set({ highContrast });
-    },
+    setConsolidatedMode: (isConsolidatedMode) => set({ isConsolidatedMode }),
+    setSubsidiaries: (subsidiaries) => set({ subsidiaries }),
 }));
