@@ -9,7 +9,6 @@ import { exportToCSV } from '../services/exportService';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
-import { usageService } from '../services/usageService';
 
 interface ReceivablesViewProps {
     invoices: Invoice[];
@@ -80,12 +79,6 @@ const NewInvoiceModal: React.FC<{
             return;
         }
 
-        const isLimited = await usageService.isRateLimited('invoices_sent');
-        if (isLimited) {
-            showToast("Monthly invoice limit reached. Please upgrade your plan.", "error");
-            return;
-        }
-
         const finalLineItems = lineItems.map((li, idx) => {
             const quantity = Number(li.quantity) || 1;
             const unitPrice = Number(li.unitPrice) || 0;
@@ -115,8 +108,6 @@ const NewInvoiceModal: React.FC<{
             lineItems: finalLineItems
         });
         
-        usageService.trackUsage('invoices_sent');
-
         setCustomer('');
         setLineItems([{ inventoryItemId: '', quantity: 1, unitPrice: 0 }]);
         setDueDate('');

@@ -372,8 +372,15 @@ export default function App(): React.ReactNode {
   };
 
   const handleAddInvoice = async (invoiceData: Omit<Invoice, 'id'|'status'|'issueDate'>) => {
+    const isLimited = await usageService.isRateLimited('invoices_sent');
+    if (isLimited) {
+        showToast("Monthly invoice limit reached. Please upgrade your plan.", "error");
+        return;
+    }
+
     const newInvoice = await apiAddInvoice(invoiceData);
     setInvoices(prev => [newInvoice, ...prev]);
+    usageService.trackUsage('invoices_sent');
     logAndRefresh(`Added new invoice for ${newInvoice.customer}`, 'Receivables');
     showToast(`Invoice for ${newInvoice.customer} created.`, 'success');
   };
