@@ -6,8 +6,9 @@ import { useCurrency } from './ui/CurrencyProvider';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export const ConsolidatedReportsView: React.FC = () => {
-    const { subsidiaries, transactions, bills, invoices } = useAppStore();
+    const { subsidiaries, transactions } = useAppStore();
     const { formatAmount } = useCurrency();
+    const [selectedEntity, setSelectedEntity] = React.useState<string | null>(null);
 
     const consolidationData = useMemo(() => {
         const parentIncome = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
@@ -68,7 +69,12 @@ export const ConsolidatedReportsView: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                    <h3 className="text-lg font-bold text-white mb-6">Revenue Distribution by Entity</h3>
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-lg font-bold text-white">Revenue Distribution</h3>
+                        {selectedEntity && (
+                            <button onClick={() => setSelectedEntity(null)} className="text-xs text-brand-cyan hover:underline">Back to Group</button>
+                        )}
+                    </div>
                     <div className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={consolidationData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
@@ -79,7 +85,14 @@ export const ConsolidatedReportsView: React.FC = () => {
                                     contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '12px' }}
                                     formatter={(v: number) => formatAmount(v)}
                                 />
-                                <Bar dataKey="income" fill="#00F5D4" radius={[4, 4, 0, 0]} name="Income" />
+                                <Bar
+                                    dataKey="income"
+                                    fill="#00F5D4"
+                                    radius={[4, 4, 0, 0]}
+                                    name="Income"
+                                    onClick={(data) => setSelectedEntity(data.name)}
+                                    className="cursor-pointer"
+                                />
                                 <Bar dataKey="expenses" fill="#F15BB5" radius={[4, 4, 0, 0]} name="Expenses" />
                             </BarChart>
                         </ResponsiveContainer>
@@ -111,17 +124,31 @@ export const ConsolidatedReportsView: React.FC = () => {
                 </Card>
             </div>
 
-            <Card className="border-brand-purple/20 bg-brand-purple/5">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 bg-brand-purple rounded-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="border-brand-purple/20 bg-brand-purple/5">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-brand-purple rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-white">Intercompany Eliminations</h4>
+                            <p className="text-xs text-gray-400">Aura has automatically identified ₦1.2M in intercompany transactions and eliminated them for the consolidated view.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h4 className="text-sm font-bold text-white">Intercompany Eliminations</h4>
-                        <p className="text-xs text-gray-400">Aura has automatically identified ₦1.2M in intercompany transactions and eliminated them for the consolidated view.</p>
+                </Card>
+
+                <Card className="border-brand-cyan/20 bg-brand-cyan/5">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-brand-cyan rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold text-white">Shared Economic Drivers</h4>
+                            <p className="text-xs text-gray-400">Group fuel costs increased 42% last month. AI suggests consolidating logistics vendor for a potential ₦500k saving.</p>
+                        </div>
                     </div>
-                </div>
-            </Card>
+                </Card>
+            </div>
         </div>
     );
 };

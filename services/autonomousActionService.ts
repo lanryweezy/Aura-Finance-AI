@@ -59,6 +59,17 @@ class AutonomousActionService {
         action.status = 'authorized';
         monitoringService.log('info', 'AUTONOMOUS_ENGINE', `Authorized: ${action.description}`);
 
+        // Handle Intercompany Logic
+        if (action.type === 'tax_filing' && action.metadata?.isIntercompany) {
+            // Suggest matching bill in the other entity
+            this.proposeAction(
+                'payment_schedule',
+                { amount: action.metadata.amount, vendorName: 'Group HQ', isIntercompany: true },
+                "Matching intercompany bill detected from authorized invoice.",
+                "High"
+            );
+        }
+
         // Simulate execution delay
         setTimeout(() => {
             action.status = 'completed';

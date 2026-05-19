@@ -7,6 +7,7 @@ import { useCurrency } from './ui/CurrencyProvider';
 import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
 import { Bill, Invoice } from '../types';
 import { autonomousActionService } from '../services/autonomousActionService';
+import { API_KEY, isOpenRouter, openAICompatibleRequest } from '../services/aiConfig';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
@@ -73,7 +74,7 @@ const proposeActionTool: FunctionDeclaration = {
     }
 };
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = !isOpenRouter && API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 const suggestedPrompts = [
     "What was my biggest expense?",
@@ -82,7 +83,7 @@ const suggestedPrompts = [
     "Forecast my cashflow for next month.",
 ];
 
-type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations';
+type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations' | 'Audit' | 'Procurement';
 
 interface Agent {
     id: AgentType;
@@ -129,6 +130,20 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
         role: 'Finance Operations',
         color: 'from-pink-400 to-brand-purple',
         instruction: `You are OpsBot AI. Focus on bills, invoices, vendor payments, and day-to-day transaction management. Use ${currency}.`
+    },
+    {
+        id: 'Audit',
+        name: 'Audit Shield AI',
+        role: 'Risk & Internal Audit',
+        color: 'from-yellow-400 to-orange-500',
+        instruction: `You are Audit Shield AI. Focus on finding inconsistencies, duplicate transactions, and potential fraud patterns. Be extremely thorough and detail-oriented. Use ${currency}.`
+    },
+    {
+        id: 'Procurement',
+        name: 'Procure AI',
+        role: 'Vendor Intelligence',
+        color: 'from-indigo-400 to-brand-cyan',
+        instruction: `You are Procure AI. Focus on vendor payment intelligence, identifying better pricing, and managing vendor relationships. Use ${currency}.`
     }
   ];
 
@@ -138,14 +153,16 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
     Be concise, helpful. Do not invent data; always use the provided tools to get real information.`;
 
-    if(process.env.API_KEY) {
-        chatInstance.current = ai.chats.create({
-            model: 'gemini-2.0-flash',
-            config: {
-                systemInstruction,
-                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool, proposeActionTool] }]
-            },
-        });
+    if(API_KEY) {
+        if (!isOpenRouter && ai) {
+            chatInstance.current = ai.chats.create({
+                model: 'gemini-2.0-flash',
+                config: {
+                    systemInstruction,
+                    tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool, proposeActionTool] }]
+                },
+            });
+        }
 
         if (messages.length === 0) {
             setMessages([{
@@ -177,7 +194,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     if (!textToSend.trim() || isLoading) return;
 
     // If no API key, use mock logic for demo/testing
-    if (!process.env.API_KEY || !chatInstance.current) {
+    if (!API_KEY || (!chatInstance.current && !isOpenRouter)) {
         const userMessage: ChatMessage = { id: Date.now().toString(), role: 'user', text: textToSend };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
@@ -225,6 +242,22 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     setMessages(prev => [...prev, { id: modelMessageId, role: 'model', text: '' }]);
 
     try {
+      if (isOpenRouter) {
+          const selectedAgent = agents.find(a => a.id === activeAgent) || agents[0];
+          const systemInstruction = `${selectedAgent.instruction}
+          You should proactively analyze the user's situation and offer actionable advice.
+          Be concise, helpful. Note: Tool usage is currently simulated in OpenRouter mode.`;
+
+          const response = await openAICompatibleRequest(textToSend, systemInstruction);
+          setMessages(prev => prev.map(msg =>
+              msg.id === modelMessageId ? { ...msg, text: response } : msg
+          ));
+          setIsLoading(false);
+          return;
+      }
+
+      if (!chatInstance.current) throw new Error("Chat instance not initialized");
+
       let responseStream = await chatInstance.current.sendMessageStream({ message: textToSend });
       let fullResponseText = '';
       let functionCallMade = false;
@@ -353,7 +386,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder={!process.env.API_KEY ? "Demo Mode: Type 'remind', 'pay', 'tax', or 'payroll'..." : "Ask about your finances..."}
+            placeholder={!API_KEY ? "Demo Mode: Type 'remind', 'pay', 'tax', or 'payroll'..." : "Ask about your finances..."}
             className="w-full bg-dark-tertiary border-2 border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
             disabled={isLoading}
             />

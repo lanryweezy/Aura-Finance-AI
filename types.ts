@@ -55,6 +55,7 @@ export interface Bill {
   whtApplies: boolean;
   lineItems: LineItem[];
   projectId?: string;
+  isIntercompany?: boolean;
 }
 
 export interface Invoice {
@@ -70,6 +71,7 @@ export interface Invoice {
   whtApplied: boolean;
   lineItems: LineItem[];
   projectId?: string;
+  isIntercompany?: boolean;
 }
 
 export interface Employee {
