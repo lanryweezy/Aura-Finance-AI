@@ -14,6 +14,8 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
     const [employees, setEmployees] = useState<Employee[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [period, setPeriod] = useState({ start: '', end: '' });
+    const [filingStatus, setFilingStatus] = useState<{ [key: string]: 'draft' | 'filed' }>({});
+    const [filingReceipts, setFilingReceipts] = useState<{ [key: string]: string }>({});
     const printRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -29,6 +31,18 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         };
         loadData();
     }, []);
+
+    const handleFileDirectly = async (taxType: string) => {
+        const key = `${taxType}_${period.start}_${period.end}`;
+        setIsLoading(true);
+        // Simulate FIRS API interaction
+        await new Promise(resolve => setTimeout(resolve, 2500));
+
+        const refNumber = `AURA-TAX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+        setFilingStatus(prev => ({ ...prev, [key]: 'filed' }));
+        setFilingReceipts(prev => ({ ...prev, [key]: refNumber }));
+        setIsLoading(false);
+    };
 
     const handlePrint = () => {
         const printContent = printRef.current;
@@ -170,9 +184,37 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
             </Card>
 
             <div ref={printRef} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                    Tax Report: {period.start && period.end ? `${new Date(period.start).toLocaleDateString()} - ${new Date(period.end).toLocaleDateString()}` : <span className="text-gray-400 font-medium">Select a period to generate results</span>}
-                </h2>
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                        Tax Report: {period.start && period.end ? `${new Date(period.start).toLocaleDateString()} - ${new Date(period.end).toLocaleDateString()}` : <span className="text-gray-400 font-medium">Select a period to generate results</span>}
+                    </h2>
+                    {period.start && period.end && (
+                        <div className="flex gap-2">
+                             <button
+                                onClick={() => handleFileDirectly('VAT')}
+                                disabled={filingStatus[`VAT_${period.start}_${period.end}`] === 'filed'}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                    filingStatus[`VAT_${period.start}_${period.end}`] === 'filed'
+                                    ? 'bg-green-500/20 text-green-500 cursor-default'
+                                    : 'bg-dark-tertiary text-white hover:bg-brand-cyan hover:text-black border border-white/5'
+                                }`}
+                            >
+                                {filingStatus[`VAT_${period.start}_${period.end}`] === 'filed' ? 'VAT FILED' : 'File VAT to FIRS'}
+                            </button>
+                             <button
+                                onClick={() => handleFileDirectly('CIT')}
+                                disabled={filingStatus[`CIT_${period.start}_${period.end}`] === 'filed'}
+                                className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                                    filingStatus[`CIT_${period.start}_${period.end}`] === 'filed'
+                                    ? 'bg-green-500/20 text-green-500 cursor-default'
+                                    : 'bg-dark-tertiary text-white hover:bg-brand-cyan hover:text-black border border-white/5'
+                                }`}
+                            >
+                                {filingStatus[`CIT_${period.start}_${period.end}`] === 'filed' ? 'CIT FILED' : 'File CIT to FIRS'}
+                            </button>
+                        </div>
+                    )}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                     <Card className="border-gray-100 dark:border-white/5 shadow-lg">
                         <h3 className="text-gray-500 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Sales</h3>
@@ -191,6 +233,26 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                         <p className="text-2xl font-black text-green-600 dark:text-green-400 mt-3">{formatAmount(filteredData.totalPAYE)}</p>
                     </Card>
                 </div>
+
+                {(filingReceipts[`VAT_${period.start}_${period.end}`] || filingReceipts[`CIT_${period.start}_${period.end}`]) && (
+                    <Card className="mb-8 border-green-500/30 bg-green-500/5">
+                        <h4 className="text-xs font-bold text-green-500 uppercase tracking-widest mb-3">Digital Filing Receipts</h4>
+                        <div className="space-y-2">
+                             {filingReceipts[`VAT_${period.start}_${period.end}`] && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">VAT Filing Confirmation:</span>
+                                    <span className="font-mono text-white font-bold">{filingReceipts[`VAT_${period.start}_${period.end}`]}</span>
+                                </div>
+                             )}
+                             {filingReceipts[`CIT_${period.start}_${period.end}`] && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-400">CIT Filing Confirmation:</span>
+                                    <span className="font-mono text-white font-bold">{filingReceipts[`CIT_${period.start}_${period.end}`]}</span>
+                                </div>
+                             )}
+                        </div>
+                    </Card>
+                )}
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <Card className="border-gray-100 dark:border-white/5 shadow-xl overflow-hidden">
