@@ -7,6 +7,42 @@ interface AuditTrailViewProps {
     logs: AuditLog[];
 }
 
+const DiffTable: React.FC<{ before: any; after: any }> = ({ before, after }) => {
+    const allKeys = Array.from(new Set([...Object.keys(before || {}), ...Object.keys(after || {})]))
+        .filter(k => k !== 'id' && k !== 'joinedAt' && k !== 'lastUpdated');
+
+    const changes = allKeys.filter(k => JSON.stringify(before?.[k]) !== JSON.stringify(after?.[k]));
+
+    if (changes.length === 0) return <span className="text-gray-500 italic">Metadata update only</span>;
+
+    return (
+        <div className="mt-3 overflow-hidden rounded-xl border border-white/5 bg-black/20">
+            <table className="w-full text-left text-[10px]">
+                <thead className="bg-white/5">
+                    <tr>
+                        <th className="p-2 text-gray-400 uppercase font-black">Field</th>
+                        <th className="p-2 text-gray-400 uppercase font-black">Original</th>
+                        <th className="p-2 text-gray-400 uppercase font-black">Changed To</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                    {changes.map(key => (
+                        <tr key={key} className="group hover:bg-white/5 transition-colors">
+                            <td className="p-2 font-black text-gray-500 uppercase tracking-tighter">{key.replace(/([A-Z])/g, ' $1')}</td>
+                            <td className="p-2 text-red-400/80 font-medium italic line-through decoration-red-500/50">
+                                {typeof before?.[key] === 'object' ? '...' : String(before?.[key] ?? 'None')}
+                            </td>
+                            <td className="p-2 text-green-400 font-bold">
+                                {typeof after?.[key] === 'object' ? '...' : String(after?.[key] ?? 'None')}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
 export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
     const [filterModule, setFilterModule] = useState<string>('All');
 
@@ -67,7 +103,12 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                                         </span>
                                     </td>
                                     <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{log.user}</td>
-                                    <td className="p-4 text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</td>
+                                    <td className="p-4">
+                                        <div className="text-gray-900 dark:text-white text-sm font-bold">{log.action}</div>
+                                        {(log.before || log.after) && (
+                                            <DiffTable before={log.before} after={log.after} />
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {filteredLogs.length === 0 && (

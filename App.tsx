@@ -36,6 +36,8 @@ const ProjectsView = lazy(() => import('./components/ProjectsView').then(m => ({
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
+const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+const SharedReportView = lazy(() => import('./components/SharedReportView').then(m => ({ default: m.SharedReportView })));
 
 const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
 const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));

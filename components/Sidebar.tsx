@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { NAV_ITEMS, NavItem } from '../constants';
-import type { View } from '../types';
+import type { View, Permission } from '../types';
+import { usePermissions } from '../services/hooks/usePermissions';
 
 interface SidebarProps {
   activeView: View;
@@ -27,6 +28,39 @@ const NavMenu: React.FC<{
         }
     }, [isParentActive, activeView]);
 
+
+    const { hasPermission } = usePermissions();
+
+    // Mapping view IDs to required permissions
+    const viewPermissionMap: Record<string, Permission> = {
+        'dashboard': 'view_dashboard',
+        'transactions': 'view_transactions',
+        'reports': 'view_reports',
+        'payables': 'manage_payables',
+        'receivables': 'manage_receivables',
+        'estimates': 'manage_receivables',
+        'purchaseOrders': 'manage_payables',
+        'payroll': 'manage_payroll',
+        'inventory': 'manage_inventory',
+        'contacts': 'manage_contacts',
+        'taxFiling': 'view_reports',
+        'chartOfAccounts': 'manage_accounting',
+        'journalEntries': 'manage_accounting',
+        'fixedAssets': 'manage_accounting',
+        'reconciliation': 'manage_accounting',
+        'budgeting': 'manage_accounting',
+        'yearEnd': 'manage_accounting',
+        'auditTrail': 'manage_accounting',
+        'projects': 'view_transactions',
+        'connections': 'manage_settings',
+        'integrations': 'manage_settings',
+        'settings': 'manage_settings',
+    };
+
+    const requiredPermission = viewPermissionMap[item.id];
+    if (requiredPermission && !hasPermission(requiredPermission)) {
+        return null;
+    }
 
     const handleClick = () => {
         if (hasChildren) {
