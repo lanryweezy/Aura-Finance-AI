@@ -19,12 +19,15 @@ import {
   Minus
 } from 'lucide-react';
 
+import { View } from '../types';
+
 interface LandingViewProps {
   onGetStarted: () => void;
   onLogin: () => void;
+  onNavigate: (view: View) => void;
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin }) => {
+export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin, onNavigate }) => {
   return (
     <div className="min-h-screen bg-dark-primary text-white font-sans selection:bg-brand-cyan selection:text-black">
       {/* Navigation */}
@@ -40,6 +43,7 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
           <div className="hidden md:flex items-center gap-8">
             <a href="#features" className="text-sm font-bold text-gray-400 hover:text-brand-cyan transition-colors">Features</a>
             <a href="#pricing" className="text-sm font-bold text-gray-400 hover:text-brand-cyan transition-colors">Pricing</a>
+            <button onClick={() => onNavigate('blog')} className="text-sm font-bold text-gray-400 hover:text-brand-cyan transition-colors">Blog</button>
             <a href="#solutions" className="text-sm font-bold text-gray-400 hover:text-brand-cyan transition-colors">Solutions</a>
           </div>
 
@@ -735,27 +739,28 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
             <div>
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-6">Product</h4>
               <ul className="space-y-4 text-sm font-bold text-gray-500">
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">AI Assistant</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Payroll</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Inventory</a></li>
+                <li><button onClick={() => onNavigate('chat')} className="hover:text-brand-cyan transition-colors">AI Assistant</button></li>
+                <li><button onClick={() => onNavigate('payroll')} className="hover:text-brand-cyan transition-colors">Payroll</button></li>
+                <li><button onClick={() => onNavigate('inventory')} className="hover:text-brand-cyan transition-colors">Inventory</button></li>
+                <li><button onClick={() => onNavigate('blog')} className="hover:text-brand-cyan transition-colors">Blog</button></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-6">Company</h4>
               <ul className="space-y-4 text-sm font-bold text-gray-500">
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Contact</a></li>
+                <li><button onClick={() => onNavigate('about')} className="hover:text-brand-cyan transition-colors">About Us</button></li>
+                <li><button onClick={() => onNavigate('careers')} className="hover:text-brand-cyan transition-colors">Careers</button></li>
+                <li><button onClick={() => onNavigate('contact')} className="hover:text-brand-cyan transition-colors">Contact</button></li>
               </ul>
             </div>
 
             <div>
               <h4 className="text-white font-black text-xs uppercase tracking-widest mb-6">Legal</h4>
               <ul className="space-y-4 text-sm font-bold text-gray-500">
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-brand-cyan transition-colors">Security</a></li>
+                <li><button onClick={() => onNavigate('privacy')} className="hover:text-brand-cyan transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => onNavigate('terms')} className="hover:text-brand-cyan transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => onNavigate('security')} className="hover:text-brand-cyan transition-colors">Security</button></li>
               </ul>
             </div>
           </div>

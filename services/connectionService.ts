@@ -57,26 +57,3 @@ export const syncConnection = async (id: string): Promise<BankConnection> => {
     mockConnections[connectionIndex].lastSynced = new Date().toISOString();
     return mockConnections[connectionIndex];
 }
-
-export const connectPlaid = async (): Promise<BankConnection> => {
-  await sleep(2000);
-  const newConnection: BankConnection = {
-    id: `conn_plaid_${Date.now()}`,
-    provider: 'plaid' as any,
-    bankName: 'Chase Bank (Global)',
-    accountNumber: '******8899',
-    accountName: 'Operating Account',
-    lastSynced: new Date().toISOString(),
-  };
-  mockConnections.push(newConnection);
-  return newConnection;
-};
-
-export const processBankStatement = async (file: File, password?: string): Promise<void> => {
-  await sleep(3000); // Simulate OCR/Parsing
-  if (password && password === 'wrong') {
-    throw new Error("Invalid bank statement password.");
-  }
-  // In a real app, we'd parse the PDF/CSV and inject transactions into the DB
-  return;
-};

@@ -17,7 +17,7 @@ const NavMenu: React.FC<{
 }> = ({ item, activeView, setActiveView, isChild = false }) => {
     
     const hasChildren = item.children && item.children.length > 0;
-    const isParentActive = hasChildren ? (item.children || []).some(c => c.id === activeView) : activeView === item.id;
+    const isParentActive = hasChildren ? item.children.some(c => c.id === activeView) : activeView === item.id;
 
     const [isOpen, setIsOpen] = useState(isParentActive);
 

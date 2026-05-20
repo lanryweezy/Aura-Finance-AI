@@ -46,7 +46,7 @@ const loadContacts = (): Contact[] => {
     if (stored) {
         try {
             return JSON.parse(stored);
-        } catch (e: any) {
+        } catch (e) {
             monitoringService.trackError('SERVICE', e, { message: 'Failed to parse contacts' });
             return initialContacts;
         }

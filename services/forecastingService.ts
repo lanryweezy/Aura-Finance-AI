@@ -21,16 +21,11 @@ export const forecastingService = {
         const threeMonthsAgo = new Date();
         threeMonthsAgo.setMonth(now.getMonth() - 3);
 
-        const relevantExpenses = transactions.filter(t => t.type === 'debit' && new Date(t.date) >= threeMonthsAgo);
+        const recentExpenses = transactions
+            .filter(t => t.type === 'debit' && new Date(t.date) >= threeMonthsAgo)
+            .reduce((sum, t) => sum + t.amount, 0);
 
-        // Calculate the actual number of months in the data range (min 1)
-        const earliestDate = relevantExpenses.length > 0
-            ? new Date(Math.min(...relevantExpenses.map(t => new Date(t.date).getTime())))
-            : threeMonthsAgo;
-        const monthsDiff = Math.max(1, (now.getMonth() - earliestDate.getMonth()) + (12 * (now.getFullYear() - earliestDate.getFullYear())));
-
-        const totalExpenses = relevantExpenses.reduce((sum, t) => sum + t.amount, 0);
-        const monthlyBurnRate = totalExpenses / monthsDiff || 1;
+        const monthlyBurnRate = recentExpenses / 3 || 1; // Avoid division by zero
 
         // 2. Current Cash Balance (Simplified sum of last balances or mock)
         const currentCash = transactions.length > 0 ? (transactions[0].balance || 5000000) : 5000000;
@@ -38,10 +33,12 @@ export const forecastingService = {
         // 3. Predicted Runway
         const predictedRunwayDays = Math.round((currentCash / (monthlyBurnRate / 30)));
 
-        // 4. Predicted Revenue (Average income over available period + pending invoices)
-        const relevantIncome = transactions.filter(t => t.type === 'credit' && new Date(t.date) >= threeMonthsAgo);
-        const totalIncome = relevantIncome.reduce((sum, t) => sum + t.amount, 0);
-        const avgMonthlyIncome = totalIncome / monthsDiff;
+        // 4. Predicted Revenue (Average of last 3 months income + pending invoices)
+        const recentIncome = transactions
+            .filter(t => t.type === 'credit' && new Date(t.date) >= threeMonthsAgo)
+            .reduce((sum, t) => sum + t.amount, 0);
+
+        const avgMonthlyIncome = recentIncome / 3;
         const pendingInvoicesTotal = invoices
             .filter(i => i.status !== 'Paid')
             .reduce((sum, i) => sum + i.total, 0);

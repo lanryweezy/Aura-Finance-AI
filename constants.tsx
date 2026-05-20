@@ -24,7 +24,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     id: 'chat',
-    label: 'Aura AI Workforce',
+    label: 'Aura AI Assistant',
     icon: (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 8V4H8" />
@@ -35,11 +35,6 @@ export const NAV_ITEMS: NavItem[] = [
             <path d="M9 13v2" />
         </svg>
     ),
-    children: [
-        { id: 'chat', label: 'AI Chat', icon: <></> },
-        { id: 'approvalQueue', label: 'Approval Queue', icon: <></> },
-        { id: 'whatsappInbox', label: 'WhatsApp Inbox', icon: <></> },
-    ]
   },
   {
     id: 'contacts',
@@ -125,11 +120,6 @@ export const NAV_ITEMS: NavItem[] = [
             <path d="M10 8h7" />
         </svg>
     ),
-    children: [
-        { id: 'reports', label: 'Standard Reports', icon: <></> },
-        { id: 'consolidatedReports', label: 'Group Consolidation', icon: <></> },
-        { id: 'scenarioPlanner', label: 'AI Scenario Planner', icon: <></> },
-    ]
   },
   {
     id: 'taxFiling',
