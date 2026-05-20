@@ -47,8 +47,9 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                             <tr>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Timestamp</th>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Module</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">User</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Entity</th>
                                 <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Action</th>
+                                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">AI Reasoning</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -67,25 +68,16 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                                         </span>
                                     </td>
                                     <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{log.user}</td>
-                                    <td className="p-4">
-                                        <div className="text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</div>
-                                        {(log.before || log.after) && (
-                                            <div className="mt-2 p-2 bg-gray-100 dark:bg-black/20 rounded border border-gray-200 dark:border-white/5 text-[10px] font-mono overflow-hidden">
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <div className="text-gray-400 uppercase font-black mb-1">Before</div>
-                                                        <pre className="text-red-600 dark:text-red-400 break-words whitespace-pre-wrap">
-                                                            {JSON.stringify(log.before, null, 2) || 'None'}
-                                                        </pre>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-gray-400 uppercase font-black mb-1">After</div>
-                                                        <pre className="text-green-600 dark:text-green-400 break-words whitespace-pre-wrap">
-                                                            {JSON.stringify(log.after, null, 2) || 'None'}
-                                                        </pre>
-                                                    </div>
-                                                </div>
+                                    <td className="p-4 text-gray-600 dark:text-gray-300 text-sm font-medium">{log.action}</td>
+                                    <td className="p-4 max-w-xs">
+                                        {log.user.includes('AI') ? (
+                                            <div className="text-[10px] text-brand-cyan bg-brand-cyan/5 p-2 rounded-lg border border-brand-cyan/10 italic leading-relaxed">
+                                                {log.action.includes('reconciled') ? 'Deterministic matching based on amount, date, and vendor pattern.' :
+                                                 log.action.includes('reminder') ? 'Automated follow-up triggered by payment due date expiration.' :
+                                                 'Autonomous optimization based on business graph intelligence.'}
                                             </div>
+                                        ) : (
+                                            <span className="text-[10px] text-gray-500">Manual User Action</span>
                                         )}
                                     </td>
                                 </tr>

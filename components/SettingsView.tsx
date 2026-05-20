@@ -99,13 +99,27 @@ const SecuritySettings: React.FC = () => {
 };
 
 const DeveloperSettings: React.FC = () => {
+    const { showToast } = useToast();
     const [apiKeys, setApiKeys] = useState<ApiKey[]>([
         { id: '1', key: 'aura_live_sk_....92a1', name: 'Server Integration', scope: 'write', createdAt: '2023-11-20T10:00:00Z' }
     ]);
 
+    const [webhooks, setWebhooks] = useState([
+        { id: '1', url: 'https://zapier.com/hooks/...', events: ['transaction.created', 'invoice.paid'], status: 'active' }
+    ]);
+    const [newWebhookUrl, setNewWebhookUrl] = useState('');
+
     const handleGenerateKey = () => {
         const newKey = securityService.generateApiKey('New Integration', 'read');
         setApiKeys([...apiKeys, newKey]);
+        showToast('New API key generated.', 'success');
+    };
+
+    const handleAddWebhook = () => {
+        if (!newWebhookUrl) return;
+        setWebhooks([...webhooks, { id: Date.now().toString(), url: newWebhookUrl, events: ['all'], status: 'active' }]);
+        setNewWebhookUrl('');
+        showToast('Webhook added successfully.', 'success');
     };
 
     return (
@@ -139,12 +153,34 @@ const DeveloperSettings: React.FC = () => {
                 </div>
             </Card>
 
-            <Card className="bg-amber-500/5 border-amber-500/20">
-                <h4 className="text-sm font-bold text-amber-500 mb-2">Webhooks</h4>
-                <p className="text-xs text-gray-400 mb-4">Receive real-time notifications for transactions, invoice payments, and payroll runs.</p>
-                <button disabled className="px-4 py-2 bg-amber-500/10 text-amber-500 border border-amber-500/30 rounded-lg text-xs font-bold opacity-50 cursor-not-allowed">
-                    Coming Soon
-                </button>
+            <Card>
+                <SectionHeader title="Webhooks & API" description="Build custom automations with Zapier, Make, or your own server." />
+                <div className="space-y-4">
+                    <div className="flex gap-2">
+                        <input
+                            type="text"
+                            placeholder="https://your-server.com/webhook"
+                            value={newWebhookUrl}
+                            onChange={(e) => setNewWebhookUrl(e.target.value)}
+                            className="flex-1 bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-xs"
+                        />
+                        <button onClick={handleAddWebhook} className="bg-brand-cyan text-black px-4 py-2 rounded-lg text-xs font-bold">Add Webhook</button>
+                    </div>
+
+                    <div className="space-y-2">
+                        {webhooks.map(webhook => (
+                            <div key={webhook.id} className="p-3 bg-dark-secondary rounded-lg border border-gray-700 flex justify-between items-center">
+                                <div className="truncate flex-1 mr-4">
+                                    <div className="text-xs font-mono text-white truncate">{webhook.url}</div>
+                                    <div className="flex gap-1 mt-1">
+                                        {webhook.events.map(e => <span key={e} className="text-[9px] bg-gray-800 text-gray-400 px-1.5 rounded">{e}</span>)}
+                                    </div>
+                                </div>
+                                <span className="text-[10px] text-green-400 font-bold uppercase">{webhook.status}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </Card>
         </div>
     );
@@ -341,6 +377,34 @@ export const SettingsView: React.FC = () => {
                         </div>
                     </Card>
 
+                    <Card>
+                        <SectionHeader title="Custom SMTP Configuration" description="Configure your own mail server for white-labeled notifications and invoices." />
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">SMTP Host</label>
+                                    <input type="text" placeholder="smtp.mailgun.org" className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">Port</label>
+                                    <input type="number" placeholder="587" className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white text-sm" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">Username</label>
+                                    <input type="text" placeholder="postmaster@aurafinance.app" className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white text-sm" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-400 mb-1">Password</label>
+                                    <input type="password" placeholder="••••••••" className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white text-sm" />
+                                </div>
+                            </div>
+                            <button className="text-xs bg-white/5 border border-white/10 hover:bg-white/10 text-white px-4 py-2 rounded-lg font-bold transition-all">Test Connection</button>
+                        </div>
+                    </Card>
+
+                    <Card>
                     <Card className="border-gray-100 dark:border-white/5 shadow-xl">
                         <SectionHeader title="Regional Settings" description="Localization and currency preferences." />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

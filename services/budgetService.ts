@@ -16,7 +16,7 @@ const loadBudgets = (): Budget[] => {
     if (stored) {
         try {
             return JSON.parse(stored);
-        } catch (e) {
+        } catch (e: any) {
             monitoringService.trackError('SERVICE', e, { message: 'Failed to parse budgets' });
             return initialBudgets;
         }
