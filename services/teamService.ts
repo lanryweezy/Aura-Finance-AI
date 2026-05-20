@@ -78,5 +78,20 @@ export const teamService = {
             const roles = await teamService.fetchCustomRoles();
             localStorage.setItem('aura_custom_roles', JSON.stringify(roles.filter(r => r.id !== id)));
         }
+    },
+
+    getSystemRolePermissions: (role: string): string[] => {
+        const permissions: Record<string, string[]> = {
+            'Owner': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_payroll', 'manage_inventory', 'manage_contacts', 'manage_accounting', 'manage_settings'],
+            'Admin': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_payroll', 'manage_inventory', 'manage_contacts', 'manage_accounting', 'manage_settings'],
+            'Accountant': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_accounting', 'manage_contacts'],
+            'Viewer': ['view_dashboard', 'view_transactions', 'view_reports']
+        };
+        return permissions[role] || [];
+    },
+
+    getCustomRoles: (): PermissionSet[] => {
+        const stored = localStorage.getItem('aura_custom_roles');
+        return stored ? JSON.parse(stored) : [];
     }
 };

@@ -1,6 +1,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from 'recharts';
+import {
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+    ResponsiveContainer, Cell, AreaChart, Area, PieChart, Pie
+} from 'recharts';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { Tooltip } from './ui/Tooltip';
@@ -324,6 +327,35 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
     { name: 'Total Income', value: summary.income, color: '#00F5D4' },
     { name: 'Total Expenses', value: summary.expenses, color: '#F15BB5' },
   ];
+
+  const trendData = useMemo(() => {
+    const months: Record<string, { income: number, expenses: number }> = {};
+    const sortedTx = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    sortedTx.forEach(t => {
+        const month = new Date(t.date).toLocaleDateString(undefined, { month: 'short' });
+        if (!months[month]) months[month] = { income: 0, expenses: 0 };
+        if (t.type === 'credit') months[month].income += t.amount;
+        else months[month].expenses += t.amount;
+    });
+
+    return Object.entries(months).map(([name, data]) => ({ name, ...data }));
+  }, [transactions]);
+
+  const invoiceDistribution = useMemo(() => {
+    const distribution: Record<string, number> = { Paid: 0, Unpaid: 0, Overdue: 0, Draft: 0 };
+    invoices.forEach(i => {
+        distribution[i.status] = (distribution[i.status] || 0) + 1;
+    });
+    return Object.entries(distribution).map(([name, value]) => ({ name, value }));
+  }, [invoices]);
+
+  const COLORS = {
+    Paid: '#00F5D4',
+    Unpaid: '#7000FF',
+    Overdue: '#F15BB5',
+    Draft: '#94A3B8'
+  };
   
   const lastSyncTime = useMemo(() => {
     if (connections.length === 0) return null;
@@ -396,38 +428,38 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 dark:text-white"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-aura-gray-300 dark:text-white/20"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
           </div>
           <Tooltip content="Sum of all credit transactions in the current period.">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Income</h3>
+            <h3 className="text-gray-500 dark:text-gray-400 text-xs font-black uppercase tracking-widest">Total Income</h3>
           </Tooltip>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{formatAmount(summary.income)}</p>
-          <div className="mt-2 flex items-center text-xs text-green-600 dark:text-green-400 font-medium bg-green-500/10 w-fit px-2 py-1 rounded-full border border-green-500/20">
-             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          <p className="text-3xl font-black text-aura-gray-900 dark:text-white mt-2">{formatAmount(summary.income)}</p>
+          <div className="mt-4 flex items-center text-[10px] text-green-600 dark:text-green-400 font-black uppercase tracking-tighter bg-green-500/10 w-fit px-2.5 py-1 rounded-lg border border-green-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +12.5% vs last month
           </div>
         </Card>
         <Card className="relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:scale-110 transition-transform">
-             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-300 dark:text-white"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+             <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-aura-gray-300 dark:text-white/20"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
           </div>
           <Tooltip content="Sum of all debit transactions in the current period.">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Expenses</h3>
+            <h3 className="text-gray-500 dark:text-gray-400 text-xs font-black uppercase tracking-widest">Total Expenses</h3>
           </Tooltip>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white mt-2">{formatAmount(summary.expenses)}</p>
-          <div className="mt-2 flex items-center text-xs text-red-600 dark:text-red-400 font-medium bg-red-500/10 w-fit px-2 py-1 rounded-full border border-red-500/20">
-             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          <p className="text-3xl font-black text-aura-gray-900 dark:text-white mt-2">{formatAmount(summary.expenses)}</p>
+          <div className="mt-4 flex items-center text-[10px] text-red-600 dark:text-red-400 font-black uppercase tracking-tighter bg-red-500/10 w-fit px-2.5 py-1 rounded-lg border border-red-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="mr-1"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
              +5.2% vs last month
           </div>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden group">
           <Tooltip content="Net difference between your Income and Expenses.">
-            <h3 className="text-gray-600 dark:text-gray-400 text-sm font-medium">Net Flow</h3>
+            <h3 className="text-gray-500 dark:text-gray-400 text-xs font-black uppercase tracking-widest">Net Flow</h3>
           </Tooltip>
-          <p className={`text-3xl font-bold mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-600 dark:text-red-400'}`}>
+          <p className={`text-3xl font-black mt-2 ${summary.income - summary.expenses >= 0 ? 'text-brand-cyan' : 'text-red-600 dark:text-red-400'}`}>
             {formatAmount(summary.income - summary.expenses)}
           </p>
-          <div className="mt-2 text-xs text-gray-500">
+          <div className="mt-4 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
              Cash availability metric
           </div>
         </Card>
@@ -435,32 +467,47 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 overflow-hidden">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Cash Flow Overview</h3>
+            <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Revenue Trends</h3>
+                <p className="text-xs text-gray-500">Monthly income vs expenses performance</p>
+            </div>
             <select className="bg-gray-50 dark:bg-dark-primary/50 border border-gray-200 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300">
-                <option>This Month</option>
-                <option>Last Quarter</option>
+                <option>Last 6 Months</option>
+                <option>Last Year</option>
             </select>
           </div>
           {transactions.length > 0 ? (
-               <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
-                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => formatAmount(value, { compact: true })} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
+               <div className="h-[300px] w-full">
+               <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={trendData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                        <defs>
+                            <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#00F5D4" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#00F5D4" stopOpacity={0}/>
+                            </linearGradient>
+                            <linearGradient id="colorExpenses" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#F15BB5" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#F15BB5" stopOpacity={0}/>
+                            </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? "#ffffff1a" : "#0000000a"} vertical={false} />
+                        <XAxis dataKey="name" stroke="#888888" fontSize={10} axisLine={false} tickLine={false} />
+                        <YAxis stroke="#888888" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(v) => formatAmount(v, { compact: true })} />
                         <RechartsTooltip
-                            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                            contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
-                            formatter={(value: number) => formatAmount(value)}
+                            contentStyle={{
+                                backgroundColor: theme === 'dark' ? '#1C203F' : '#ffffff',
+                                border: 'none',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                            }}
                         />
-                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
-                            {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                        </Bar>
-                    </BarChart>
+                        <Area type="monotone" dataKey="income" stroke="#00F5D4" strokeWidth={3} fillOpacity={1} fill="url(#colorIncome)" />
+                        <Area type="monotone" dataKey="expenses" stroke="#F15BB5" strokeWidth={3} fillOpacity={1} fill="url(#colorExpenses)" />
+                    </AreaChart>
                 </ResponsiveContainer>
+                </div>
           ) : (
              <div className="flex flex-col items-center justify-center h-[300px]">
                 <p className="text-gray-400">No transaction data available.</p>
@@ -499,6 +546,53 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <RecentActivity transactions={transactions} bills={bills} invoices={invoices} />
+
+        <Card>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Invoice Status</h3>
+            <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={invoiceDistribution}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {invoiceDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[entry.name as keyof typeof COLORS] || '#8884d8'} />
+                            ))}
+                        </Pie>
+                        <RechartsTooltip />
+                    </PieChart>
+                </ResponsiveContainer>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+                {invoiceDistribution.map(item => (
+                    <div key={item.name} className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[item.name as keyof typeof COLORS] }}></div>
+                        <span className="text-xs text-gray-500">{item.name}: {item.value}</span>
+                    </div>
+                ))}
+            </div>
+        </Card>
+
+        <Card>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Cash Outflow</h3>
+            <div className="h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData.filter(d => d.name === 'Total Expenses')}>
+                        <XAxis dataKey="name" hide />
+                        <YAxis hide />
+                        <RechartsTooltip />
+                        <Bar dataKey="value" fill="#F15BB5" radius={[10, 10, 10, 10]} barSize={60} />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+            <p className="text-center text-xs text-gray-500 mt-4 font-medium italic">Highest spending in "Operating Expenses"</p>
+        </Card>
       </div>
     </div>
     </>
