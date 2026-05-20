@@ -6,6 +6,12 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
 import { LandingView } from './components/LandingView';
+import { BlogView } from './components/BlogView';
+import { AboutView } from './components/AboutView';
+import { CareersView } from './components/CareersView';
+import { ContactView } from './components/ContactView';
+import { SecurityView } from './components/SecurityView';
+import { LegalView } from './components/LegalView';
 import { Spinner } from './components/ui/Spinner';
 import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 
@@ -30,11 +36,6 @@ const ProjectsView = lazy(() => import('./components/ProjectsView').then(m => ({
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
-const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
-const ApprovalQueueView = lazy(() => import('./components/ApprovalQueueView').then(m => ({ default: m.ApprovalQueueView })));
-const ConsolidatedReportsView = lazy(() => import('./components/ConsolidatedReportsView').then(m => ({ default: m.ConsolidatedReportsView })));
-const WhatsAppInboxView = lazy(() => import('./components/WhatsAppInboxView').then(m => ({ default: m.WhatsAppInboxView })));
-const ScenarioPlannerView = lazy(() => import('./components/ScenarioPlannerView').then(m => ({ default: m.ScenarioPlannerView })));
 
 const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m => ({ default: m.FixedAssetsView })));
 const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
@@ -93,26 +94,24 @@ export default function App(): React.ReactNode {
     estimates, setEstimates,
     budgets, setBudgets,
     contacts, setContacts,
-        fixedAssets, setFixedAssets,
-        reconciliations, setReconciliations,
-        entities, setEntities,
-        closingHistory, setClosingHistory,
+    fixedAssets, setFixedAssets,
+    reconciliations, setReconciliations,
+    entities, setEntities,
+    closingHistory, setClosingHistory,
     auditLog, setAuditLog,
     isLoading, setIsLoading,
     error, setError,
     theme, highContrast
   } = store;
   
-  // Check for existing session on mount
   useEffect(() => {
     const session = authService.getCurrentUser();
     if (session) {
         setUser(session.user);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [setUser]);
 
-  const handleLogin = (loggedInUser: User, org: Organization) => {
+  const handleLogin = (loggedInUser: User) => {
       setUser(loggedInUser);
       loadInitialData();
   };
@@ -120,7 +119,6 @@ export default function App(): React.ReactNode {
   const handleLogout = async () => {
       await authService.logout();
       setUser(null);
-      // Optional: Clear sensitive state here if needed
   };
 
   const logAndRefresh = (log: string, module: string = 'General', before?: any, after?: any) => {
@@ -177,7 +175,7 @@ export default function App(): React.ReactNode {
     } finally {
       setIsLoading(false);
     }
-  }, [chartOfAccounts, user]);
+  }, [chartOfAccounts, user, setConnections, setEmployees, setBills, setInvoices, setProjects, setInventory, setPurchaseOrders, setEstimates, setJournalEntries, setBudgets, setContacts, setFixedAssets, setEntities, setTransactions, setIsLoading, setError]);
 
   useEffect(() => {
     if (user) {
@@ -185,7 +183,6 @@ export default function App(): React.ReactNode {
     }
   }, [loadInitialData, user]);
 
-  // Global Hotkeys
   useHotkeys({
     'mod+k': () => setActiveView('chat'),
     'mod+i': () => setActiveView('receivables'),
@@ -196,19 +193,16 @@ export default function App(): React.ReactNode {
     'mod+p': () => setActiveView('payroll'),
   });
 
-  // Session Timeout Implementation
   useEffect(() => {
       let timeout: ReturnType<typeof setTimeout>;
       let lastReset = 0;
 
       const resetTimeout = (e?: Event) => {
           const now = Date.now();
-          // Throttle event listeners to prevent excessive timer churn
           if (e && now - lastReset < 2000) return;
           lastReset = now;
 
           if (timeout) clearTimeout(timeout);
-          // Default timeout: 30 minutes, or from org settings
           const duration = (authService.getCurrentUser()?.org.sessionTimeout || 30) * 60 * 1000;
           timeout = setTimeout(() => {
               if (authService.getCurrentUser()) {
@@ -220,14 +214,13 @@ export default function App(): React.ReactNode {
 
       const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
       events.forEach(name => document.addEventListener(name, resetTimeout));
-
       resetTimeout();
 
       return () => {
           events.forEach(name => document.removeEventListener(name, resetTimeout));
           if (timeout) clearTimeout(timeout);
       };
-  }, [user]);
+  }, [user, showToast]);
   
   const payrollSummary: PayrollSummary = useMemo(() => {
     return employees.reduce((acc, emp) => {
@@ -397,7 +390,6 @@ export default function App(): React.ReactNode {
     const invoice = invoices.find(i => i.id === invoiceId);
     if (!invoice) return;
 
-    // Create transaction for payment received
     handleAddNewTransaction({
         date: new Date().toISOString(),
         amount: invoice.total,
@@ -407,13 +399,11 @@ export default function App(): React.ReactNode {
         projectId: invoice.projectId,
     });
 
-    // Reduce stock for inventory items sold
     invoice.lineItems.forEach(li => {
         if(li.inventoryItemId) {
             updateStock(li.inventoryItemId, -li.quantity);
         }
     });
-    // Refresh inventory state
     fetchInventoryItems().then(setInventory);
 
     setInvoices(prev => prev.map(i => i.id === invoiceId ? {...i, status: 'Paid'} : i));
@@ -535,13 +525,65 @@ export default function App(): React.ReactNode {
       showToast(`Fiscal year ${year} has been successfully closed.`, 'success');
   };
 
+  const userPlan = authService.getCurrentUser()?.org.plan || 'Free';
+
+  const withUpgrade = (view: View, requiredPlan: 'Growth' | 'Enterprise', title: string, description: string, component: React.ReactNode) => {
+      if (!billingService.hasFeature(userPlan, view)) {
+          return (
+              <div className="relative h-full">
+                  <UpgradeOverlay
+                      title={title}
+                      description={description}
+                      requiredPlan={requiredPlan}
+                      onUpgrade={() => setActiveView('subscription')}
+                  />
+                  <div className="opacity-20 pointer-events-none filter blur-sm h-full overflow-hidden">
+                      {component}
+                  </div>
+              </div>
+          );
+      }
+      return component;
+  };
+
+  const viewMap: Record<View, React.ReactNode> = {
+    dashboard: <Dashboard user={user} transactions={transactions} connections={connections} bills={bills} invoices={invoices} onQuickAction={setActiveView} onAddTransaction={handleAddNewTransaction} />,
+    transactions: <TransactionsView transactions={transactions} onUpdateCategory={handleUpdateTransaction} onAddTransaction={handleAddNewTransaction} projects={projects} chartOfAccounts={chartOfAccounts} />,
+    reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
+    payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
+    receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
+    estimates: withUpgrade('estimates', 'Growth', 'Professional Estimates', 'Create and send branded estimates to your customers to win more business.', <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />),
+    purchaseOrders: withUpgrade('purchaseOrders', 'Growth', 'Purchase Orders', 'Streamline your procurement process with professional purchase orders.', <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />),
+    payroll: withUpgrade('payroll', 'Growth', 'Automated Payroll', 'Run payroll for your team in minutes. Automated tax calculations and payslips.', <PayrollView employees={employees} payrollSummary={payrollSummary} payrollHistory={payrollHistory} onAddEmployee={handleAddEmployee} onUpdateEmployee={handleUpdateEmployee} onRemoveEmployee={handleRemoveEmployee} onRunPayroll={handleRunPayroll} />),
+    inventory: withUpgrade('inventory', 'Growth', 'Inventory Management', 'Track stock levels, set low-stock alerts, and manage products across multiple warehouses.', <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />),
+    contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
+    taxFiling: withUpgrade('taxFiling', 'Growth', 'Tax Compliance', 'Automatically calculate VAT, WHT, and PAYE. Stay compliant with local tax laws.', <TaxFilingView transactions={transactions} />),
+    connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
+    integrations: <IntegrationsView />,
+    chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
+    journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
+    budgeting: withUpgrade('budgeting', 'Growth', 'Smart Budgeting', 'Plan your spending and stay on track with real-time budget vs actual reporting.', <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />),
+    auditTrail: withUpgrade('auditTrail', 'Enterprise', 'Compliance Audit Trail', 'Maintain a detailed history of all changes for full accountability and audit readiness.', <AuditTrailView logs={auditLog} />),
+    projects: withUpgrade('projects', 'Growth', 'Project Accounting', 'Track profitability and expenses for specific projects or departments.', <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />),
+    fixedAssets: withUpgrade('fixedAssets', 'Enterprise', 'Fixed Assets Registry', 'Track depreciation and manage the lifecycle of your company\'s physical assets.', <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />),
+    reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
+    recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
+    yearEnd: withUpgrade('yearEnd', 'Enterprise', 'Year-End Closing', 'Guided wizard for closing your books and preparing for the next fiscal year.', <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />),
+    settings: <SettingsView />,
+    subscription: <SubscriptionView />,
+    chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
+    privacy: <LegalView type="privacy" />,
+    terms: <LegalView type="terms" />,
+    blog: <BlogView />,
+    about: <AboutView />,
+    careers: <CareersView />,
+    contact: <ContactView />,
+    security: <SecurityView />
+  };
+
   const renderContent = () => {
     if (isLoading) {
-      return (
-        <div className="p-8">
-            {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
-        </div>
-      );
+      return <div className="p-8">{activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}</div>;
     }
 
     if (error) {
@@ -550,100 +592,14 @@ export default function App(): React.ReactNode {
           <div className="text-center bg-red-900/20 border border-red-500 p-8 rounded-lg">
             <h2 className="text-2xl font-bold text-red-400 mb-2">Error</h2>
             <p className="text-red-300">{error}</p>
-            <button
-                onClick={loadInitialData}
-                className="mt-6 px-4 py-2 bg-brand-pink text-white font-semibold rounded-lg hover:bg-brand-pink/80 transition-colors"
-            >
-                Retry
-            </button>
+            <button onClick={loadInitialData} className="mt-6 px-4 py-2 bg-brand-pink text-white font-semibold rounded-lg hover:bg-brand-pink/80 transition-colors">Retry</button>
           </div>
         </div>
       );
     }
 
-    const userPlan = authService.getCurrentUser()?.org.plan || 'Free';
-
-    const withUpgrade = (view: View, requiredPlan: 'Growth' | 'Enterprise', title: string, description: string, component: React.ReactNode) => {
-        if (!billingService.hasFeature(userPlan, view)) {
-            return (
-                <div className="relative h-full">
-                    <UpgradeOverlay
-                        title={title}
-                        description={description}
-                        requiredPlan={requiredPlan}
-                        onUpgrade={() => setActiveView('subscription')}
-                    />
-                    <div className="opacity-20 pointer-events-none filter blur-sm h-full overflow-hidden">
-                        {component}
-                    </div>
-                </div>
-            );
-        }
-        return component;
-    };
-
-    const viewMap: Record<View, React.ReactNode> = {
-      dashboard: <Dashboard
-                    user={user}
-                    transactions={transactions} 
-                    connections={connections}
-                    bills={bills}
-                    invoices={invoices}
-                    onQuickAction={setActiveView}
-                    onAddTransaction={handleAddNewTransaction}
-                 />,
-      transactions: <TransactionsView
-                        transactions={transactions}
-                        onUpdateCategory={handleUpdateTransaction}
-                        onAddTransaction={handleAddNewTransaction}
-                        projects={projects}
-                        chartOfAccounts={chartOfAccounts}
-                    />,
-      reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
-      payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
-      receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
-      estimates: withUpgrade('estimates', 'Growth', 'Professional Estimates', 'Create and send branded estimates to your customers to win more business.', <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />),
-      purchaseOrders: withUpgrade('purchaseOrders', 'Growth', 'Purchase Orders', 'Streamline your procurement process with professional purchase orders.', <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />),
-      payroll: withUpgrade('payroll', 'Growth', 'Automated Payroll', 'Run payroll for your team in minutes. Automated tax calculations and payslips.', <PayrollView
-                    employees={employees} 
-                    payrollSummary={payrollSummary}
-                    payrollHistory={payrollHistory}
-                    onAddEmployee={handleAddEmployee}
-                    onUpdateEmployee={handleUpdateEmployee}
-                    onRemoveEmployee={handleRemoveEmployee}
-                    onRunPayroll={handleRunPayroll}
-                />),
-      inventory: withUpgrade('inventory', 'Growth', 'Inventory Management', 'Track stock levels, set low-stock alerts, and manage products across multiple warehouses.', <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />),
-      contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
-      taxFiling: withUpgrade('taxFiling', 'Growth', 'Tax Compliance', 'Automatically calculate VAT, WHT, and PAYE. Stay compliant with local tax laws.', <TaxFilingView transactions={transactions} />),
-      connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
-      integrations: <IntegrationsView />,
-      chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
-      journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
-      budgeting: withUpgrade('budgeting', 'Growth', 'Smart Budgeting', 'Plan your spending and stay on track with real-time budget vs actual reporting.', <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />),
-      auditTrail: withUpgrade('auditTrail', 'Enterprise', 'Compliance Audit Trail', 'Maintain a detailed history of all changes for full accountability and audit readiness.', <AuditTrailView logs={auditLog} />),
-      projects: withUpgrade('projects', 'Growth', 'Project Accounting', 'Track profitability and expenses for specific projects or departments.', <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />),
-      fixedAssets: withUpgrade('fixedAssets', 'Enterprise', 'Fixed Assets Registry', 'Track depreciation and manage the lifecycle of your company\'s physical assets.', <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />),
-      reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
-      recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
-      yearEnd: withUpgrade('yearEnd', 'Enterprise', 'Year-End Closing', 'Guided wizard for closing your books and preparing for the next fiscal year.', <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />),
-      settings: <SettingsView />,
-      subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
-      approvalQueue: <ApprovalQueueView />,
-      whatsappInbox: <WhatsAppInboxView />,
-      consolidatedReports: <ConsolidatedReportsView />,
-      scenarioPlanner: <ScenarioPlannerView />,
-      privacy: <LegalView type="privacy" />,
-      terms: <LegalView type="terms" />
-    };
-
     return (
-        <Suspense fallback={
-            <div className="p-8">
-                 {activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}
-            </div>
-        }>
+        <Suspense fallback={<div className="p-8">{activeView === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}</div>}>
             {viewMap[activeView] || viewMap.dashboard}
         </Suspense>
     );
@@ -663,17 +619,31 @@ export default function App(): React.ReactNode {
     if (showLanding) {
       return (
         <LandingView
-          onGetStarted={() => {
-            setIsLoginFlow(false);
-            setShowLanding(false);
-          }}
-          onLogin={() => {
-            setIsLoginFlow(true);
-            setShowLanding(false);
-          }}
+          onGetStarted={() => { setIsLoginFlow(false); setShowLanding(false); }}
+          onLogin={() => { setIsLoginFlow(true); setShowLanding(false); }}
+          onNavigate={(view) => { setActiveView(view); setShowLanding(false); }}
         />
       );
     }
+
+    const publicViews: View[] = ['blog', 'about', 'careers', 'contact', 'security', 'privacy', 'terms'];
+    if (publicViews.includes(activeView)) {
+        return (
+            <div className={`min-h-screen font-sans ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-gray-50 text-gray-900'}`}>
+                <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-dark-primary/80 backdrop-blur-md">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+                        <button onClick={() => setShowLanding(true)} className="flex items-center gap-3">
+                            <div className="bg-gradient-to-br from-brand-cyan to-brand-purple p-2 rounded-xl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg></div>
+                            <span className="text-xl font-black tracking-tight text-white">Aura Finance</span>
+                        </button>
+                        <button onClick={() => { setShowLanding(false); setActiveView('dashboard'); }} className="px-6 py-2.5 bg-white text-black font-black text-sm rounded-xl hover:bg-brand-cyan transition-all">Sign In</button>
+                    </div>
+                </nav>
+                <main className="pt-24 pb-20">{renderContent()}</main>
+            </div>
+        );
+    }
+
     return <AuthView onLogin={handleLogin} initialIsLogin={isLoginFlow} />;
   }
 
@@ -684,7 +654,6 @@ export default function App(): React.ReactNode {
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header user={user} />
         <main className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-3xl ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-gray-200'} backdrop-blur-sm border-t border-l shadow-2xl relative`}>
-           {/* Rich gradient background for world-class depth */}
            {theme === 'dark' && (
                <>
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50"></div>

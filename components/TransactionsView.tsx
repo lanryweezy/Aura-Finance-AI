@@ -7,7 +7,7 @@ import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
 import { AdvancedFilter } from './ui/AdvancedFilter';
-import { exportToCSV, exportToQuickBooks, exportToXero, exportToSage } from '../services/exportService';
+import { exportToCSV } from '../services/exportService';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -228,7 +228,6 @@ const AddTransactionModal = React.memo<{
 
 export const TransactionsView = React.memo<TransactionsViewProps>(({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
   const { formatAmount } = useCurrency();
-  const { showToast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'credit'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -237,7 +236,6 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   
   const [advancedFilters, setAdvancedFilters] = useState<Record<string, any>>({});
 
@@ -286,16 +284,6 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
     showToast('Transaction updated successfully.', 'success');
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      showToast(`Importing transactions from ${file.name}...`, 'info');
-      setTimeout(() => {
-        showToast('Successfully imported transactions!', 'success');
-      }, 2000);
-    }
-  };
-
   const getProjectName = (projectId?: string) => {
     return projects.find(p => p.id === projectId)?.name;
   }
@@ -334,43 +322,18 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             </div>
           </div>
           
-          <div className="flex flex-col md:flex-row gap-4 items-end">
-            <div className="flex-1">
-                <AdvancedFilter
-                    options={[
-                    { label: 'Narration', field: 'narration', type: 'text' },
-                    { label: 'Category', field: 'category', type: 'select', options: allAvailableCategories.map(c => ({ label: c, value: c })) },
-                    { label: 'Project', field: 'projectId', type: 'select', options: projects.map(p => ({ label: p.name, value: p.id })) },
-                    { label: 'Start Date', field: 'startDate', type: 'date' },
-                    { label: 'End Date', field: 'endDate', type: 'date' },
-                    { label: 'Amount Range', field: 'amount', type: 'number-range' }
-                    ]}
-                    onFilter={setAdvancedFilters}
-                    onExport={() => exportToCSV('transactions', filteredTransactions)}
-                />
-            </div>
-            <div className="flex gap-2 pb-1">
-                <div className="relative">
-                    <button onClick={() => setIsExportMenuOpen(!isExportMenuOpen)} className="bg-dark-secondary border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-800 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Export
-                    </button>
-                    {isExportMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-48 bg-dark-tertiary border border-gray-700 rounded-xl shadow-2xl z-40 p-1 animate-in fade-in zoom-in-95 duration-200">
-                             <button onClick={() => { exportToCSV('aura_transactions', filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">CSV Format</button>
-                             <button onClick={() => { exportToQuickBooks(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">QuickBooks (IIF)</button>
-                             <button onClick={() => { exportToXero(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">Xero (CSV)</button>
-                             <button onClick={() => { exportToSage(filteredTransactions); setIsExportMenuOpen(false); }} className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/5 rounded-lg">Sage (CSV)</button>
-                        </div>
-                    )}
-                </div>
-                <label className="bg-dark-secondary border border-gray-700 text-gray-300 px-3 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-gray-800 transition-all cursor-pointer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                    Import
-                    <input type="file" className="hidden" accept=".csv,.iif,.xlsx" onChange={handleImport} />
-                </label>
-            </div>
-          </div>
+          <AdvancedFilter
+            options={[
+              { label: 'Narration', field: 'narration', type: 'text' },
+              { label: 'Category', field: 'category', type: 'select', options: allAvailableCategories.map(c => ({ label: c, value: c })) },
+              { label: 'Project', field: 'projectId', type: 'select', options: projects.map(p => ({ label: p.name, value: p.id })) },
+              { label: 'Start Date', field: 'startDate', type: 'date' },
+              { label: 'End Date', field: 'endDate', type: 'date' },
+              { label: 'Amount Range', field: 'amount', type: 'number-range' }
+            ]}
+            onFilter={setAdvancedFilters}
+            onExport={() => exportToCSV('transactions', filteredTransactions)}
+          />
        </div>
 
       <div className="overflow-x-auto flex-grow relative">

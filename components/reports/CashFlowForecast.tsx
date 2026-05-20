@@ -46,11 +46,11 @@ export const CashFlowForecast: React.FC = () => {
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
                         <XAxis dataKey="month" stroke="#4B5563" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#4B5563" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v: any) => formatAmount(v as number, { compact: true })} />
+                        <YAxis stroke="#4B5563" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(v) => formatAmount(v, { compact: true })} />
                         <Tooltip
                             contentStyle={{ backgroundColor: '#10142C', border: '1px solid #1F2937', borderRadius: '12px' }}
                             itemStyle={{ color: '#fff' }}
-                            formatter={(v: any) => formatAmount(v)}
+                            formatter={(v: number) => formatAmount(v)}
                         />
                         <Area type="monotone" dataKey="actual" stroke="#00F5D4" strokeWidth={3} fillOpacity={1} fill="url(#colorActual)" />
                         <Area type="monotone" dataKey="forecast" stroke="#9B5DE5" strokeWidth={3} strokeDasharray="5 5" fillOpacity={1} fill="url(#colorForecast)" />

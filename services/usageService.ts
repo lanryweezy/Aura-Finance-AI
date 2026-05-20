@@ -46,7 +46,7 @@ export const usageService = {
     trackUsage: async (type: UsageType) => {
         try {
             await apiClient.post('/usage/track', { type });
-        } catch (e: any) {
+        } catch (e) {
             monitoringService.trackError('SERVICE', e, { message: "Failed to track usage via API" });
         }
     },

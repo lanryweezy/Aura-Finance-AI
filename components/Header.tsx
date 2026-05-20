@@ -1,9 +1,8 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { User } from '../types';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
-import { autonomousActionService } from '../services/autonomousActionService';
 
 interface HeaderProps {
     user: User | null;
@@ -11,18 +10,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ user }) => {
   const { currency, setCurrency } = useCurrency();
-  const { theme, setTheme, setActiveView } = useAppStore();
-  const [pendingCount, setPendingCount] = useState(0);
-
-  useEffect(() => {
-    const checkQueue = () => {
-        const pending = autonomousActionService.getHistory().filter(a => a.status === 'pending').length;
-        setPendingCount(pending);
-    };
-    checkQueue();
-    const interval = setInterval(checkQueue, 3000);
-    return () => clearInterval(interval);
-  }, []);
+  const { theme, setTheme, entities, selectedEntityId, setSelectedEntityId } = useAppStore();
 
   return (
     <header className="p-4 md:p-8 flex justify-between items-center">
@@ -57,19 +45,6 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
       </div>
 
       <div className="flex items-center gap-4">
-        <button
-          onClick={() => setActiveView('approvalQueue')}
-          className="relative p-2 rounded-lg bg-dark-secondary/50 border border-white/5 text-gray-400 hover:text-brand-cyan transition-colors"
-          title="Approval Queue"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>
-          {pendingCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                  {pendingCount}
-              </span>
-          )}
-        </button>
-
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className="p-2 rounded-lg bg-dark-secondary/50 border border-white/5 text-gray-400 hover:text-brand-cyan transition-colors"

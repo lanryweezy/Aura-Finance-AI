@@ -378,7 +378,7 @@ export type View =
     // New Views
     'chartOfAccounts' | 'journalEntries' | 'purchaseOrders' | 'estimates' | 'inventory' |
     'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts' |
-    'privacy' | 'terms' |
+    'privacy' | 'terms' | 'blog' | 'about' | 'careers' | 'contact' | 'security' |
     // Core Enhancements
     'fixedAssets' | 'reconciliation' | 'recurring' | 'yearEnd';
 
