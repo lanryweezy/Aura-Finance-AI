@@ -10,6 +10,7 @@ import { AddEditEmployeeModal } from './payroll/AddEditEmployeeModal';
 import { PayrollRunDetailModal } from './payroll/PayrollRunDetailModal';
 import { useCurrency } from './ui/CurrencyProvider';
 import type { Employee, PayrollSummary, PayrollRun, PayrollAdjustment } from '../types';
+import { usePermissions } from '../services/hooks/usePermissions';
 
 interface PayrollViewProps {
     employees: Employee[];
@@ -23,6 +24,7 @@ interface PayrollViewProps {
 
 export const PayrollView: React.FC<PayrollViewProps> = (props) => {
     const { formatAmount } = useCurrency();
+    const { hasPermission } = usePermissions();
     const { employees, payrollSummary, payrollHistory, onAddEmployee, onUpdateEmployee, onRemoveEmployee, onRunPayroll } = props;
     
     const [activeTab, setActiveTab] = useState<'dashboard' | 'employees' | 'history'>('dashboard');
@@ -120,14 +122,18 @@ export const PayrollView: React.FC<PayrollViewProps> = (props) => {
                          <p className="text-gray-600 dark:text-gray-400 mt-1">Manage employees and automate payroll compliance.</p>
                     </div>
                     <div className="flex gap-2 flex-shrink-0">
-                        <button onClick={handleAddEmployeeClick} className="bg-white dark:bg-dark-tertiary hover:bg-gray-50 dark:hover:bg-dark-primary border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 transition-all active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                            Add Employee
-                        </button>
-                         <button onClick={() => setIsWizardOpen(true)} disabled={employees.length === 0} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-cyan/20 active:scale-95">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.59a2 2 0 0 1-2.83-2.83l.79-.79"/></svg>
-                            Run Payroll
-                        </button>
+                        {hasPermission('manage_payroll') && (
+                            <>
+                            <button onClick={handleAddEmployeeClick} className="bg-white dark:bg-dark-tertiary hover:bg-gray-50 dark:hover:bg-dark-primary border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white font-bold py-2.5 px-5 rounded-xl flex items-center gap-2 transition-all active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                                Add Employee
+                            </button>
+                            <button onClick={() => setIsWizardOpen(true)} disabled={employees.length === 0} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-brand-cyan/20 active:scale-95">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.59a2 2 0 0 1-2.83-2.83l.79-.79"/></svg>
+                                Run Payroll
+                            </button>
+                            </>
+                        )}
                     </div>
                 </div>
 

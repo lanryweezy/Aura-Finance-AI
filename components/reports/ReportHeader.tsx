@@ -11,6 +11,7 @@ interface ReportHeaderProps {
     comparePeriod: ReportPeriod | null;
     setComparePeriod: (period: ReportPeriod | null) => void;
     onPrint: () => void;
+    onShare: () => void;
     projects: Project[];
     projectFilter: string;
     setProjectFilter: (id: string) => void;
@@ -21,7 +22,7 @@ const formatDateForInput = (date: Date): string => {
 };
 
 export const ReportHeader: React.FC<ReportHeaderProps> = ({ 
-    activeReport, setActiveReport, reportPeriod, setReportPeriod, onPrint, projects, projectFilter, setProjectFilter 
+    activeReport, setActiveReport, reportPeriod, setReportPeriod, onPrint, onShare, projects, projectFilter, setProjectFilter
 }) => {
 
     const handlePresetChange = (preset: string) => {
@@ -76,10 +77,16 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Financial Reports</h2>
                     <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Analyze your performance and financial health.</p>
                 </div>
-                 <button onClick={onPrint} className="no-print bg-brand-cyan text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-brand-cyan/90 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Print Report
-                </button>
+                 <div className="flex items-center gap-3">
+                    <button onClick={onShare} className="no-print bg-white/10 dark:bg-dark-secondary text-gray-900 dark:text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-white/20 dark:hover:bg-dark-tertiary border border-gray-100 dark:border-gray-700 shadow-sm active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        Share Link
+                    </button>
+                    <button onClick={onPrint} className="no-print bg-brand-cyan text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-brand-cyan/90 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print Report
+                    </button>
+                </div>
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-4 p-5 bg-gray-50 dark:bg-dark-tertiary border border-gray-100 dark:border-gray-800 rounded-2xl shadow-inner">
                  <div className="flex-1 min-w-[180px]">
