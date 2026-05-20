@@ -127,6 +127,60 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
         </div>
       </section>
 
+      {/* Problem vs Solution */}
+      <section className="py-32 relative bg-dark-secondary/10 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-brand-pink mb-4">The Aura Advantage</h2>
+            <p className="text-4xl md:text-5xl font-black tracking-tight">Manual vs. Autonomous Finance</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-px bg-white/10 rounded-[3rem] overflow-hidden border border-white/10">
+            {/* Manual Way */}
+            <div className="p-12 md:p-16 bg-dark-primary/50">
+              <h3 className="text-2xl font-black mb-10 flex items-center gap-3 text-gray-500">
+                <Minus className="p-1 bg-gray-800 rounded-full" /> The Manual Way
+              </h3>
+              <ul className="space-y-8">
+                {[
+                  "Chasing vendors for paper receipts and invoices.",
+                  "Manually calculating PAYE and Pensions in spreadsheets.",
+                  "Guessing tax liabilities until the end of the month.",
+                  "Wait weeks for monthly financial reports.",
+                  "Prone to human error and data entry fatigue."
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-4 text-gray-500 font-medium italic">
+                    <span className="mt-1 w-2 h-2 rounded-full bg-gray-700 shrink-0"></span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Aura Way */}
+            <div className="p-12 md:p-16 bg-gradient-to-br from-brand-cyan/10 to-brand-purple/10">
+              <h3 className="text-2xl font-black mb-10 flex items-center gap-3 text-brand-cyan">
+                <Plus className="p-1 bg-brand-cyan/20 rounded-full" /> The Aura Way
+              </h3>
+              <ul className="space-y-8">
+                {[
+                  "AI agents automatically ingest and reconcile receipts.",
+                  "One-click payroll with automated Nigerian tax logic.",
+                  "Real-time tax liability forecasting and alerts.",
+                  "Instant, reasoning-backed financial insights.",
+                  "Deterministic accuracy with a full AI reasoning trail."
+                ].map((item, i) => (
+                  <li key={i} className="flex items-start gap-4 text-white font-bold">
+                    <CheckCircle2 className="mt-1 text-brand-cyan shrink-0" size={20} />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="solutions" className="py-32 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -201,6 +255,59 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Feature Deep Dive */}
+      <section className="py-32 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {[
+            {
+              title: "Payroll for the Modern Nigerian Business",
+              desc: "Aura automates the entire payroll lifecycle. From onboarding employees to calculating PAYE, Pension, NHF, and generating payslips—all with one click and 100% compliance.",
+              image: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&q=80&w=1000",
+              features: ["Automated Statutories", "Bulk Direct Deposits", "Tax Filing Ready"],
+              reversed: false,
+              accent: "brand-purple"
+            },
+            {
+              title: "AI-Powered Inventory & Procurement",
+              desc: "Predict stockouts before they happen. Aura's Procure AI analyzes your spend patterns and suggests vendor negotiations while keeping your warehouses perfectly balanced.",
+              image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1000",
+              features: ["FIFO Valuation", "Multi-Warehouse", "Market Intel"],
+              reversed: true,
+              accent: "brand-cyan"
+            },
+            {
+              title: "Agentic Tax Compliance (FIRS/LIRS)",
+              desc: "Stop worrying about audits. Aura maintains a complete reasoning trail for every VAT, WHT, and CIT calculation, ensuring you're always ready for the taxman.",
+              image: "https://images.unsplash.com/photo-1586486855514-8c633cc6fd38?auto=format&fit=crop&q=80&w=1000",
+              features: ["Instant VAT Reports", "WHT Automation", "Audit Log Trail"],
+              reversed: false,
+              accent: "brand-pink"
+            }
+          ].map((item, i) => (
+            <div key={i} className={`flex flex-col ${item.reversed ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-20 mb-40 last:mb-0`}>
+              <div className="flex-1">
+                <h2 className={`text-sm font-black uppercase tracking-[0.3em] text-${item.accent} mb-4`}>Feature Deep Dive</h2>
+                <h3 className="text-4xl md:text-5xl font-black mb-8 leading-tight">{item.title}</h3>
+                <p className="text-xl text-gray-400 font-medium mb-10 leading-relaxed">{item.desc}</p>
+                <div className="flex flex-wrap gap-4">
+                  {item.features.map((f, j) => (
+                    <div key={j} className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm font-bold flex items-center gap-2">
+                      <CheckCircle2 size={16} className={`text-${item.accent}`} /> {f}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 w-full">
+                <div className={`p-1 bg-gradient-to-br from-${item.accent}/40 to-transparent rounded-[3rem] shadow-2xl relative group overflow-hidden`}>
+                  <img src={item.image} alt={item.title} className="rounded-[2.8rem] grayscale-[0.2] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 aspect-video object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-dark-primary/80 via-transparent to-transparent opacity-60"></div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -340,6 +447,81 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
         </div>
       </section>
 
+      {/* Security & Compliance */}
+      <section className="py-32 relative bg-dark-secondary/40 overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-cyan/5 rounded-full blur-[100px] -z-10"></div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="relative">
+              <div className="p-12 bg-white/5 border border-white/10 rounded-[3rem] backdrop-blur-2xl relative z-10">
+                <ShieldCheck size={64} className="text-brand-cyan mb-8 animate-pulse" />
+                <h3 className="text-3xl font-black mb-6">Bank-Grade Security. Always.</h3>
+                <p className="text-gray-400 font-medium mb-8 leading-relaxed">
+                  We understand that your financial data is sacred. Aura is built with multi-layer security protocols to ensure your information remains confidential and protected.
+                </p>
+                <div className="space-y-6">
+                  {[
+                    { title: "AES-256 Encryption", desc: "Data is encrypted at rest and in transit using industry-standard protocols." },
+                    { title: "Tenant Isolation", desc: "Your data is strictly isolated from other organizations at the database level." },
+                    { title: "Audit Trail", desc: "Every single action is logged with an AI-reasoning path for full accountability." }
+                  ].map((s, i) => (
+                    <div key={i} className="flex gap-4">
+                      <div className="mt-1 w-5 h-5 rounded-full bg-brand-cyan/20 flex items-center justify-center shrink-0">
+                        <div className="w-2 h-2 rounded-full bg-brand-cyan"></div>
+                      </div>
+                      <div>
+                        <p className="font-black text-sm text-white mb-1">{s.title}</p>
+                        <p className="text-xs text-gray-500 font-medium">{s.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-brand-purple/20 blur-[80px] -z-10"></div>
+            </div>
+            <div>
+              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-brand-cyan mb-4">Security first</h2>
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-8">Compliance without the complexity.</p>
+              <p className="text-xl text-gray-400 font-medium mb-12 leading-relaxed">
+                Aura isn't just about automation; it's about trust. We follow strict NDPR (Nigerian Data Protection Regulation) guidelines and SOC2 readiness indicators.
+              </p>
+              <div className="flex flex-wrap gap-8 opacity-50 grayscale invert">
+                <div className="flex items-center gap-2 font-black tracking-tighter text-2xl">
+                  <div className="w-8 h-8 rounded bg-white"></div> NDPR
+                </div>
+                <div className="flex items-center gap-2 font-black tracking-tighter text-2xl">
+                  <div className="w-8 h-8 rounded bg-white"></div> SOC2
+                </div>
+                <div className="flex items-center gap-2 font-black tracking-tighter text-2xl text-white">
+                  ISO 27001
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Metrics Ticker */}
+      <section className="py-16 relative overflow-hidden bg-brand-cyan/5 border-y border-brand-cyan/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                { label: "Transactions Processed", value: "24.5M+", color: "text-brand-cyan" },
+                { label: "Tax Liability Saved", value: "₦1.2B+", color: "text-brand-purple" },
+                { label: "Active Businesses", value: "850+", color: "text-brand-pink" },
+                { label: "AI Accuracy", value: "99.9%", color: "text-brand-cyan" }
+              ].map((stat, i) => (
+                <div key={i} className="text-center group">
+                  <p className={`text-3xl md:text-5xl font-black ${stat.color} mb-2 group-hover:scale-110 transition-transform duration-500`}>
+                    {stat.value}
+                  </p>
+                  <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-gray-500">{stat.label}</p>
+                </div>
+              ))}
+           </div>
+        </div>
+      </section>
+
       {/* Integrations Section */}
       <section className="py-32 relative border-y border-white/5 bg-white/[0.02]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -369,6 +551,53 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin 
               <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/Andela_logo.png" alt="Andela" className="h-8 mx-auto" />
               <div className="h-8 text-white font-black text-center text-xl">Shopify</div>
               <div className="h-8 text-white font-black text-center text-xl">Amazon</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Aura Everywhere (PWA/Mobile) */}
+      <section className="py-32 relative overflow-hidden bg-dark-secondary/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+            <div className="order-2 lg:order-1">
+              <h2 className="text-sm font-black uppercase tracking-[0.3em] text-brand-purple mb-4">Aura Everywhere</h2>
+              <p className="text-4xl md:text-5xl font-black tracking-tight mb-8">Your Finance, at Your Fingertips.</p>
+              <p className="text-xl text-gray-400 font-medium mb-12 leading-relaxed">
+                Aura is built as a Progressive Web App (PWA), giving you a native mobile experience on any device. Manage your business from the construction site, the warehouse, or your home office.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                   <Smartphone className="text-brand-purple mb-4" />
+                   <p className="font-black mb-2">Native Mobile Feel</p>
+                   <p className="text-xs text-gray-500 font-medium leading-relaxed">Add to home screen and use Aura just like a native app on iOS and Android.</p>
+                </div>
+                <div className="p-6 bg-white/5 border border-white/10 rounded-2xl">
+                   <Globe className="text-brand-cyan mb-4" />
+                   <p className="font-black mb-2">Offline Capability</p>
+                   <p className="text-xs text-gray-500 font-medium leading-relaxed">Keep working even without an internet connection. Aura syncs when you're back online.</p>
+                </div>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2 relative flex justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-brand-purple/20 to-transparent blur-[100px] -z-10"></div>
+              <div className="relative w-full max-w-[320px] aspect-[9/19] bg-dark-primary border-[8px] border-gray-800 rounded-[3rem] shadow-2xl overflow-hidden shadow-brand-purple/20 animate-float">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-gray-800 rounded-b-2xl z-20"></div>
+                <img
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=1000"
+                  alt="Mobile Interface"
+                  className="w-full h-full object-cover grayscale-[0.3]"
+                />
+              </div>
+              {/* Floating Success Indicator */}
+              <div className="absolute top-1/4 -right-10 p-4 bg-dark-secondary border border-white/10 rounded-2xl shadow-2xl animate-bounce-slow">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-brand-cyan/20 flex items-center justify-center text-brand-cyan">
+                       <CheckCircle2 size={16} />
+                    </div>
+                    <p className="text-xs font-black">Payroll Approved</p>
+                 </div>
+              </div>
             </div>
           </div>
         </div>
