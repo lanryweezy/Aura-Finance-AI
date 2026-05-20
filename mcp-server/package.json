@@ -1,0 +1,21 @@
+{
+  "name": "aura-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP Server for Aura Finance AI",
+  "type": "module",
+  "bin": {
+    "aura-mcp": "./build/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "typescript": "~5.8.2"
+  }
+}

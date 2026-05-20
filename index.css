@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+.high-contrast {
+    @apply bg-hc-bg text-hc-text !important;
+}
+
+.high-contrast * {
+    @apply border-hc-border text-hc-text !important;
+    background-image: none !important;
+}
+
+.high-contrast button, .high-contrast a, .high-contrast select, .high-contrast input {
+    @apply border-2 border-hc-border bg-hc-bg text-hc-text !important;
+    outline: 2px solid transparent !important;
+}
+
+.high-contrast button:hover, .high-contrast a:hover {
+    @apply bg-hc-accent text-hc-bg !important;
+}
+
+.high-contrast .bg-brand-cyan, .high-contrast .text-brand-cyan {
+    @apply bg-hc-accent text-hc-bg border-hc-accent !important;
+}
+
 @layer base {
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
@@ -35,5 +57,36 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .animate-shine {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shine 3s linear infinite;
   }
 }

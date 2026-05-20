@@ -8,8 +8,29 @@ interface FetchOptions extends RequestInit {
   timeout?: number;
 }
 
+const rateLimitMap = new Map<string, { count: number, reset: number }>();
+const MAX_REQUESTS = 100;
+const WINDOW_MS = 60000;
+
 export const apiClient = {
   async fetch(endpoint: string, options: FetchOptions = {}) {
+      // Simulate Rate Limiting
+      const now = Date.now();
+      const rateData = rateLimitMap.get(endpoint) || { count: 0, reset: now + WINDOW_MS };
+
+      if (now > rateData.reset) {
+          rateData.count = 0;
+          rateData.reset = now + WINDOW_MS;
+      }
+
+      rateData.count++;
+      rateLimitMap.set(endpoint, rateData);
+
+      if (rateData.count > MAX_REQUESTS) {
+          monitoringService.log('warn', 'SECURITY', `Rate limit exceeded for ${endpoint}`);
+          throw new Error('Too many requests. Please try again later.');
+      }
+
     const { timeout = 15000, ...fetchOptions } = options;
 
     const tenantId = authService.getTenantId();
@@ -38,17 +59,41 @@ export const apiClient = {
         ...fetchOptions,
         headers,
         signal: controller.signal,
+      }).catch(err => {
+          if (!navigator.onLine) {
+              const cached = localStorage.getItem(`aura_cache_${endpoint}`);
+              if (cached && options.method === 'GET') {
+                  return new Response(cached, {
+                      status: 200,
+                      headers: { 'Content-Type': 'application/json', 'X-Offline-Cache': 'true' }
+                  });
+              }
+          }
+          throw err;
       });
 
       clearTimeout(timeoutId);
 
+      const contentType = response.headers.get('content-type');
+      const isJson = contentType && contentType.includes('application/json');
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = isJson ? await response.json().catch(() => ({})) : {};
         monitoringService.trackError('NETWORK', `HTTP ${response.status}: ${errorData.message || response.statusText}`);
         throw new Error(errorData.message || `Request failed with status ${response.status}`);
       }
 
-      return await response.json();
+      if (isJson) {
+        const data = await response.json();
+        // Cache successful GET responses for offline use
+        if (options.method === 'GET' || !options.method) {
+            localStorage.setItem(`aura_cache_${endpoint}`, JSON.stringify(data));
+        }
+        return data;
+      } else {
+        const text = await response.text();
+        throw new Error(`Expected JSON response but got: ${text.substring(0, 50)}...`);
+      }
     } catch (error: any) {
       clearTimeout(timeoutId);
       if (error.name === 'AbortError') {

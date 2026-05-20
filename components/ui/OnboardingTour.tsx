@@ -61,14 +61,39 @@ export const OnboardingTour: React.FC = () => {
         showToast('Onboarding complete! Enjoy Aura.', 'success');
     };
 
-    if (stepIndex === -1) return null;
+    const currentStep = stepIndex >= 0 ? TOUR_STEPS[stepIndex] : null;
+    const [spotlightStyles, setSpotlightStyles] = useState<React.CSSProperties>({});
 
-    const currentStep = TOUR_STEPS[stepIndex];
+    useEffect(() => {
+        if (stepIndex === -1 || !currentStep) return;
+
+        const target = document.getElementById(currentStep.target);
+        if (target) {
+            const rect = target.getBoundingClientRect();
+            setSpotlightStyles({
+                top: rect.top - 8,
+                left: rect.left - 8,
+                width: rect.width + 16,
+                height: rect.height + 16,
+                opacity: 1
+            });
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            setSpotlightStyles({ opacity: 0 });
+        }
+    }, [stepIndex, currentStep?.target]);
+
+    if (stepIndex === -1 || !currentStep) return null;
 
     return (
         <div className="fixed inset-0 z-[100] pointer-events-none">
-            {/* Dark Overlay with Hole (Conceptual for demo, simplified implementation) */}
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"></div>
+            {/* Dark Overlay with Hole */}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]">
+                <div
+                    className="absolute bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] rounded-xl transition-all duration-500 ease-in-out"
+                    style={spotlightStyles}
+                />
+            </div>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
                 <div className="bg-dark-tertiary border border-brand-cyan/30 p-8 rounded-3xl shadow-[0_0_50px_rgba(0,245,212,0.2)] max-w-sm w-full animate-in zoom-in duration-300">
@@ -100,9 +125,17 @@ export const OnboardingTour: React.FC = () => {
             </div>
 
             {/* Spotlight Pointer Effect (Visual cue) */}
-            <div className="absolute top-4 left-4 text-brand-cyan animate-bounce hidden lg:block">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
-            </div>
+            {spotlightStyles.top !== undefined && (
+                <div
+                    className="absolute text-brand-cyan animate-bounce hidden lg:block transition-all duration-500"
+                    style={{
+                        top: (spotlightStyles.top as number) - 40,
+                        left: (spotlightStyles.left as number) + (spotlightStyles.width as number) / 2 - 16
+                    }}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M12 19l-7-7M12 19l7-7"/></svg>
+                </div>
+            )}
         </div>
     );
 };
