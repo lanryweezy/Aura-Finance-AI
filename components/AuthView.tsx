@@ -6,11 +6,12 @@ import { useToast } from './ui/Toast';
 
 interface AuthViewProps {
     onLogin: (user: User, org: Organization) => void;
+    initialIsLogin?: boolean;
 }
 
-export const AuthView: React.FC<AuthViewProps> = ({ onLogin }) => {
+export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = true }) => {
     const { showToast } = useToast();
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(initialIsLogin);
     const [isLoading, setIsLoading] = useState(false);
     const [requires2FA, setRequires2FA] = useState(false);
     const [twoFactorCode, setTwoFactorCode] = useState('');
