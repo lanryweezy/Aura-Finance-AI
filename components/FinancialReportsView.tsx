@@ -131,8 +131,9 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
     const handleShare = async () => {
         setIsSharing(true);
         try {
-            const reportName = TABS.find(t => t.id === activeReport)?.label || 'Financial Report';
-            const link = await reportSharingService.generateLink(reportName);
+            const org = authService.getCurrentUser()?.org;
+            const orgName = org?.name || 'Aura Customer';
+            const link = reportSharingService.generateLink(orgName, summary);
             const fullUrl = `${window.location.origin}/shared/report?token=${link.token}`;
             setSharedLink(fullUrl);
             showToast('Secure link generated successfully', 'success');
@@ -180,8 +181,8 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
         <div className="space-y-8 pb-12">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Financial Intelligence</h2>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium italic">Accrual-basis reporting for professional insights.</p>
+                    <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white tracking-tight">Financial Intelligence</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium italic">Accrual-basis reporting for professional insights.</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -196,7 +197,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                     </button>
                     <button
                         onClick={handlePrint}
-                        className="bg-white/5 hover:bg-white/10 text-gray-300 font-bold py-2.5 px-6 rounded-xl border border-white/10 flex items-center gap-2 transition-all active:scale-95"
+                        className="bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-aura-gray-600 dark:text-gray-300 font-bold py-2.5 px-6 rounded-xl border border-gray-200 dark:border-white/10 flex items-center gap-2 transition-all active:scale-95 shadow-sm dark:shadow-none"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Print Report
@@ -207,11 +208,11 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
                     { label: 'Total Revenue', val: summary.revenue, color: 'text-brand-cyan' },
-                    { label: 'Net Profit', val: summary.netProfit, color: summary.netProfit >= 0 ? 'text-green-400' : 'text-red-400' },
-                    { label: 'Operating Expenses', val: summary.expenses, color: 'text-orange-400' },
+                    { label: 'Net Profit', val: summary.netProfit, color: summary.netProfit >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' },
+                    { label: 'Operating Expenses', val: summary.expenses, color: 'text-orange-600 dark:text-orange-400' },
                     { label: 'Cash Margin', val: ((summary.netProfit / (summary.revenue || 1)) * 100).toFixed(1) + '%', color: 'text-brand-purple', isRaw: true }
                 ].map((stat, i) => (
-                    <Card key={i} className="p-6 border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent">
+                    <Card key={i} className="p-6 border-gray-100 dark:border-white/5 bg-gradient-to-br from-aura-gray-50 dark:from-white/[0.02] to-transparent">
                         <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-1">{stat.label}</p>
                         <p className={`text-2xl font-black ${stat.color}`}>
                             {stat.isRaw ? stat.val : formatAmount(Number(stat.val))}
@@ -236,10 +237,10 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                 />
 
                 {sharedLink && (
-                    <div className="bg-brand-cyan/10 border border-brand-cyan/20 rounded-2xl p-6 animate-in zoom-in duration-300">
+                    <div className="bg-brand-cyan/10 border border-brand-cyan/20 rounded-2xl p-6 animate-in zoom-in duration-300 shadow-lg shadow-brand-cyan/10">
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-brand-cyan font-bold uppercase tracking-widest text-xs">Secure Shareable Link</h4>
-                            <button onClick={() => setSharedLink(null)} className="text-gray-400 hover:text-white transition-colors">
+                            <button onClick={() => setSharedLink(null)} className="text-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </div>
@@ -247,19 +248,19 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                             <input
                                 readOnly
                                 value={sharedLink}
-                                className="flex-1 bg-black/20 border border-white/10 rounded-xl p-3 text-sm font-mono text-brand-cyan outline-none"
+                                className="flex-1 bg-white dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl p-3 text-sm font-mono text-brand-cyan outline-none"
                             />
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(sharedLink);
                                     showToast('Copied to clipboard', 'success');
                                 }}
-                                className="bg-brand-cyan text-black font-black px-6 rounded-xl hover:bg-brand-cyan/80 transition-all active:scale-95"
+                                className="bg-brand-cyan text-black font-black px-6 rounded-xl hover:bg-brand-cyan/80 transition-all active:scale-95 shadow-md shadow-brand-cyan/20"
                             >
                                 COPY
                             </button>
                         </div>
-                        <p className="text-[10px] text-gray-500 mt-3 font-bold uppercase tracking-tighter italic">This link is secure, encrypted, and will expire in 7 days.</p>
+                        <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-3 font-bold uppercase tracking-tighter italic">This link is secure, encrypted, and will expire in 7 days.</p>
                     </div>
                 )}
 
@@ -277,8 +278,8 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                             ) : (
                                 <Card className="flex items-center justify-center h-96">
                                     <div className="text-center">
-                                        <h3 className="text-xl font-semibold text-white">No Transaction Data</h3>
-                                        <p className="text-gray-400 mt-2">Link a bank account and sync transactions to generate reports.</p>
+                                        <h3 className="text-xl font-semibold text-aura-gray-900 dark:text-white">No Transaction Data</h3>
+                                        <p className="text-gray-500 dark:text-gray-400 mt-2">Link a bank account and sync transactions to generate reports.</p>
                                     </div>
                                 </Card>
                             )}
@@ -286,38 +287,38 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                         <div className="lg:col-span-2 space-y-6">
                             <AICFOInsights analysis={aiAnalysis} isLoading={isLoadingAnalysis} />
 
-                            <Card className="p-6 border-white/5 bg-white/5 backdrop-blur-sm">
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Card className="p-6 border-gray-100 dark:border-white/5 bg-aura-gray-50 dark:bg-white/5 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-aura-gray-900 dark:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-brand-purple"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
                                     Balance Sheet Summary
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Total Assets</span>
-                                        <span className="font-mono font-bold">{formatAmount(summary.totalAssets)}</span>
+                                        <span className="text-gray-500 dark:text-gray-400">Total Assets</span>
+                                        <span className="font-mono font-bold text-aura-gray-900 dark:text-white">{formatAmount(summary.totalAssets)}</span>
                                     </div>
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Total Liabilities</span>
-                                        <span className="font-mono font-bold text-red-400">({formatAmount(summary.totalLiabilities)})</span>
+                                        <span className="text-gray-500 dark:text-gray-400">Total Liabilities</span>
+                                        <span className="font-mono font-bold text-red-600 dark:text-red-400">({formatAmount(summary.totalLiabilities)})</span>
                                     </div>
-                                    <div className="pt-4 border-t border-white/10 flex justify-between items-center">
+                                    <div className="pt-4 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">
                                         <span className="font-bold text-brand-cyan">Net Equity</span>
-                                        <span className="font-mono font-bold text-lg">{formatAmount(summary.totalAssets - summary.totalLiabilities)}</span>
+                                        <span className="font-mono font-bold text-lg text-aura-gray-900 dark:text-white">{formatAmount(summary.totalAssets - summary.totalLiabilities)}</span>
                                     </div>
                                 </div>
                             </Card>
 
-                            <Card className="p-6 border-white/5 bg-white/5 backdrop-blur-sm">
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                            <Card className="p-6 border-gray-100 dark:border-white/5 bg-aura-gray-50 dark:bg-white/5 backdrop-blur-sm">
+                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-aura-gray-900 dark:text-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-400"><path d="M12 2v20"/><path d="m17 5-5-3-5 3"/><path d="m17 19-5 3-5-3"/><path d="M2 12h20"/><path d="m5 7-3 5 3 5"/><path d="m19 7 3 5-3 5"/></svg>
                                     Cash Position
                                 </h3>
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-gray-400">Operating Cash</span>
-                                        <span className={`font-mono font-bold ${summary.cashFlow.operating >= 0 ? 'text-green-400' : 'text-red-400'}`}>{formatAmount(summary.cashFlow.operating)}</span>
+                                        <span className="text-gray-500 dark:text-gray-400">Operating Cash</span>
+                                        <span className={`font-mono font-bold ${summary.cashFlow.operating >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>{formatAmount(summary.cashFlow.operating)}</span>
                                     </div>
-                                    <div className="text-[10px] text-gray-500 italic">Net cash generated from daily business operations.</div>
+                                    <div className="text-[10px] text-gray-500 dark:text-gray-400 italic">Net cash generated from daily business operations.</div>
                                 </div>
                             </Card>
                         </div>

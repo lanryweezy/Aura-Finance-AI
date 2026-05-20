@@ -12,7 +12,7 @@ interface BalanceSheetReportProps {
 const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
 ({ label, value, isTotal, isHeader, className, onDrillDown, formatAmount }) => (
     <tr 
-        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
+        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-aura-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
         onClick={onDrillDown}
     >
         <td className={`py-3 ${isTotal || isHeader ? 'font-bold text-gray-900 dark:text-white' : 'pl-6 text-gray-600 dark:text-gray-400 font-medium'}`} colSpan={isHeader ? 2 : 1}>{label}</td>
@@ -35,11 +35,11 @@ const RatioIndicator: React.FC<{ratio: number}> = ({ratio}) => {
     }
     
     return (
-        <div className="mt-4 p-6 bg-gray-50 dark:bg-dark-secondary/50 rounded-2xl border border-gray-100 dark:border-white/5 text-center shadow-inner">
-            <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Current Ratio</h4>
-            <p className="text-3xl font-black text-gray-900 dark:text-white">{isFinite(ratio) ? ratio.toFixed(2) : '∞'}</p>
+        <div className="mt-4 p-6 bg-aura-gray-50 dark:bg-dark-secondary/50 rounded-2xl border border-gray-100 dark:border-white/5 text-center shadow-inner">
+            <h4 className="text-xs font-bold text-aura-gray-500 dark:text-gray-400 uppercase tracking-widest mb-2">Current Ratio</h4>
+            <p className="text-3xl font-black text-aura-gray-900 dark:text-white">{isFinite(ratio) ? ratio.toFixed(2) : '∞'}</p>
             <p className={`text-sm font-bold mt-1 ${status.color}`}>{status.text}</p>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-3 font-medium">
+            <p className="text-[10px] text-gray-500 dark:text-gray-500 mt-3 font-medium italic">
                 (Current Assets / Current Liabilities)
             </p>
         </div>

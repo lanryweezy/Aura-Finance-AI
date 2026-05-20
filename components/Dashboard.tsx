@@ -53,11 +53,11 @@ const QuickActionCard = React.memo<{
     color: string;
     onClick: () => void 
 }>(({ title, icon, color, onClick }) => (
-    <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-white dark:bg-dark-tertiary/40 backdrop-blur-md border border-gray-200 dark:border-white/5 rounded-2xl hover:bg-gray-50 dark:hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-lg">
+    <button onClick={onClick} className="flex flex-col items-center justify-center p-4 bg-white dark:bg-dark-tertiary/40 backdrop-blur-md border border-gray-100 dark:border-white/5 rounded-2xl hover:bg-aura-gray-50 dark:hover:bg-white/5 hover:border-brand-cyan/30 hover:-translate-y-1 transition-all duration-300 group shadow-xl shadow-aura-gray-200/50 dark:shadow-none">
         <div className={`p-3 rounded-full bg-opacity-20 mb-3 ${color} group-hover:scale-110 transition-transform duration-300`}>
             {icon}
         </div>
-        <span className="text-xs font-semibold text-gray-600 dark:text-gray-300 group-hover:text-brand-cyan dark:group-hover:text-white">{title}</span>
+        <span className="text-xs font-semibold text-aura-gray-600 dark:text-gray-300 group-hover:text-brand-cyan dark:group-hover:text-white">{title}</span>
     </button>
 ));
 
@@ -94,11 +94,11 @@ const OnboardingWidget = React.memo<{ connections: BankConnection[], invoices: I
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {steps.map((step, idx) => (
-                        <div key={step.id} className={`flex items-center gap-3 p-3 rounded-xl border ${step.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-gray-100 dark:bg-dark-secondary/50 border-gray-200 dark:border-gray-700'}`}>
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-500 text-white dark:text-black' : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+                        <div key={step.id} className={`flex items-center gap-3 p-3 rounded-xl border ${step.completed ? 'bg-green-500/10 border-green-500/30' : 'bg-white/50 dark:bg-dark-secondary/50 border-gray-200 dark:border-gray-700'}`}>
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${step.completed ? 'bg-green-500 text-white dark:text-black' : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'}`}>
                                 {step.completed ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg> : <span className="text-xs font-bold">{idx + 1}</span>}
                             </div>
-                            <span className={`text-xs font-medium ${step.completed ? 'text-green-600 dark:text-green-300' : 'text-gray-600 dark:text-gray-300'}`}>{step.label}</span>
+                            <span className={`text-xs font-medium ${step.completed ? 'text-green-600 dark:text-green-300' : 'text-aura-gray-600 dark:text-gray-300'}`}>{step.label}</span>
                         </div>
                     ))}
                 </div>
@@ -161,12 +161,12 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
             </div>
             <div className="space-y-4">
                 {combinedActivity.length > 0 ? combinedActivity.map(item => (
-                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5">
+                    <div key={`${item.type}-${item.id}`} className="flex items-center gap-4 p-3 rounded-xl hover:bg-aura-gray-50 dark:hover:bg-white/5 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-white/5">
                         <div className={`p-2.5 rounded-full ${colorMap[item.type]}`}>
                             {iconMap[item.type]}
                         </div>
                         <div className="flex-grow min-w-0">
-                            <p className="text-gray-900 dark:text-white font-medium truncate text-sm" title={item.description}>{item.description}</p>
+                            <p className="text-aura-gray-900 dark:text-white font-medium truncate text-sm" title={item.description}>{item.description}</p>
                             <p className="text-xs text-gray-500">{item.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</p>
                         </div>
                         <div className={`font-mono text-sm font-semibold ${item.isCredit ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
@@ -247,21 +247,21 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
               <span className="text-xs bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">Provisional</span>
           </div>
           <div className="space-y-4">
-             <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+             <div className="bg-aura-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
                 <p className="text-xs text-orange-600 dark:text-orange-400 flex justify-between items-center mb-1">
                     <Tooltip content="Companies Income Tax estimated based on annualized turnover and assessable profit.">
                         <span>Est. CIT ({taxCalculations.citRate}%)</span>
                     </Tooltip>
                 </p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedCIT)}</p>
+                <p className="text-xl font-bold text-aura-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedCIT)}</p>
             </div>
-             <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+             <div className="bg-aura-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
                 <p className="text-xs text-cyan-600 dark:text-cyan-400 flex justify-between items-center mb-1">
                     <Tooltip content="Tertiary Education Tax estimated at 3% of assessable profit.">
                         <span>Est. TET (3%)</span>
                     </Tooltip>
                 </p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
+                <p className="text-xl font-bold text-aura-gray-900 dark:text-white">{formatAmount(taxCalculations.estimatedTET)}</p>
             </div>
             {transactions.length === 0 ? (
                 <div className="py-8 text-center">
@@ -270,13 +270,13 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
             ) : (
                 <>
                 <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+                    <div className="bg-aura-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
                         <p className="text-[10px] text-blue-600 dark:text-blue-400 uppercase">VAT Payable</p>
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.vatPayable)}</p>
+                        <p className="text-lg font-bold text-aura-gray-900 dark:text-white">{formatAmount(taxCalculations.vatPayable)}</p>
                     </div>
-                    <div className="bg-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
+                    <div className="bg-aura-gray-50 dark:bg-dark-primary/50 p-3 rounded-xl border border-gray-100 dark:border-white/5">
                         <p className="text-[10px] text-purple-600 dark:text-purple-400 uppercase">WHT Credit</p>
-                        <p className="text-lg font-bold text-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable)}</p>
+                        <p className="text-lg font-bold text-aura-gray-900 dark:text-white">{formatAmount(taxCalculations.whtReceivable)}</p>
                     </div>
                 </div>
                 </>
@@ -295,52 +295,67 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
   const { bills, invoices, payrollHistory } = useAppStore();
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    let isMounted = true;
+    const timer = setTimeout(async () => {
+      if (!isMounted) return;
       setLoadingInsights(true);
-      if (transactions.length > 0 || bills.length > 0 || invoices.length > 0) {
-        const fetchedInsights = await getFinancialInsights(transactions, bills, invoices, payrollHistory);
-        setInsights(fetchedInsights);
-      } else {
-        setInsights([]);
+      try {
+          if (transactions.length > 0 || bills.length > 0 || invoices.length > 0) {
+            const fetchedInsights = await getFinancialInsights(transactions, bills, invoices, payrollHistory);
+            if (isMounted) setInsights(fetchedInsights);
+          } else {
+            if (isMounted) setInsights([]);
+          }
+      } finally {
+          if (isMounted) setLoadingInsights(false);
       }
-      setLoadingInsights(false);
+    }, 1000); // Debounce AI requests to prevent redundant calls during data load
+
+    return () => {
+        isMounted = false;
+        clearTimeout(timer);
     };
-    fetchAllData();
-  }, [transactions, bills, invoices, payrollHistory]);
+  }, [transactions.length, bills.length, invoices.length, payrollHistory.length]);
 
 
-  const summary = useMemo(() => {
-    return transactions.reduce(
-      (acc, t) => {
-        if (t.type === 'credit') {
-          acc.income += t.amount;
-        } else {
-          acc.expenses += t.amount;
+  const { summary, trendData } = useMemo(() => {
+    const summaryResult = { income: 0, expenses: 0 };
+    const months: Record<string, { income: number, expenses: number, sortKey: number }> = {};
+
+    // Single pass through transactions for both summary and trend data (O(N))
+    for (let i = 0; i < transactions.length; i++) {
+        const t = transactions[i];
+        const amt = t.amount;
+
+        // Update Summary
+        if (t.type === 'credit') summaryResult.income += amt;
+        else summaryResult.expenses += amt;
+
+        // Update Trend Groups
+        const dateObj = new Date(t.date);
+        const monthLabel = dateObj.toLocaleDateString(undefined, { month: 'short' });
+        const yearLabel = dateObj.getFullYear();
+        const key = `${monthLabel} ${yearLabel}`;
+
+        if (!months[key]) {
+            months[key] = { income: 0, expenses: 0, sortKey: dateObj.getTime() };
         }
-        return acc;
-      },
-      { income: 0, expenses: 0 }
-    );
+        if (t.type === 'credit') months[key].income += amt;
+        else months[key].expenses += amt;
+    }
+
+    const sortedTrend = Object.entries(months)
+        .sort(([, a], [, b]) => a.sortKey - b.sortKey)
+        .map(([name, data]) => ({ name: name.split(' ')[0], income: data.income, expenses: data.expenses }))
+        .slice(-6); // Only show last 6 months for dashboard clarity
+
+    return { summary: summaryResult, trendData: sortedTrend };
   }, [transactions]);
   
-  const chartData = [
+  const chartData = useMemo(() => [
     { name: 'Total Income', value: summary.income, color: '#00F5D4' },
     { name: 'Total Expenses', value: summary.expenses, color: '#F15BB5' },
-  ];
-
-  const trendData = useMemo(() => {
-    const months: Record<string, { income: number, expenses: number }> = {};
-    const sortedTx = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    sortedTx.forEach(t => {
-        const month = new Date(t.date).toLocaleDateString(undefined, { month: 'short' });
-        if (!months[month]) months[month] = { income: 0, expenses: 0 };
-        if (t.type === 'credit') months[month].income += t.amount;
-        else months[month].expenses += t.amount;
-    });
-
-    return Object.entries(months).map(([name, data]) => ({ name, ...data }));
-  }, [transactions]);
+  ], [summary]);
 
   const invoiceDistribution = useMemo(() => {
     const distribution: Record<string, number> = { Paid: 0, Unpaid: 0, Overdue: 0, Draft: 0 };
@@ -386,7 +401,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             <p className="text-gray-600 dark:text-gray-400">Welcome back, {user?.name || 'Tunde'}. Here's your financial overview.</p>
           </div>
           {lastSyncTime && (
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-2 text-sm text-aura-gray-600 dark:text-gray-400 bg-white dark:bg-dark-tertiary/50 px-3 py-1.5 rounded-full border border-gray-200 dark:border-white/5 shadow-sm dark:shadow-none">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                 <span>Synced: {lastSyncTime}</span>
             </div>
@@ -473,7 +488,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">Revenue Trends</h3>
                 <p className="text-xs text-gray-500">Monthly income vs expenses performance</p>
             </div>
-            <select className="bg-gray-50 dark:bg-dark-primary/50 border border-gray-200 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-gray-600 dark:text-gray-300">
+            <select className="bg-white dark:bg-dark-primary/50 border border-gray-200 dark:border-gray-700 text-xs rounded-lg px-2 py-1 text-aura-gray-600 dark:text-gray-300 outline-none focus:ring-1 focus:ring-brand-cyan transition-all">
                 <option>Last 6 Months</option>
                 <option>Last Year</option>
             </select>

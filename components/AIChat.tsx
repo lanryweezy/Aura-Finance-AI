@@ -221,10 +221,10 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
   };
 
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col bg-white dark:bg-dark-tertiary shadow-xl border-gray-100 dark:border-white/5">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h2 className="text-2xl font-bold text-white">Aura AI Workforce</h2>
-          <div className="flex bg-dark-tertiary p-1 rounded-xl border border-white/5">
+          <h2 className="text-2xl font-bold text-aura-gray-900 dark:text-white">Aura AI Workforce</h2>
+          <div className="flex bg-aura-gray-100 dark:bg-dark-tertiary p-1 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
               {agents.map(agent => (
                   <button
                     key={agent.id}
@@ -232,7 +232,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                         setActiveAgent(agent.id);
                         setMessages([]); // Clear chat when switching agents
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeAgent === agent.id ? `bg-gradient-to-r ${agent.color} text-white shadow-lg` : 'text-gray-400 hover:text-white'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeAgent === agent.id ? `bg-gradient-to-r ${agent.color} text-white shadow-lg` : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}
                   >
                       {agent.id}
                   </button>
@@ -240,7 +240,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
           </div>
       </div>
 
-      <div className="flex-grow overflow-y-auto p-4 space-y-6 bg-dark-secondary rounded-lg border border-white/5">
+      <div className="flex-grow overflow-y-auto p-4 space-y-6 bg-aura-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-white/5 shadow-inner min-h-0">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'model' && (
@@ -248,25 +248,25 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                 {activeAgent.slice(0, 1)}
               </div>
             )}
-            <div className={`max-w-xl p-4 rounded-2xl ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-dark-tertiary text-gray-200 rounded-bl-none'}`}>
+            <div className={`max-w-xl p-4 rounded-2xl shadow-sm ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-white dark:bg-dark-tertiary text-aura-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-100 dark:border-gray-700'}`}>
               <p className="whitespace-pre-wrap">{msg.text}{isLoading && msg.id === messages[messages.length-1].id && <span className="animate-pulse">▍</span>}</p>
             </div>
              {msg.role === 'user' && (
-              <img src="https://picsum.photos/seed/user1/40/40" alt="User" className="w-10 h-10 rounded-full flex-shrink-0" />
+              <img src="https://picsum.photos/seed/user1/40/40" alt="User" className="w-10 h-10 rounded-full flex-shrink-0 shadow-md border border-white/20" />
             )}
           </div>
         ))}
          <div ref={messagesEndRef} />
       </div>
 
-       <div className="pt-4 mt-4 border-t border-gray-700/50">
+       <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700/50">
         {!isLoading && messages.length <= 2 && (
             <div className="flex flex-wrap gap-2 mb-3">
                 {suggestedPrompts.map(prompt => (
                     <button 
                         key={prompt} 
                         onClick={() => handleSend(prompt)}
-                        className="px-3 py-1.5 bg-dark-tertiary border border-gray-700 rounded-full text-sm text-gray-300 hover:bg-dark-primary hover:border-brand-cyan"
+                        className="px-3 py-1.5 bg-white dark:bg-dark-tertiary border border-gray-200 dark:border-gray-700 rounded-full text-xs font-bold text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-50 dark:hover:bg-dark-primary hover:border-brand-cyan transition-all shadow-sm active:scale-95"
                     >
                         {prompt}
                     </button>
@@ -280,7 +280,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about your finances..."
-            className="w-full bg-dark-tertiary border-2 border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
+            className="w-full bg-aura-gray-50 dark:bg-dark-tertiary border-2 border-gray-200 dark:border-gray-600 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-inner"
             disabled={isLoading || !chatInstance.current}
             />
             <button

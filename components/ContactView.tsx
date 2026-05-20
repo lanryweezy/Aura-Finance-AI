@@ -65,17 +65,17 @@ export const ContactView: React.FC = () => {
         <form onSubmit={handleSubmit} className="p-10 bg-white dark:bg-white/5 border border-gray-100 dark:border-white/5 rounded-[3rem] space-y-6 shadow-xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-400">Full Name</label>
-              <input required type="text" className="w-full bg-gray-50 dark:bg-dark-primary border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-sm focus:border-brand-cyan outline-none transition-colors" placeholder="John Doe" />
+              <label className="text-xs font-black uppercase tracking-widest text-aura-gray-400 dark:text-gray-400">Full Name</label>
+              <input required type="text" className="w-full bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm text-aura-gray-900 dark:text-white focus:border-brand-cyan outline-none transition-colors shadow-sm" placeholder="John Doe" />
             </div>
             <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-widest text-gray-400">Email Address</label>
-              <input required type="email" className="w-full bg-gray-50 dark:bg-dark-primary border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-sm focus:border-brand-cyan outline-none transition-colors" placeholder="john@company.com" />
+              <label className="text-xs font-black uppercase tracking-widest text-aura-gray-400 dark:text-gray-400">Email Address</label>
+              <input required type="email" className="w-full bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm text-aura-gray-900 dark:text-white focus:border-brand-cyan outline-none transition-colors shadow-sm" placeholder="john@company.com" />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Subject</label>
-            <select className="w-full bg-gray-50 dark:bg-dark-primary border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-sm focus:border-brand-cyan outline-none transition-colors appearance-none">
+            <label className="text-xs font-black uppercase tracking-widest text-aura-gray-400 dark:text-gray-400">Subject</label>
+            <select className="w-full bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm text-aura-gray-900 dark:text-white focus:border-brand-cyan outline-none transition-colors appearance-none shadow-sm">
               <option>General Inquiry</option>
               <option>Sales & Demo</option>
               <option>Technical Support</option>
@@ -83,8 +83,8 @@ export const ContactView: React.FC = () => {
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-xs font-black uppercase tracking-widest text-gray-400">Message</label>
-            <textarea required rows={4} className="w-full bg-gray-50 dark:bg-dark-primary border border-gray-100 dark:border-white/10 rounded-2xl p-4 text-sm focus:border-brand-cyan outline-none transition-colors resize-none" placeholder="How can we help?"></textarea>
+            <label className="text-xs font-black uppercase tracking-widest text-aura-gray-400 dark:text-gray-400">Message</label>
+            <textarea required rows={4} className="w-full bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm text-aura-gray-900 dark:text-white focus:border-brand-cyan outline-none transition-colors resize-none shadow-sm" placeholder="How can we help?"></textarea>
           </div>
           <button
             disabled={isSubmitting}

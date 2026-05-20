@@ -74,12 +74,12 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
                     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
                         <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Confirm Payroll</h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">Review the final figures for <span className="font-bold text-gray-900 dark:text-white">{period}</span> before confirming.</p>
-                        <div className="space-y-4 bg-gray-50 dark:bg-dark-secondary/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner">
-                             <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400"><span>Total Gross Salaries:</span><span className="font-mono font-bold text-gray-900 dark:text-white">{formatAmount(summary.totalGross)}</span></div>
-                             <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400"><span>Total Bonuses:</span><span className="font-mono font-bold text-green-600 dark:text-green-400">+{formatAmount(summary.totalBonuses)}</span></div>
-                             <div className="flex justify-between text-sm font-medium text-gray-600 dark:text-gray-400"><span>Total Deductions:</span><span className="font-mono font-bold text-red-600 dark:text-red-400">-{formatAmount(summary.totalOneTimeDeductions)}</span></div>
+                        <div className="space-y-4 bg-aura-gray-50 dark:bg-dark-secondary/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-inner">
+                             <div className="flex justify-between text-sm font-medium text-aura-gray-600 dark:text-gray-400"><span>Total Gross Salaries:</span><span className="font-mono font-bold text-aura-gray-900 dark:text-white">{formatAmount(summary.totalGross)}</span></div>
+                             <div className="flex justify-between text-sm font-medium text-aura-gray-600 dark:text-gray-400"><span>Total Bonuses:</span><span className="font-mono font-bold text-green-600 dark:text-green-400">+{formatAmount(summary.totalBonuses)}</span></div>
+                             <div className="flex justify-between text-sm font-medium text-aura-gray-600 dark:text-gray-400"><span>Total Deductions:</span><span className="font-mono font-bold text-red-600 dark:text-red-400">-{formatAmount(summary.totalOneTimeDeductions)}</span></div>
                              <div className="h-px bg-gray-200 dark:bg-gray-700 my-2"></div>
-                             <div className="flex justify-between text-gray-900 dark:text-white text-xl font-black tracking-tight"><span>Total Net Payout:</span><span className="font-mono text-brand-cyan">{formatAmount(summary.totalNet)}</span></div>
+                             <div className="flex justify-between text-aura-gray-900 dark:text-white text-xl font-black tracking-tight"><span>Total Net Payout:</span><span className="font-mono text-brand-cyan">{formatAmount(summary.totalNet)}</span></div>
                         </div>
                     </div>
                 );
@@ -89,13 +89,13 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
                     <div className="animate-in fade-in slide-in-from-left-4 duration-300">
                         <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">Run Payroll: {period}</h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">Enter any one-time bonuses or deductions for this period.</p>
-                        <div className="overflow-x-auto bg-gray-50 dark:bg-dark-secondary/30 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner">
+                        <div className="overflow-x-auto bg-aura-gray-50/50 dark:bg-dark-secondary/30 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-inner">
                             <table className="w-full text-left">
-                                <thead className="bg-gray-100 dark:bg-dark-tertiary">
+                                <thead className="bg-aura-gray-100 dark:bg-dark-tertiary">
                                     <tr>
-                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Employee</th>
-                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Bonus</th>
-                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400">Deduction</th>
+                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Employee</th>
+                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Bonus</th>
+                                        <th className="p-4 text-[10px] font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Deduction</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
@@ -103,10 +103,10 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
                                         <tr key={emp.id}>
                                             <td className="p-4 text-gray-900 dark:text-white font-bold text-sm">{emp.name}</td>
                                             <td className="p-2">
-                                                <input type="number" placeholder="0.00" value={adjustments[emp.id]?.bonus || ''} onChange={e => handleAdjustmentChange(emp.id, 'bonus', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 text-sm text-green-600 dark:text-green-400 font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all" />
+                                                <input type="number" placeholder="0.00" value={adjustments[emp.id]?.bonus || ''} onChange={e => handleAdjustmentChange(emp.id, 'bonus', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 text-sm text-green-600 dark:text-green-400 font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm" />
                                             </td>
                                             <td className="p-2">
-                                                <input type="number" placeholder="0.00" value={adjustments[emp.id]?.deduction || ''} onChange={e => handleAdjustmentChange(emp.id, 'deduction', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 text-sm text-red-600 dark:text-red-400 font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all" />
+                                                <input type="number" placeholder="0.00" value={adjustments[emp.id]?.deduction || ''} onChange={e => handleAdjustmentChange(emp.id, 'deduction', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-2.5 text-sm text-red-600 dark:text-red-400 font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm" />
                                             </td>
                                         </tr>
                                     ))}
@@ -125,7 +125,7 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
             <div className="bg-white dark:bg-dark-tertiary rounded-3xl p-8 w-full max-w-2xl shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
                 {renderStep()}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 mt-8 border-t border-gray-100 dark:border-gray-700">
-                    <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
+                    <button type="button" onClick={onClose} className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         {step > 1 && <button type="button" onClick={() => setStep(s => s - 1)} className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl text-brand-cyan border border-brand-cyan/30 hover:bg-brand-cyan/10 font-bold transition-all">Back</button>}
                         {step < 2 ? (

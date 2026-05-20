@@ -111,33 +111,33 @@ export const TeamManagement: React.FC = () => {
                     <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Invite Member</h4>
                     <form onSubmit={handleInvite} className="space-y-5">
                         <div>
-                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Full Name</label>
+                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Full Name</label>
                             <input
                                 type="text"
                                 value={inviteName}
                                 onChange={e => setInviteName(e.target.value)}
                                 required
-                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
+                                className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm"
                                 placeholder="Tunde Oke"
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Email Address</label>
+                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Email Address</label>
                             <input
                                 type="email"
                                 value={inviteEmail}
                                 onChange={e => setInviteEmail(e.target.value)}
                                 required
-                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
+                                className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white mt-2 text-sm font-medium focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm"
                                 placeholder="colleague@company.com"
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Role</label>
+                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Role</label>
                             <select
                                 value={inviteRole}
                                 onChange={e => setInviteRole(e.target.value as UserRole)}
-                                className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white mt-2 text-sm font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all"
+                                className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white mt-2 text-sm font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm"
                             >
                                 <option value="Viewer">Viewer (Read-only)</option>
                                 <option value="Accountant">Accountant</option>
@@ -161,24 +161,24 @@ export const TeamManagement: React.FC = () => {
                 <Card className="lg:col-span-2 overflow-hidden border-gray-100 dark:border-white/5 shadow-xl flex flex-col">
                     <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Current Members</h4>
                     {isLoading ? (
-                        <div className="py-20 text-center bg-gray-50 dark:bg-dark-secondary/20 rounded-2xl"><Spinner /></div>
+                        <div className="py-20 text-center bg-aura-gray-50 dark:bg-dark-secondary/20 rounded-2xl shadow-inner"><Spinner /></div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-gray-50 dark:bg-dark-tertiary">
+                                <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
                                     <tr>
-                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Member</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Role</th>
-                                        <th className="p-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                                        <th className="p-4 text-xs font-black text-aura-gray-500 dark:text-gray-400 uppercase tracking-widest">Member</th>
+                                        <th className="p-4 text-xs font-black text-aura-gray-500 dark:text-gray-400 uppercase tracking-widest">Role</th>
+                                        <th className="p-4 text-xs font-black text-aura-gray-500 dark:text-gray-400 uppercase tracking-widest">Status</th>
                                         <th className="p-4 text-right"></th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
                                     {members.map(member => (
-                                        <tr key={member.id} className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                                        <tr key={member.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                                             <td className="p-4">
-                                                <p className="text-gray-900 dark:text-white font-bold text-sm">{member.name}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{member.email}</p>
+                                                <p className="text-aura-gray-900 dark:text-white font-bold text-sm">{member.name}</p>
+                                                <p className="text-xs text-aura-gray-500 dark:text-gray-400 font-medium">{member.email}</p>
                                             </td>
                                             <td className="p-4">
                                                 <span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-widest border ${
@@ -269,31 +269,31 @@ export const TeamManagement: React.FC = () => {
 
             {/* Custom Role Modal */}
             {showRoleModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-                    <Card className="w-full max-w-lg border-white/10 shadow-2xl">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-aura-gray-900/40 dark:bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+                    <Card className="w-full max-w-lg border-gray-200 dark:border-white/10 shadow-2xl bg-white dark:bg-dark-tertiary">
                         <div className="flex justify-between items-center mb-6">
-                            <h4 className="text-xl font-bold text-white">Create Custom Role</h4>
-                            <button onClick={() => setShowRoleModal(false)} className="text-gray-400 hover:text-white transition-colors">
+                            <h4 className="text-xl font-bold text-aura-gray-900 dark:text-white">Create Custom Role</h4>
+                            <button onClick={() => setShowRoleModal(false)} className="text-aura-gray-400 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </div>
                         <div className="space-y-6">
                             <div>
-                                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-2 block">Role Name</label>
+                                <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-2 block">Role Name</label>
                                 <input
                                     type="text"
                                     value={newRoleName}
                                     onChange={e => setNewRoleName(e.target.value)}
-                                    className="w-full bg-dark-secondary border border-white/10 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-brand-purple"
+                                    className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-4 text-aura-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-purple shadow-sm font-medium"
                                     placeholder="e.g., Junior Accountant"
                                 />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 uppercase font-bold tracking-wider mb-4 block">Select Permissions</label>
+                                <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-4 block">Select Permissions</label>
                                 <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                     {permissionsList.map(p => (
-                                        <label key={p.key} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 hover:border-brand-purple/50 transition-all cursor-pointer group">
-                                            <span className="text-sm font-bold text-gray-300 group-hover:text-white">{p.name}</span>
+                                        <label key={p.key} className="flex items-center justify-between p-3 bg-aura-gray-50/50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:border-brand-purple/50 transition-all cursor-pointer group">
+                                            <span className="text-sm font-bold text-aura-gray-600 dark:text-gray-300 group-hover:text-aura-gray-900 dark:group-hover:text-white">{p.name}</span>
                                             <input
                                                 type="checkbox"
                                                 checked={selectedPerms.includes(p.key)}
