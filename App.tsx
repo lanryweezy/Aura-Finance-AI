@@ -197,7 +197,7 @@ export default function App(): React.ReactNode {
   }, [loadInitialData, user]);
 
   useHotkeys({
-    'mod+k': () => navigate('/chat'),
+    'mod+j': () => navigate('/chat'),
     'mod+i': () => navigate('/receivables'),
     'mod+b': () => navigate('/payables'),
     'mod+s': () => navigate('/settings'),

@@ -1,57 +1,26 @@
 
-import { authService } from './authService';
 import type { FixedAsset } from '../types';
-
-const getStorageKey = () => `aura_${authService.getTenantId()}_fixed_assets`;
-
-const initialAssets: FixedAsset[] = [
-    {
-        id: 'fa_1',
-        name: 'MacBook Pro 16" (M3 Max)',
-        category: 'Electronics',
-        purchaseDate: '2023-11-15',
-        purchaseCost: 3500000,
-        salvageValue: 500000,
-        usefulLifeYears: 4,
-        depreciationMethod: 'Straight Line',
-        status: 'Active',
-        accumulatedDepreciation: 875000,
-        bookValue: 2625000,
-    }
-];
+import { apiClient } from './apiClient';
 
 export const fixedAssetService = {
     fetchAssets: async (): Promise<FixedAsset[]> => {
-        const stored = localStorage.getItem(getStorageKey());
-        if (stored) return JSON.parse(stored);
-        return initialAssets;
+        return await apiClient.get('/fixed_assets');
     },
 
-    addAsset: async (asset: Omit<FixedAsset, 'id' | 'accumulatedDepreciation' | 'bookValue'>): Promise<FixedAsset> => {
-        const assets = await fixedAssetService.fetchAssets();
-        const newAsset: FixedAsset = {
-            ...asset,
-            id: `fa_${Date.now()}`,
-            accumulatedDepreciation: 0,
-            bookValue: asset.purchaseCost
-        };
-        const updated = [newAsset, ...assets];
-        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
-        return newAsset;
+    addAsset: async (asset: Omit<FixedAsset, 'id' | 'status'>): Promise<FixedAsset> => {
+        return await apiClient.post('/fixed_assets', { ...asset, status: 'Active' });
     },
 
-    calculateDepreciation: (asset: FixedAsset, currentDate: string = new Date().toISOString()): number => {
-        const purchase = new Date(asset.purchaseDate);
-        const current = new Date(currentDate);
-        const yearsDiff = (current.getTime() - purchase.getTime()) / (1000 * 60 * 60 * 24 * 365);
-
-        if (yearsDiff <= 0) return 0;
-
-        if (asset.depreciationMethod === 'Straight Line') {
-            const annualDep = (asset.purchaseCost - asset.salvageValue) / asset.usefulLifeYears;
-            return Math.min(annualDep * yearsDiff, asset.purchaseCost - asset.salvageValue);
+    disposeAsset: async (id: string, price: number): Promise<void> => {
+        const asset = await apiClient.get(`/fixed_assets/${id}`);
+        if (asset) {
+            await apiClient.put(`/fixed_assets/${id}`, {
+                ...asset,
+                status: 'Disposed',
+                disposalDate: new Date().toISOString(),
+                disposalPrice: price,
+                bookValue: 0
+            });
         }
-
-        return 0; // Simplified for now
     }
 };

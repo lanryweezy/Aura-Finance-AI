@@ -1,11 +1,12 @@
 
 import type { SubscriptionTier } from '../types';
 import { monitoringService } from './monitoringService';
+import { localDb } from './localDb';
 
 declare const PaystackPop: any;
 declare const FlutterwaveCheckout: any;
 
-const STORAGE_KEY = 'aura_subscription_plan';
+const STORAGE_KEY = 'subscription_plan';
 
 export const PLANS: SubscriptionTier[] = [
     {
@@ -59,13 +60,12 @@ export const billingService = {
     getPlans: () => PLANS,
 
     getCurrentPlan: (): string => {
-        return localStorage.getItem(STORAGE_KEY) || 'Free';
+        return localDb.load(STORAGE_KEY, 'Free');
     },
 
     initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof PaystackPop === 'undefined') {
             monitoringService.trackError('SERVICE', 'PaystackPop is not defined. Ensure the script is loaded.');
-            // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-PAYSTACK-' + Date.now()), 1000);
             return;
         }
@@ -88,7 +88,6 @@ export const billingService = {
     initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof FlutterwaveCheckout === 'undefined') {
             monitoringService.trackError('SERVICE', 'FlutterwaveCheckout is not defined. Ensure the script is loaded.');
-            // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-FLUTTERWAVE-' + Date.now()), 1000);
             return;
         }
@@ -116,19 +115,17 @@ export const billingService = {
         });
     },
 
-    upgradePlan: (planId: string): Promise<boolean> => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                localStorage.setItem(STORAGE_KEY, planId);
-                const orgStr = localStorage.getItem('aura_org');
-                if (orgStr) {
-                    const org = JSON.parse(orgStr);
-                    org.plan = planId;
-                    localStorage.setItem('aura_org', JSON.stringify(org));
-                }
-                resolve(true);
-            }, 1000);
-        });
+    upgradePlan: async (planId: string): Promise<boolean> => {
+        return localDb.simulateRequest(() => {
+            localDb.save(STORAGE_KEY, planId);
+            const orgStr = localStorage.getItem('aura_org');
+            if (orgStr) {
+                const org = JSON.parse(orgStr);
+                org.plan = planId;
+                localStorage.setItem('aura_org', JSON.stringify(org));
+            }
+            return true;
+        }, 1000);
     },
 
     hasFeature: (plan: string, featureId: string): boolean => {

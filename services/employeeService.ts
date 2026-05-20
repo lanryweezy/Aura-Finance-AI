@@ -1,9 +1,7 @@
-import { monitoringService } from './monitoringService';
 
 import type { Employee } from '../types';
-import { authService } from './authService';
-
-const getStorageKey = () => `aura_${authService.getTenantId()}_employees`;
+import { apiClient } from './apiClient';
+import { localDb } from './localDb';
 
 const initialEmployees: Employee[] = [
   {
@@ -48,66 +46,28 @@ const initialEmployees: Employee[] = [
   }
 ];
 
-const loadEmployees = (): Employee[] => {
-    const stored = localStorage.getItem(getStorageKey());
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse employees' });
-            return initialEmployees;
-        }
+// Seed the local database if empty
+const seedEmployees = () => {
+    const employees = localDb.load('employees', []);
+    if (employees.length === 0) {
+        localDb.save('employees', initialEmployees);
     }
-    return initialEmployees;
 };
 
-export const fetchEmployees = (): Promise<Employee[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const employees = loadEmployees();
-      resolve([...employees].sort((a, b) => a.name.localeCompare(b.name)));
-    }, 400);
-  });
+export const fetchEmployees = async (): Promise<Employee[]> => {
+    seedEmployees();
+    const employees = await apiClient.get('/employees');
+    return [...employees].sort((a, b) => a.name.localeCompare(b.name));
 };
 
-export const addEmployee = (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const current = loadEmployees();
-            const newEmployee: Employee = {
-                id: `emp_${Date.now()}`,
-                ...employeeData
-            };
-            const updated = [...current, newEmployee];
-            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
-            resolve(newEmployee);
-        }, 300);
-    });
+export const addEmployee = async (employeeData: Omit<Employee, 'id'>): Promise<Employee> => {
+    return await apiClient.post('/employees', employeeData);
 };
 
-export const updateEmployee = (employeeData: Employee): Promise<Employee> => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const current = loadEmployees();
-            const index = current.findIndex(e => e.id === employeeData.id);
-            if(index !== -1){
-                current[index] = employeeData;
-                localStorage.setItem(getStorageKey(), JSON.stringify(current));
-                resolve(employeeData);
-            } else {
-                reject(new Error("Employee not found"));
-            }
-        }, 300);
-    });
+export const updateEmployee = async (employeeData: Employee): Promise<Employee> => {
+    return await apiClient.put(`/employees/${employeeData.id}`, employeeData);
 };
 
-export const removeEmployee = (employeeId: string): Promise<void> => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const current = loadEmployees();
-            const updated = current.filter(emp => emp.id !== employeeId);
-            localStorage.setItem(getStorageKey(), JSON.stringify(updated));
-            resolve();
-        }, 300);
-    });
+export const removeEmployee = async (employeeId: string): Promise<void> => {
+    return await apiClient.delete(`/employees/${employeeId}`);
 };
