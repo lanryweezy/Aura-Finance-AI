@@ -195,6 +195,8 @@ export interface AuditLog {
     user: string;
     action: string;
     module?: string;
+    before?: any;
+    after?: any;
 }
 
 export interface Budget {

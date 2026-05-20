@@ -123,8 +123,8 @@ export default function App(): React.ReactNode {
       // Optional: Clear sensitive state here if needed
   };
 
-  const logAndRefresh = (log: string, module: string = 'General') => {
-    auditLogService.add(log, user?.name || "System", module);
+  const logAndRefresh = (log: string, module: string = 'General', before?: any, after?: any) => {
+    auditLogService.add(log, user?.name || "System", module, before, after);
     setAuditLog(auditLogService.getLogs());
   };
 
@@ -253,9 +253,10 @@ export default function App(): React.ReactNode {
   };
     
   const handleUpdateEmployee = async (employeeData: Employee) => {
+      const oldEmployee = employees.find(e => e.id === employeeData.id);
       const updatedEmployee = await updateEmployee(employeeData);
       setEmployees(prev => prev.map(e => e.id === updatedEmployee.id ? updatedEmployee : e));
-      logAndRefresh(`Updated employee details for: ${updatedEmployee.name}`, 'Payroll');
+      logAndRefresh(`Updated employee details for: ${updatedEmployee.name}`, 'Payroll', oldEmployee, updatedEmployee);
       return updatedEmployee;
   };
     
@@ -434,9 +435,10 @@ export default function App(): React.ReactNode {
   };
 
   const handleUpdateInventoryItem = async (item: InventoryItem) => {
+    const oldItem = inventory.find(i => i.id === item.id);
     const updatedItem = await apiUpdateInventoryItem(item);
     setInventory(prev => prev.map(i => i.id === updatedItem.id ? updatedItem : i));
-    logAndRefresh(`Updated inventory item: ${updatedItem.name}`, 'Inventory');
+    logAndRefresh(`Updated inventory item: ${updatedItem.name}`, 'Inventory', oldItem, updatedItem);
     showToast(`Updated ${updatedItem.name} details.`, 'success');
   };
 
@@ -503,9 +505,10 @@ export default function App(): React.ReactNode {
   };
 
   const handleUpdateContact = async (contact: Contact) => {
+      const oldContact = contacts.find(c => c.id === contact.id);
       const updated = await apiUpdateContact(contact);
       setContacts(prev => prev.map(c => c.id === updated.id ? updated : c));
-      logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts');
+      logAndRefresh(`Updated contact info: ${updated.name}`, 'Contacts', oldContact, updated);
   }
 
   const handleAddFixedAsset = async (asset: any) => {
@@ -645,6 +648,16 @@ export default function App(): React.ReactNode {
         </Suspense>
     );
   };
+
+  const isSharedRoute = window.location.pathname.startsWith('/shared/');
+
+  if (isSharedRoute) {
+    return (
+        <Suspense fallback={<div className="h-screen flex items-center justify-center bg-dark-primary"><Spinner /></div>}>
+            <SharedReportView />
+        </Suspense>
+    );
+  }
 
   if (!user) {
     if (showLanding) {
