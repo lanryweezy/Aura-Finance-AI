@@ -123,25 +123,19 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                 {/* Right Side - Form */}
                 <div className="w-full lg:w-1/2 p-8 md:p-12 flex flex-col justify-center bg-white/50 dark:bg-dark-secondary/50 overflow-y-auto custom-scrollbar">
                     <div className="max-w-md mx-auto w-full">
-                        <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-2 tracking-tight">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-                        <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium">{isLogin ? 'Choose a login method to continue.' : 'Start your 14-day free trial.'}</p>
-                        <h2 className="text-3xl font-bold text-white mb-2">
-                            {requires2FA ? '2FA Verification' : (isLogin ? 'Welcome Back' : 'Create Account')}
-                        </h2>
-                        <p className="text-gray-400 mb-6">
-                            {requires2FA ? 'Enter the code from your authenticator app.' : (isLogin ? 'Choose a login method to continue.' : 'Start your 14-day free trial.')}
-                        </p>
+                        <h2 className="text-3xl font-black text-aura-gray-900 dark:text-white mb-2 tracking-tight">{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8 font-medium italic">{isLogin ? 'Choose a login method to continue.' : 'Start your 14-day free trial.'}</p>
 
                         {requires2FA ? (
                             <form onSubmit={handleVerify2FA} className="space-y-6">
                                 <div>
-                                    <label className="text-xs font-semibold text-gray-400 uppercase">Verification Code</label>
+                                    <label className="text-xs font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest">Verification Code</label>
                                     <input
                                         type="text"
                                         value={twoFactorCode}
                                         onChange={(e) => setTwoFactorCode(e.target.value)}
                                         required
-                                        className="w-full mt-1 bg-dark-primary border border-gray-700 rounded-lg p-3 text-white text-center text-2xl tracking-[1em] focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono"
+                                        className="w-full mt-1 bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white text-center text-2xl tracking-[1em] focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono shadow-inner"
                                         placeholder="000000"
                                         maxLength={6}
                                     />
@@ -175,7 +169,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                              <button
                                 onClick={handleBiometricLogin}
                                 disabled={isLoading}
-                                className="w-full py-2.5 bg-dark-primary border border-brand-cyan/30 text-brand-cyan font-semibold rounded-lg hover:bg-brand-cyan/10 transition-colors flex items-center justify-center gap-3"
+                                className="w-full py-2.5 bg-aura-gray-100 dark:bg-dark-primary border border-brand-cyan/30 text-brand-cyan font-semibold rounded-lg hover:bg-brand-cyan/10 transition-colors flex items-center justify-center gap-3"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                                 Face ID / Touch ID
@@ -222,24 +216,24 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                             {!isLogin && (
                                 <>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                                        <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                                         <input 
                                             type="text" 
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
                                             required
-                                            className="w-full mt-1 bg-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium"
+                                            className="w-full mt-1 bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium shadow-sm"
                                             placeholder="Tunde Okechukwu"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Company Name</label>
+                                        <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Company Name</label>
                                         <input 
                                             type="text" 
                                             value={companyName}
                                             onChange={(e) => setCompanyName(e.target.value)}
                                             required
-                                            className="w-full mt-1 bg-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium"
+                                            className="w-full mt-1 bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium shadow-sm"
                                             placeholder="Aura Logistics Ltd"
                                         />
                                     </div>
@@ -247,25 +241,25 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                             )}
 
                             <div>
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <input 
                                     type="email" 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full mt-1 bg-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium"
+                                    className="w-full mt-1 bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium shadow-sm"
                                     placeholder="name@company.com"
                                 />
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                                <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Password</label>
                                 <input 
                                     type="password" 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
-                                    className="w-full mt-1 bg-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium"
+                                    className="w-full mt-1 bg-aura-gray-50 dark:bg-dark-primary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium shadow-sm"
                                     placeholder="••••••••"
                                 />
                             </div>

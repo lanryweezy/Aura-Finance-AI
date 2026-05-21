@@ -47,15 +47,15 @@ const AddEditContactModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
             <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-lg shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">{contact ? 'Edit Contact' : 'Add New Contact'}</h3>
+                <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">{contact ? 'Edit Contact' : 'Add New Contact'}</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="flex gap-4 p-1.5 bg-gray-100 dark:bg-dark-secondary rounded-xl">
-                        <button type="button" onClick={() => setFormData({...formData, type: 'Customer'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Customer' ? 'bg-white dark:bg-brand-cyan text-gray-900 dark:text-black shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>Customer</button>
-                        <button type="button" onClick={() => setFormData({...formData, type: 'Vendor'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Vendor' ? 'bg-white dark:bg-brand-pink text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>Vendor</button>
+                    <div className="flex gap-4 p-1.5 bg-aura-gray-100 dark:bg-dark-secondary rounded-xl">
+                        <button type="button" onClick={() => setFormData({...formData, type: 'Customer'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Customer' ? 'bg-white dark:bg-brand-cyan text-aura-gray-900 dark:text-black shadow-sm' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Customer</button>
+                        <button type="button" onClick={() => setFormData({...formData, type: 'Vendor'})} className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${formData.type === 'Vendor' ? 'bg-white dark:bg-brand-pink text-aura-gray-900 dark:text-white shadow-sm' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Vendor</button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Contact Person" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan outline-none transition-all"/>
-                        <input type="text" placeholder="Company Name" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan outline-none transition-all"/>
+                        <input type="text" placeholder="Contact Person" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan outline-none transition-all"/>
+                        <input type="text" placeholder="Company Name" value={formData.companyName} onChange={e => setFormData({...formData, companyName: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan outline-none transition-all"/>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <input type="email" placeholder="Email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan outline-none transition-all"/>
@@ -129,9 +129,9 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="flex bg-gray-100 dark:bg-dark-tertiary p-1.5 rounded-xl shadow-inner w-full md:w-auto">
-                        <button onClick={() => setActiveTab('Customer')} className={`flex-1 md:flex-none px-8 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Customer' ? 'bg-white dark:bg-dark-secondary text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>Customers</button>
-                        <button onClick={() => setActiveTab('Vendor')} className={`flex-1 md:flex-none px-8 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Vendor' ? 'bg-white dark:bg-brand-pink text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>Vendors</button>
+                    <div className="flex bg-aura-gray-100 dark:bg-dark-tertiary p-1.5 rounded-xl shadow-inner w-full md:w-auto">
+                        <button onClick={() => setActiveTab('Customer')} className={`flex-1 md:flex-none px-8 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Customer' ? 'bg-white dark:bg-dark-secondary text-aura-gray-900 dark:text-white shadow-sm' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Customers</button>
+                        <button onClick={() => setActiveTab('Vendor')} className={`flex-1 md:flex-none px-8 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'Vendor' ? 'bg-white dark:bg-brand-pink text-aura-gray-900 dark:text-white shadow-sm' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Vendors</button>
                     </div>
                     <div className="relative w-full md:w-80">
                         <input 
@@ -197,8 +197,8 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
                         );
                     })}
                     {filteredContacts.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center justify-center p-20 text-center bg-gray-50/50 dark:bg-dark-tertiary/30 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                             <div className="p-5 bg-white dark:bg-dark-secondary rounded-2xl mb-6 shadow-sm">
+                        <div className="col-span-full flex flex-col items-center justify-center p-20 text-center bg-aura-gray-50/50 dark:bg-dark-tertiary/30 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                             <div className="p-5 bg-white dark:bg-dark-secondary rounded-2xl mb-6 shadow-xl shadow-aura-gray-200/50 dark:shadow-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                              </div>
                             <p className="text-gray-500 dark:text-gray-400 font-bold">No {activeTab.toLowerCase()}s found matching your search.</p>

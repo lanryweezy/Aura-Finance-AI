@@ -27,9 +27,9 @@ export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDeta
     }, [runs, filters]);
 
     return (
-         <Card className="h-full overflow-hidden flex flex-col">
+         <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Payroll Run History</h3>
+                <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white">Payroll Run History</h3>
             </div>
 
             <AdvancedFilter
@@ -45,24 +45,24 @@ export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDeta
 
             <div className="overflow-y-auto flex-grow -mr-6 pr-4">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-dark-tertiary">
+                    <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
                         <tr>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Period</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Net Payout</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Employees</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Run Date</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Period</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-right">Net Payout</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-center">Employees</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Run Date</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-800">
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                         {filteredRuns.map(run => (
-                            <tr key={run.id} className="hover:bg-dark-secondary/50">
-                                <td className="p-3 text-white font-medium">{run.period}</td>
-                                <td className="p-3 font-mono text-brand-cyan">{formatAmount(run.summary.totalNet)}</td>
-                                <td className="p-3 text-gray-300">{run.summary.employeeCount}</td>
-                                <td className="p-3 text-gray-400 text-sm">{new Date(run.runDate).toLocaleDateString()}</td>
+                            <tr key={run.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-dark-secondary/50 transition-colors group">
+                                <td className="p-3 text-aura-gray-900 dark:text-white font-bold">{run.period}</td>
+                                <td className="p-3 font-mono text-brand-cyan text-right">{formatAmount(run.summary.totalNet)}</td>
+                                <td className="p-3 text-aura-gray-600 dark:text-gray-300 text-center font-bold">{run.summary.employeeCount}</td>
+                                <td className="p-3 text-gray-500 dark:text-gray-400 text-sm">{new Date(run.runDate).toLocaleDateString()}</td>
                                 <td className="p-3 text-right">
-                                    <button onClick={() => onViewDetails(run)} className="text-brand-cyan hover:text-white font-semibold text-sm py-1 px-3 rounded-md border border-brand-cyan/50 hover:bg-brand-cyan/20">View Details</button>
+                                    <button onClick={() => onViewDetails(run)} className="text-brand-cyan hover:text-white font-bold text-xs uppercase tracking-widest py-1.5 px-4 rounded-lg border border-brand-cyan/50 hover:bg-brand-cyan/20 transition-all active:scale-95">View</button>
                                 </td>
                             </tr>
                         ))}

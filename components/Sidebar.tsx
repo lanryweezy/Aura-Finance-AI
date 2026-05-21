@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { NAV_ITEMS, NavItem } from '../constants';
 import type { View, Permission } from '../types';
 import { usePermissions } from '../services/hooks/usePermissions';
+import { useAppStore } from '../store/useAppStore';
 
 interface SidebarProps {
   activeView: View;
@@ -30,6 +31,7 @@ const NavMenu: React.FC<{
 
 
     const { hasPermission } = usePermissions();
+    const theme = useAppStore(state => state.theme);
 
     // Mapping view IDs to required permissions
     const viewPermissionMap: Record<string, Permission> = {
@@ -91,12 +93,12 @@ const NavMenu: React.FC<{
               onClick={handleClick}
               className={`flex items-center justify-between gap-4 p-3 w-full rounded-xl transition-all duration-300 group ${
                 isParentActive 
-                ? 'bg-gradient-to-r from-brand-cyan/10 to-transparent backdrop-blur-md text-brand-cyan font-semibold border-l-4 border-brand-cyan shadow-[0_0_20px_rgba(0,245,212,0.15)] dark:bg-gradient-to-r dark:from-brand-cyan/10 dark:to-transparent'
-                : 'text-gray-400 dark:text-gray-400 hover:text-white hover:bg-white/5'
+                ? 'bg-gradient-to-r from-brand-cyan/10 to-transparent backdrop-blur-md text-brand-cyan font-semibold border-l-4 border-brand-cyan shadow-[0_0_20px_rgba(0,245,212,0.15)]'
+                : theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-white/5' : 'text-aura-gray-500 hover:text-aura-gray-900 hover:bg-aura-gray-50'
               }`}
             >
               <div className="flex items-center gap-4">
-                  <span className={`transition-colors duration-200 ${isParentActive ? 'text-brand-cyan drop-shadow-[0_0_8px_rgba(0,245,212,0.6)]' : 'text-gray-500 group-hover:text-white'}`}>
+                  <span className={`transition-colors duration-200 ${isParentActive ? 'text-brand-cyan drop-shadow-[0_0_8px_rgba(0,245,212,0.6)]' : 'text-gray-500 group-hover:text-aura-gray-900 dark:group-hover:text-white'}`}>
                     {item.icon}
                   </span>
                   <span className="hidden lg:block">{item.label}</span>
@@ -118,6 +120,7 @@ const NavMenu: React.FC<{
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onLogout }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const theme = useAppStore(state => state.theme);
 
   return (
     <>
@@ -145,8 +148,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, onL
     <div
         id="sidebar-nav"
         className={`
-            fixed inset-y-0 left-0 z-[55] w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 bg-dark-primary dark:bg-dark-primary p-4 lg:p-6 flex flex-col justify-between border-r border-white/5
+            fixed inset-y-0 left-0 z-[55] w-64 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 p-4 lg:p-6 flex flex-col justify-between border-r transition-colors duration-500
             ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            ${theme === 'dark' ? 'bg-dark-primary border-white/5' : 'bg-white border-aura-gray-200 shadow-2xl shadow-gray-200/50'}
         `}
     >
       <div>

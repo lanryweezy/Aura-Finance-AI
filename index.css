@@ -47,16 +47,45 @@
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply transition-colors duration-300;
+  }
+
+  .dark body {
     @apply bg-dark-primary text-light-primary;
+  }
+
+  body:not(.dark) {
+    @apply bg-light-primary text-aura-gray-900;
   }
 }
 
 @layer components {
   .glass-panel {
+    @apply backdrop-blur-xl transition-all duration-300;
     background: rgba(16, 20, 44, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .light .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    @apply shadow-xl shadow-gray-200/50;
+  }
+
+  .premium-card {
+    @apply rounded-3xl transition-all duration-500 border;
+    background: theme('colors.dark-secondary');
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .light .premium-card {
+    background: theme('colors.light-secondary');
+    border-color: theme('colors.aura-gray-100');
+    @apply shadow-lg shadow-gray-100/50;
+  }
+
+  .aura-button-primary {
+    @apply bg-brand-cyan text-black font-black py-3 px-8 rounded-2xl transition-all active:scale-95 shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/40 hover:-translate-y-0.5;
   }
 }
 

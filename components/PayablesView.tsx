@@ -100,18 +100,18 @@ const NewBillModal: React.FC<{
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Add New Bill</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <input type="text" placeholder="Vendor Name" value={vendor} onChange={e => setVendor(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
-                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                        <input type="text" placeholder="Vendor Name" value={vendor} onChange={e => setVendor(e.target.value)} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                        <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                     </div>
-                    <textarea placeholder="Overall Description (optional)" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" rows={2}></textarea>
+                    <textarea placeholder="Overall Description (optional)" value={description} onChange={e => setDescription(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" rows={2}></textarea>
                     
                     <div className="space-y-3">
                         <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Line Items</label>
                         {lineItems.map((item, index) => (
-                            <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 bg-gray-50 dark:bg-dark-secondary/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
-                                <input type="text" placeholder="Item/Service" value={item.name} onChange={e => handleLineItemChange(index, 'name', e.target.value)} className="flex-1 min-w-[200px] bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none" />
-                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
-                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
+                            <div key={index} className="flex flex-wrap md:flex-nowrap items-center gap-2 bg-aura-gray-50 dark:bg-dark-secondary/50 p-2 rounded-xl border border-gray-100 dark:border-gray-800">
+                                <input type="text" placeholder="Item/Service" value={item.name} onChange={e => handleLineItemChange(index, 'name', e.target.value)} className="flex-1 min-w-[200px] bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none" />
+                                <input type="number" placeholder="Qty" value={item.quantity} onChange={e => handleLineItemChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
+                                <input type="number" placeholder="Price" value={item.unitPrice} onChange={e => handleLineItemChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
                                 <button type="button" onClick={() => removeLineItem(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
                             </div>
                         ))}
@@ -121,15 +121,15 @@ const NewBillModal: React.FC<{
                         </button>
                     </div>
 
-                    <div className="flex items-center justify-between gap-4 bg-gray-50 dark:bg-dark-secondary p-4 rounded-xl border border-gray-100 dark:border-gray-700">
-                         <label htmlFor="wht-bill-checkbox" className="flex items-center gap-2 cursor-pointer text-gray-700 dark:text-white text-sm font-bold select-none">
-                           <input id="wht-bill-checkbox" type="checkbox" checked={whtApplies} onChange={() => setWhtApplies(!whtApplies)} className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-purple focus:ring-brand-purple transition-all"/>
+                    <div className="flex items-center justify-between gap-4 bg-aura-gray-50 dark:bg-dark-secondary p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+                         <label htmlFor="wht-bill-checkbox" className="flex items-center gap-2 cursor-pointer text-aura-gray-900 dark:text-white text-sm font-bold select-none">
+                           <input id="wht-bill-checkbox" type="checkbox" checked={whtApplies} onChange={() => setWhtApplies(!whtApplies)} className="w-5 h-5 rounded border-gray-300 dark:border-gray-600 text-brand-purple focus:ring-brand-purple transition-all shadow-sm"/>
                            WHT applies to this payment
                         </label>
                     </div>
 
                     <div className="flex justify-end gap-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
+                        <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
                         <button type="submit" className="px-8 py-2.5 rounded-xl bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Save Bill</button>
                     </div>
                 </form>
@@ -242,25 +242,25 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
         ]}
       />
 
-      <Card className="h-full overflow-hidden flex flex-col">
-        <h3 className="text-xl font-bold text-white mb-6">Bill Details</h3>
+      <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5">
+        <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Bill Details</h3>
         <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
-            <thead className="bg-gray-50 dark:bg-dark-tertiary">
+            <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
               <tr>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Vendor</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Due Date</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Amount</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Vendor</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Due Date</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Amount</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Status</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredBills.map((bill) => (
-                <tr key={bill.id} className="hover:bg-dark-secondary/50">
-                  <td className="p-4 text-white font-medium">{bill.vendor}</td>
-                  <td className="p-4 whitespace-nowrap text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
-                  <td className="p-4 font-mono text-white">
+                <tr key={bill.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-dark-secondary/50 transition-colors group">
+                  <td className="p-4 text-aura-gray-900 dark:text-white font-medium">{bill.vendor}</td>
+                  <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-300">{new Date(bill.dueDate).toLocaleDateString()}</td>
+                  <td className="p-4 font-mono text-aura-gray-900 dark:text-white">
                     <div className="flex items-center gap-2">
                         <span className="font-black">{formatAmount(bill.amount)}</span>
                         {bill.whtApplies && <span className="text-[9px] font-black uppercase tracking-tighter bg-purple-500/10 text-purple-600 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">WHT</span>}

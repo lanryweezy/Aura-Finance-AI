@@ -376,8 +376,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Accounts Receivable</h2>
-                <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Invoicing, customer payments, and revenue tracking.</p>
+                <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white">Accounts Receivable</h2>
+                <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Invoicing, customer payments, and revenue tracking.</p>
             </div>
             <button onClick={() => setIsNewInvoiceModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -419,25 +419,25 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
         ]}
       />
 
-      <Card className="h-full overflow-hidden flex flex-col">
-        <h3 className="text-xl font-bold text-white mb-6">Invoice Details</h3>
+      <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5">
+        <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Invoice Details</h3>
         <div className="overflow-y-auto flex-grow">
           <table className="w-full text-left">
-            <thead className="bg-gray-50 dark:bg-dark-tertiary">
+            <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
               <tr>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Customer</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Due Date</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Total Amount</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Customer</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Due Date</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Total Amount</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Status</th>
+                <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
               {filteredInvoices.map((invoice) => (
-                <tr key={invoice.id} className="hover:bg-dark-secondary/50 transition-colors">
-                  <td className="p-4 text-white font-medium">{invoice.customer}</td>
-                  <td className="p-4 whitespace-nowrap text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
-                  <td className="p-4 font-mono text-white">
+                <tr key={invoice.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-dark-secondary/50 transition-colors group">
+                  <td className="p-4 text-aura-gray-900 dark:text-white font-medium">{invoice.customer}</td>
+                  <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-300">{new Date(invoice.dueDate).toLocaleDateString()}</td>
+                  <td className="p-4 font-mono text-aura-gray-900 dark:text-white">
                      <div className="flex flex-col gap-1">
                         <span className="font-black">{formatAmount(invoice.total)}</span>
                         <div className="flex flex-wrap gap-1">

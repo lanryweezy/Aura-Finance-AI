@@ -28,12 +28,12 @@ const NewProjectModal: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6">Create New Project</h3>
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-100 dark:border-white/10" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Create New Project</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm text-gray-500 dark:text-gray-400 mb-1 block">Project Name</label>
+                        <label className="text-sm text-aura-gray-500 dark:text-gray-400 mb-1 block uppercase tracking-widest font-black text-[10px]">Project Name</label>
                         <input 
                             type="text" 
                             placeholder="e.g. Q4 Marketing Campaign" 
@@ -41,11 +41,11 @@ const NewProjectModal: React.FC<{
                             onChange={e => setName(e.target.value)} 
                             autoFocus
                             required 
-                            className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
+                            className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all shadow-sm"
                         />
                     </div>
                     <div className="flex justify-end gap-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-secondary transition-colors">Cancel</button>
+                        <button type="button" onClick={onClose} className="px-6 py-2 rounded-xl text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
                         <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Save Project</button>
                     </div>
                 </form>
@@ -84,8 +84,8 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Projects</h2>
-                        <p className="text-gray-600 dark:text-gray-400 mt-1 text-sm font-medium">Track profitability by project or cost center.</p>
+                        <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white">Projects</h2>
+                        <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm font-medium">Track profitability by project or cost center.</p>
                     </div>
                     <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
@@ -151,12 +151,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
                         </Card>
                     ))}
                     {projectFinancials.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center justify-center p-16 text-center bg-gray-50/50 dark:bg-dark-tertiary/30 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
-                             <div className="p-5 bg-white dark:bg-dark-secondary rounded-2xl mb-6 shadow-sm">
+                        <div className="col-span-full flex flex-col items-center justify-center p-16 text-center bg-aura-gray-50/50 dark:bg-dark-tertiary/30 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                             <div className="p-5 bg-white dark:bg-dark-secondary rounded-2xl mb-6 shadow-xl shadow-aura-gray-200/50 dark:shadow-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                              </div>
-                            <h3 className="text-xl font-bold text-gray-900 dark:text-white">No Projects Yet</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mt-2 max-w-sm font-medium">Create a project to track expenses and revenue for specific jobs, clients, or departments.</p>
+                            <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white">No Projects Yet</h3>
+                            <p className="text-aura-gray-500 dark:text-gray-400 mt-2 max-w-sm font-medium italic">Create a project to track expenses and revenue for specific jobs, clients, or departments.</p>
                             <button onClick={() => setIsModalOpen(true)} className="mt-8 px-6 py-2.5 rounded-xl border border-brand-cyan text-brand-cyan hover:bg-brand-cyan hover:text-black transition-all font-bold">Create your first project</button>
                         </div>
                     )}

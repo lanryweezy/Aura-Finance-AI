@@ -36,14 +36,14 @@ export const BankReconciliationView: React.FC<BankReconciliationViewProps> = ({ 
         <div className="space-y-8">
             <div className="flex justify-between items-end">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Bank Reconciliation</h2>
+                    <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white">Bank Reconciliation</h2>
                     <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Match your book entries with bank statements effortlessly.</p>
                 </div>
                 <div className="flex gap-4">
                      <select
                         value={selectedBankId}
                         onChange={e => setSelectedBankId(e.target.value)}
-                        className="bg-white dark:bg-dark-tertiary border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
+                        className="bg-white dark:bg-dark-tertiary border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-brand-cyan transition-all shadow-sm"
                     >
                         {connections.map(c => <option key={c.id} value={c.id}>{c.bankName} - {c.accountNumber}</option>)}
                     </select>
@@ -79,18 +79,18 @@ export const BankReconciliationView: React.FC<BankReconciliationViewProps> = ({ 
                 </Card>
             </div>
 
-            <Card className="overflow-hidden">
+            <Card className="overflow-hidden border-gray-100 dark:border-white/5">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-dark-tertiary">
+                    <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
                         <tr>
                             <th className="p-4 w-12">
-                                <input type="checkbox" className="rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan" />
+                                <input type="checkbox" className="rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan shadow-sm" />
                             </th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Date</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Narration</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Amount</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Type</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Date</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Narration</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-right">Amount</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-center">Type</th>
+                            <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -98,7 +98,7 @@ export const BankReconciliationView: React.FC<BankReconciliationViewProps> = ({ 
                             <tr
                                 key={t.id}
                                 onClick={() => toggleCleared(t.id)}
-                                className={`cursor-pointer transition-colors ${clearedIds.has(t.id) ? 'bg-brand-cyan/5' : 'hover:bg-gray-50 dark:hover:bg-dark-secondary/50'}`}
+                                className={`cursor-pointer transition-colors group ${clearedIds.has(t.id) ? 'bg-brand-cyan/5' : 'hover:bg-aura-gray-50/50 dark:hover:bg-dark-secondary/50'}`}
                             >
                                 <td className="p-4">
                                     <input
@@ -108,12 +108,12 @@ export const BankReconciliationView: React.FC<BankReconciliationViewProps> = ({ 
                                         className="rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan"
                                     />
                                 </td>
-                                <td className="p-4 text-sm font-mono text-gray-500 dark:text-gray-400">{t.date}</td>
-                                <td className="p-4 font-bold text-gray-900 dark:text-white">{t.narration}</td>
-                                <td className={`p-4 font-mono font-bold ${t.type === 'credit' ? 'text-green-500' : 'text-red-400'}`}>
+                                <td className="p-4 text-sm font-mono text-aura-gray-500 dark:text-gray-400">{t.date}</td>
+                                <td className="p-4 font-bold text-aura-gray-900 dark:text-white">{t.narration}</td>
+                                <td className={`p-4 font-mono font-bold text-right ${t.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                     {formatAmount(t.amount)}
                                 </td>
-                                <td className="p-4 text-[10px] font-black uppercase tracking-widest text-gray-500">{t.type}</td>
+                                <td className="p-4 text-[10px] font-black uppercase tracking-widest text-aura-gray-400 text-center">{t.type}</td>
                                 <td className="p-4">
                                     {clearedIds.has(t.id) ? (
                                         <span className="text-green-500 flex items-center gap-1 text-[10px] font-black uppercase">

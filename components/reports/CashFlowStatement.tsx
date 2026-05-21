@@ -11,7 +11,7 @@ interface CashFlowStatementProps {
 const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, isSub?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
 ({ label, value, isTotal, isHeader, isSub, className, onDrillDown, formatAmount }) => (
     <tr 
-        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : ''} ${isSub ? 'section-item' : ''} ${onDrillDown ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
+        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : ''} ${isSub ? 'section-item' : ''} ${onDrillDown ? 'cursor-pointer hover:bg-aura-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
         onClick={onDrillDown}
     >
         <td className={`py-3 ${isTotal || isHeader ? 'font-bold text-gray-900 dark:text-white' : 'pl-6 text-gray-600 dark:text-gray-400 font-medium'} ${isSub ? 'pl-10' : ''}`} colSpan={isHeader ? 2 : 1}>{label}</td>

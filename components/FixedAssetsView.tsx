@@ -28,8 +28,8 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
         <div className="space-y-8">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Fixed Asset Management</h2>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Track lifecycle, depreciation, and disposal of company assets.</p>
+                    <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white">Fixed Asset Management</h2>
+                    <p className="text-aura-gray-500 dark:text-gray-400 mt-1 font-medium">Track lifecycle, depreciation, and disposal of company assets.</p>
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
@@ -41,21 +41,21 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="p-6 border-blue-500/10 bg-blue-500/5">
-                    <h4 className="text-sm font-bold text-blue-400 uppercase tracking-wider mb-2">Total Asset Value</h4>
-                    <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
+                <Card className="p-6 border-blue-500/10 bg-blue-500/5 shadow-sm">
+                    <h4 className="text-sm font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider mb-2">Total Asset Value</h4>
+                    <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
                         {formatAmount(assets.reduce((sum, a) => sum + a.purchaseCost, 0))}
                     </p>
                 </Card>
-                <Card className="p-6 border-purple-500/10 bg-purple-500/5">
-                    <h4 className="text-sm font-bold text-purple-400 uppercase tracking-wider mb-2">Accumulated Depreciation</h4>
-                    <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
+                <Card className="p-6 border-purple-500/10 bg-purple-500/5 shadow-sm">
+                    <h4 className="text-sm font-bold text-purple-500 dark:text-purple-400 uppercase tracking-wider mb-2">Accumulated Depreciation</h4>
+                    <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
                         {formatAmount(assets.reduce((sum, a) => sum + a.accumulatedDepreciation, 0))}
                     </p>
                 </Card>
-                <Card className="p-6 border-brand-cyan/10 bg-brand-cyan/5">
+                <Card className="p-6 border-brand-cyan/10 bg-brand-cyan/5 shadow-sm">
                     <h4 className="text-sm font-bold text-brand-cyan uppercase tracking-wider mb-2">Net Book Value</h4>
-                    <p className="text-3xl font-black text-gray-900 dark:text-white font-mono">
+                    <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
                         {formatAmount(assets.reduce((sum, a) => sum + a.bookValue, 0))}
                     </p>
                 </Card>
@@ -63,28 +63,28 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
 
             <Card className="overflow-hidden border-gray-100 dark:border-white/5 shadow-xl">
                 <table className="w-full text-left">
-                    <thead className="bg-gray-50 dark:bg-dark-tertiary">
+                    <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
                         <tr>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Asset Name</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Category</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Cost</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Acc. Dep.</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Book Value</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</th>
-                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-right">Actions</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Asset Name</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Category</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Cost</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Acc. Dep.</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Book Value</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400">Status</th>
+                            <th className="p-4 text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                         {assets.map(asset => (
-                            <tr key={asset.id} className="hover:bg-gray-50 dark:hover:bg-dark-secondary/50 transition-colors">
+                            <tr key={asset.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-dark-secondary/50 transition-colors group">
                                 <td className="p-4">
-                                    <div className="font-bold text-gray-900 dark:text-white">{asset.name}</div>
-                                    <div className="text-[10px] font-mono text-gray-400">Purchased: {asset.purchaseDate}</div>
+                                    <div className="font-bold text-aura-gray-900 dark:text-white">{asset.name}</div>
+                                    <div className="text-[10px] font-mono text-aura-gray-400">Purchased: {asset.purchaseDate}</div>
                                 </td>
-                                <td className="p-4 text-sm text-gray-500 dark:text-gray-400">{asset.category}</td>
-                                <td className="p-4 font-mono font-bold text-sm">{formatAmount(asset.purchaseCost)}</td>
-                                <td className="p-4 font-mono text-red-400 text-sm">{formatAmount(asset.accumulatedDepreciation)}</td>
-                                <td className="p-4 font-mono text-brand-cyan font-bold text-sm">{formatAmount(asset.bookValue)}</td>
+                                <td className="p-4 text-sm text-aura-gray-500 dark:text-gray-400">{asset.category}</td>
+                                <td className="p-4 font-mono font-bold text-sm text-aura-gray-900 dark:text-white">{formatAmount(asset.purchaseCost)}</td>
+                                <td className="p-4 font-mono text-red-500 dark:text-red-400 text-sm">{formatAmount(asset.accumulatedDepreciation)}</td>
+                                <td className="p-4 font-mono text-brand-cyan font-black text-sm">{formatAmount(asset.bookValue)}</td>
                                 <td className="p-4">
                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${asset.status === 'Active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-gray-500/10 text-gray-500 border border-gray-500/20'}`}>
                                         {asset.status}
@@ -110,18 +110,18 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
             </Card>
 
             {isModalOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setIsModalOpen(false)}>
+                <div className="fixed inset-0 bg-aura-gray-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setIsModalOpen(false)}>
                     <Card className="w-full max-w-lg p-8 space-y-6" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">New Asset Registration</h3>
+                        <h3 className="text-2xl font-bold text-aura-gray-900 dark:text-white">New Asset Registration</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Asset Name</label>
-                                    <input type="text" value={newAsset.name} onChange={e => setNewAsset({...newAsset, name: e.target.value})} required className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none"/>
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Asset Name</label>
+                                    <input type="text" value={newAsset.name} onChange={e => setNewAsset({...newAsset, name: e.target.value})} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Category</label>
-                                    <select value={newAsset.category} onChange={e => setNewAsset({...newAsset, category: e.target.value})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none">
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Category</label>
+                                    <select value={newAsset.category} onChange={e => setNewAsset({...newAsset, category: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm">
                                         <option>Furniture</option>
                                         <option>Electronics</option>
                                         <option>Vehicles</option>
@@ -131,26 +131,26 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Purchase Date</label>
-                                    <input type="date" value={newAsset.purchaseDate} onChange={e => setNewAsset({...newAsset, purchaseDate: e.target.value})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none"/>
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Date</label>
+                                    <input type="date" value={newAsset.purchaseDate} onChange={e => setNewAsset({...newAsset, purchaseDate: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Purchase Cost</label>
-                                    <input type="number" value={newAsset.purchaseCost} onChange={e => setNewAsset({...newAsset, purchaseCost: Number(e.target.value)})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono"/>
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Cost</label>
+                                    <input type="number" value={newAsset.purchaseCost} onChange={e => setNewAsset({...newAsset, purchaseCost: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Salvage Value</label>
-                                    <input type="number" value={newAsset.salvageValue} onChange={e => setNewAsset({...newAsset, salvageValue: Number(e.target.value)})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono"/>
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Salvage Value</label>
+                                    <input type="number" value={newAsset.salvageValue} onChange={e => setNewAsset({...newAsset, salvageValue: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-gray-500 uppercase">Useful Life (Years)</label>
-                                    <input type="number" value={newAsset.usefulLifeYears} onChange={e => setNewAsset({...newAsset, usefulLifeYears: Number(e.target.value)})} className="w-full bg-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono"/>
+                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Useful Life (Years)</label>
+                                    <input type="number" value={newAsset.usefulLifeYears} onChange={e => setNewAsset({...newAsset, usefulLifeYears: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                             </div>
                             <div className="flex justify-end gap-4 pt-6">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 rounded-xl text-gray-500 font-bold hover:bg-gray-100 dark:hover:bg-dark-secondary transition-all">Cancel</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2 rounded-xl text-aura-gray-500 font-bold hover:bg-aura-gray-100 dark:hover:bg-dark-secondary transition-all">Cancel</button>
                                 <button type="submit" className="bg-brand-cyan text-black px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-cyan/20 active:scale-95 transition-all">Register Asset</button>
                             </div>
                         </form>

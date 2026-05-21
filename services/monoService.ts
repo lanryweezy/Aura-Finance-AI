@@ -1,7 +1,10 @@
 
 import type { RawTransaction } from '../types';
+import { localDb } from './localDb';
 
-const mockData: RawTransaction[] = [
+const STORAGE_KEY = 'raw_transactions';
+
+const initialMockData: RawTransaction[] = [
   {
     "id": "txn_1",
     "amount": 500000,
@@ -84,10 +87,13 @@ const mockData: RawTransaction[] = [
   }
 ];
 
-export const fetchTransactions = (): Promise<RawTransaction[]> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(mockData);
-    }, 1500); // Simulate network delay
-  });
+export const fetchTransactions = async (): Promise<RawTransaction[]> => {
+    return localDb.simulateRequest(() => {
+        let transactions = localDb.load<RawTransaction[]>(STORAGE_KEY, []);
+        if (transactions.length === 0) {
+            transactions = initialMockData;
+            localDb.save(STORAGE_KEY, transactions);
+        }
+        return transactions;
+    }, 1500);
 };

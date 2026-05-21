@@ -13,14 +13,14 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   const { theme, setTheme, entities, selectedEntityId, setSelectedEntityId } = useAppStore();
 
   return (
-    <header className="p-4 md:p-8 flex justify-between items-center">
+    <header className="p-4 md:p-8 flex justify-between items-center z-20">
       <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 bg-dark-secondary/50 p-1 rounded-lg border border-white/5">
+          <div className={`flex items-center gap-2 p-1 rounded-lg border transition-all ${theme === 'dark' ? 'bg-dark-secondary/50 border-white/5' : 'bg-aura-gray-50 border-aura-gray-200'}`}>
             {['NGN', 'USD', 'GBP'].map(c => (
                 <button
                     key={c}
                     onClick={() => setCurrency(c)}
-                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${currency === c ? 'bg-brand-cyan text-black shadow-lg' : 'text-gray-500 hover:text-gray-300'}`}
+                    className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${currency === c ? 'bg-brand-cyan text-black shadow-lg' : 'text-gray-500 hover:text-aura-gray-900 dark:hover:text-gray-300'}`}
                 >
                     {c}
                 </button>
@@ -28,17 +28,17 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
           </div>
 
           {user && (
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 bg-dark-secondary/50 rounded-xl border border-white/5 group cursor-pointer hover:border-brand-cyan/50 transition-all">
+              <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl border group cursor-pointer transition-all ${theme === 'dark' ? 'bg-dark-secondary/50 border-white/5 hover:border-brand-cyan/50' : 'bg-aura-gray-50 border-aura-gray-200 hover:border-brand-cyan'}`}>
                 <div className="w-6 h-6 rounded bg-brand-cyan flex items-center justify-center text-black font-black text-[10px]">
                     {user.name.charAt(0)}
                 </div>
                 <select
                     value={selectedEntityId || ''}
                     onChange={(e) => setSelectedEntityId(e.target.value)}
-                    className="bg-transparent border-none outline-none text-xs font-bold text-gray-300 cursor-pointer"
+                    className={`bg-transparent border-none outline-none text-xs font-bold cursor-pointer ${theme === 'dark' ? 'text-gray-300' : 'text-aura-gray-800'}`}
                 >
-                    {entities.map(e => <option key={e.id} value={e.id} className="bg-dark-primary">{e.name}</option>)}
-                    {entities.length === 0 && <option value="" className="bg-dark-primary">Personal Workspace</option>}
+                    {entities.map(e => <option key={e.id} value={e.id} className="bg-dark-primary dark:bg-dark-primary light:bg-white">{e.name}</option>)}
+                    {entities.length === 0 && <option value="" className="bg-dark-primary dark:bg-dark-primary light:bg-white">Personal Workspace</option>}
                 </select>
               </div>
           )}
@@ -47,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
       <div className="flex items-center gap-4">
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 rounded-lg bg-dark-secondary/50 border border-white/5 text-gray-400 hover:text-brand-cyan transition-colors"
+          className={`p-2 rounded-lg border transition-all ${theme === 'dark' ? 'bg-dark-secondary/50 border-white/5 text-gray-400 hover:text-brand-cyan' : 'bg-aura-gray-50 border-aura-gray-200 text-aura-gray-500 hover:text-brand-purple'}`}
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
           aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
         >
@@ -61,14 +61,17 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
         {user ? (
             <>
                 <div className="text-right hidden sm:block">
-                    <span className="block text-sm font-semibold text-white">{user.name}</span>
-                    <span className="block text-xs text-gray-400">{user.email}</span>
+                    <span className={`block text-sm font-semibold ${theme === 'dark' ? 'text-white' : 'text-aura-gray-900'}`}>{user.name}</span>
+                    <span className="block text-xs text-gray-400 font-medium">{user.email}</span>
                 </div>
-                <img
-                    src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.name}&background=00F5D4&color=000`}
-                    alt="User profile"
-                    className="w-10 h-10 rounded-full border-2 border-brand-cyan"
-                />
+                <div className="relative group">
+                    <img
+                        src={user.avatarUrl || `https://ui-avatars.com/api/?name=${user.name}&background=00F5D4&color=000`}
+                        alt="User profile"
+                        className="w-11 h-11 rounded-2xl border-2 border-brand-cyan p-0.5 object-cover transition-transform group-hover:scale-105"
+                    />
+                    <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-dark-primary rounded-full"></div>
+                </div>
             </>
         ) : (
             <span className="text-sm">Guest</span>

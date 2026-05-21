@@ -1,6 +1,7 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import { registerSW } from 'virtual:pwa-register';
@@ -24,12 +25,14 @@ const updateSW = registerSW({
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <ErrorBoundary>
-        <CurrencyProvider>
-            <ToastProvider>
-                <App />
-            </ToastProvider>
-        </CurrencyProvider>
-    </ErrorBoundary>
+    <BrowserRouter>
+      <ErrorBoundary>
+          <CurrencyProvider>
+              <ToastProvider>
+                  <App />
+              </ToastProvider>
+          </CurrencyProvider>
+      </ErrorBoundary>
+    </BrowserRouter>
   </React.StrictMode>
 );

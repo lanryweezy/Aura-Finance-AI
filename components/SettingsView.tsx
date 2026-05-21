@@ -55,7 +55,7 @@ const SecuritySettings: React.FC = () => {
                     checked={highContrast}
                     onChange={setHighContrast}
                 />
-                <div className="mt-4 p-4 bg-dark-secondary rounded-xl border border-white/5">
+                <div className="mt-4 p-4 bg-aura-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-white/5 shadow-inner">
                     <button
                         onClick={async () => {
                             await securityService.registerBiometrics();
@@ -73,24 +73,24 @@ const SecuritySettings: React.FC = () => {
                 <SectionHeader title="Access Restriction" description="Restrict access to specific corporate IP addresses." />
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Whitelisted IP Addresses (comma separated)</label>
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Whitelisted IP Addresses (comma separated)</label>
                         <input
                             type="text"
                             value={ipWhitelist}
                             onChange={(e) => setIpWhitelist(e.target.value)}
                             placeholder="e.g. 192.168.1.1, 41.67.12.5"
-                            className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono text-sm"
+                            className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors font-mono text-sm shadow-sm"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-400 mb-1">Session Inactivity Timeout (Minutes)</label>
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Session Inactivity Timeout (Minutes)</label>
                         <input
                             type="number"
                             value={timeout}
                             onChange={(e) => setTimeoutVal(parseInt(e.target.value))}
-                            className="w-24 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors"
+                            className="w-24 bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan transition-colors shadow-sm"
                         />
-                        <p className="text-[10px] text-gray-500 mt-1">Users will be automatically logged out after this period of inactivity.</p>
+                        <p className="text-[10px] text-gray-500 mt-1 italic font-medium">Users will be automatically logged out after this period of inactivity.</p>
                     </div>
                 </div>
             </Card>
@@ -123,15 +123,15 @@ const DeveloperSettings: React.FC = () => {
 
                 <div className="space-y-3">
                     {apiKeys.map(key => (
-                        <div key={key.id} className="p-3 bg-dark-secondary rounded-lg border border-gray-700 flex justify-between items-center">
+                        <div key={key.id} className="p-3 bg-aura-gray-50 dark:bg-dark-secondary rounded-lg border border-gray-100 dark:border-gray-700 flex justify-between items-center shadow-sm">
                             <div>
-                                <div className="text-sm font-bold text-white">{key.name}</div>
+                                <div className="text-sm font-bold text-aura-gray-900 dark:text-white">{key.name}</div>
                                 <div className="text-xs font-mono text-gray-500 mt-1">{key.key}</div>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-[10px] uppercase font-bold px-2 py-0.5 bg-brand-purple/20 text-brand-purple rounded">{key.scope}</span>
-                                <button className="text-gray-500 hover:text-red-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                <span className="text-[10px] uppercase font-black px-2 py-0.5 bg-brand-purple/10 text-brand-purple rounded border border-brand-purple/20">{key.scope}</span>
+                                <button className="text-gray-400 hover:text-red-500 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                                 </button>
                             </div>
                         </div>
@@ -168,25 +168,25 @@ const ComplianceSettings: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
-            <Card>
+            <Card className="border-gray-100 dark:border-white/5 shadow-xl">
                 <SectionHeader title="Privacy & Data Control" description="Manage your rights under GDPR, CCPA, and NDPA." />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-4 bg-dark-secondary rounded-xl border border-white/5 space-y-3">
-                        <h4 className="text-sm font-bold text-white">Data Portability</h4>
-                        <p className="text-xs text-gray-400">Download a machine-readable copy of all your personal data and activity logs.</p>
+                    <div className="p-4 bg-aura-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-white/5 space-y-3 shadow-inner">
+                        <h4 className="text-sm font-bold text-aura-gray-900 dark:text-white">Data Portability</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Download a machine-readable copy of all your personal data and activity logs.</p>
                         <button
                             onClick={handleExport}
-                            className="w-full py-2 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-lg text-xs font-bold transition-all"
+                            className="w-full py-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-aura-gray-50 dark:hover:bg-white/10 text-aura-gray-600 dark:text-white rounded-lg text-xs font-bold transition-all shadow-sm"
                         >
                             Request Data Export
                         </button>
                     </div>
-                    <div className="p-4 bg-dark-secondary rounded-xl border border-white/5 space-y-3">
-                        <h4 className="text-sm font-bold text-red-500">Account Deletion</h4>
-                        <p className="text-xs text-gray-400">Permanently delete your account and all associated data. This action is irreversible.</p>
+                    <div className="p-4 bg-aura-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-white/5 space-y-3 shadow-inner">
+                        <h4 className="text-sm font-bold text-red-600 dark:text-red-500">Account Deletion</h4>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Permanently delete your account and all associated data. This action is irreversible.</p>
                         <button
                             onClick={() => { if(confirm("Are you SURE? All data will be lost.")) { showToast("Deletion request submitted.", "info"); } }}
-                            className="w-full py-2 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 text-red-500 rounded-lg text-xs font-bold transition-all"
+                            className="w-full py-2 bg-red-500/10 border border-red-200 dark:border-red-500/20 hover:bg-red-500/20 text-red-600 dark:text-red-500 rounded-lg text-xs font-bold transition-all"
                         >
                             Delete My Account
                         </button>
@@ -316,26 +316,26 @@ export const SettingsView: React.FC = () => {
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Company Name</label>
-                                    <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Company Name</label>
+                                    <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">TIN</label>
-                                    <input type="text" value={tin} onChange={e => setTin(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold" />
+                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">TIN</label>
+                                    <input type="text" value={tin} onChange={e => setTin(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold shadow-sm" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Business Address</label>
-                                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Business Address</label>
+                                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Contact Email</label>
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Contact Email</label>
+                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                                    <input type="tel" placeholder="+234..." className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium" />
+                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                                    <input type="tel" placeholder="+234..." className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                             </div>
                         </div>
@@ -345,8 +345,8 @@ export const SettingsView: React.FC = () => {
                         <SectionHeader title="Regional Settings" description="Localization and currency preferences." />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Base Currency</label>
-                                <select disabled className="w-full bg-gray-100 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium">
+                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Base Currency</label>
+                                <select disabled className="w-full bg-aura-gray-100 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium shadow-inner">
                                     <option>Nigerian Naira (NGN)</option>
                                     <option>US Dollar (USD)</option>
                                     <option>British Pound (GBP)</option>
@@ -354,23 +354,23 @@ export const SettingsView: React.FC = () => {
                                 <p className="text-[10px] text-gray-400 mt-2 font-medium italic">Base currency is set by your organization's region.</p>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Time Zone</label>
-                                <select className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium">
+                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Time Zone</label>
+                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>West Africa Time (WAT) - Lagos</option>
                                     <option>Greenwich Mean Time (GMT)</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date Format</label>
-                                <select className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium">
+                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date Format</label>
+                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>DD/MM/YYYY</option>
                                     <option>MM/DD/YYYY</option>
                                     <option>YYYY-MM-DD</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Financial Year Start</label>
-                                <select className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium">
+                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Financial Year Start</label>
+                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>January</option>
                                     <option>April</option>
                                     <option>July</option>

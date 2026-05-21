@@ -12,7 +12,7 @@ interface ProfitAndLossReportProps {
 const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, isProfit?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
 ({ label, value, isTotal, isHeader, isProfit, className, onDrillDown, formatAmount }) => (
     <tr 
-        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
+        className={`${isTotal ? 'section-total border-t-2 border-gray-100 dark:border-gray-800' : ''} ${isHeader ? 'section-header' : 'section-item'} ${onDrillDown ? 'cursor-pointer hover:bg-aura-gray-50 dark:hover:bg-dark-secondary transition-colors' : ''} ${isHeader ? (className ?? '') : ''}`}
         onClick={onDrillDown}
     >
         <td className={`py-3 ${isTotal || isHeader ? 'font-bold text-gray-900 dark:text-white' : 'pl-6 text-gray-600 dark:text-gray-400 font-medium'}`} colSpan={isHeader ? 2 : 1}>{label}</td>
@@ -59,8 +59,8 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                     </table>
                 </div>
                 <div className="md:col-span-2 space-y-8">
-                     <div className="bg-gray-50 dark:bg-dark-secondary/20 p-6 rounded-2xl border border-gray-100 dark:border-white/5">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-6 text-center">Expense Breakdown</h3>
+                     <div className="bg-aura-gray-50 dark:bg-dark-secondary/20 p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
+                        <h3 className="text-lg font-bold text-aura-gray-900 dark:text-white mb-6 text-center">Expense Breakdown</h3>
                         <ResponsiveContainer width="100%" height={200}>
                             <PieChart>
                                 <Pie data={expenseChartData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} fill="#8884d8" labelLine={false}>

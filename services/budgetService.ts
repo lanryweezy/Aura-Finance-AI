@@ -1,38 +1,14 @@
-import { monitoringService } from './monitoringService';
 
 import type { Budget } from '../types';
-import { authService } from './authService';
+import { apiClient } from './apiClient';
 
-const getStorageKey = () => `aura_${authService.getTenantId()}_budgets`;
-
-const initialBudgets: Budget[] = [
-    { category: 'Software & Subscriptions', amount: 50000 },
-    { category: 'Marketing & Advertising', amount: 100000 },
-    { category: 'Travel', amount: 75000 },
-];
-
-const loadBudgets = (): Budget[] => {
-    const stored = localStorage.getItem(getStorageKey());
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse budgets' });
-            return initialBudgets;
-        }
-    }
-    return initialBudgets;
+export const fetchBudgets = async (): Promise<Budget[]> => {
+    return await apiClient.get('/budgets');
 };
 
-export const fetchBudgets = (): Promise<Budget[]> => {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(loadBudgets()), 300);
-    });
-};
-
-export const saveBudgets = (updatedBudgets: Budget[]): Promise<Budget[]> => {
-    return new Promise(resolve => {
-        localStorage.setItem(getStorageKey(), JSON.stringify(updatedBudgets));
-        setTimeout(() => resolve(updatedBudgets), 500);
-    });
+export const saveBudgets = async (budgets: Budget[]): Promise<void> => {
+    // In our simplified simulator, we can just POST the whole array if we want,
+    // but typically we'd save individual ones or have a bulk endpoint.
+    // For now, let's simulate bulk save.
+    await apiClient.post('/budgets/bulk', budgets);
 };

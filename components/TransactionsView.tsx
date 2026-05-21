@@ -11,34 +11,34 @@ import { exportToCSV } from '../services/exportService';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
-  'Sales Revenue': 'bg-green-500/10 text-green-400 border-green-500/20',
-  'Service Revenue': 'bg-green-500/10 text-green-400 border-green-500/20',
-  'Interest Income': 'bg-green-500/10 text-green-400 border-green-500/20',
-  'Capital Injection': 'bg-teal-500/10 text-teal-400 border-teal-500/20',
-  'Other Income': 'bg-green-500/10 text-green-400 border-green-500/20',
+  'Sales Revenue': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  'Service Revenue': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  'Interest Income': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
+  'Capital Injection': 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20',
+  'Other Income': 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20',
   // Expenses
-  'Salaries & Wages': 'bg-red-500/10 text-red-400 border-red-500/20',
-  'Utilities': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  'Software & Subscriptions': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-  'Marketing & Advertising': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  'Rent & Leases': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  'Travel': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  'Meals & Entertainment': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
-  'Hardware': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-  'Bank Charges & Fees': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-  'Professional Fees': 'bg-lime-500/10 text-lime-400 border-lime-500/20',
-  'Legal Fees': 'bg-lime-500/10 text-lime-400 border-lime-500/20',
-  'Insurance': 'bg-sky-500/10 text-sky-400 border-sky-500/20',
-  'Repairs & Maintenance': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-  'Cost of Sales': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
-  'COGS - Raw Materials': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
-  'COGS - Direct Labor': 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
-  'Taxes - Corporate': 'bg-red-700/20 text-red-400 border-red-500/20',
+  'Salaries & Wages': 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
+  'Utilities': 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20',
+  'Software & Subscriptions': 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20',
+  'Marketing & Advertising': 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20',
+  'Rent & Leases': 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
+  'Travel': 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20',
+  'Meals & Entertainment': 'bg-pink-500/10 text-pink-600 dark:text-pink-400 border-pink-500/20',
+  'Hardware': 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+  'Bank Charges & Fees': 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20',
+  'Professional Fees': 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/20',
+  'Legal Fees': 'bg-lime-500/10 text-lime-600 dark:text-lime-400 border-lime-500/20',
+  'Insurance': 'bg-sky-500/10 text-sky-600 dark:text-sky-400 border-sky-500/20',
+  'Repairs & Maintenance': 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
+  'Cost of Sales': 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20',
+  'COGS - Raw Materials': 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20',
+  'COGS - Direct Labor': 'bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-500/20',
+  'Taxes - Corporate': 'bg-red-700/20 text-red-600 dark:text-red-400 border-red-500/20',
    // Other
-  'Inter-account Transfer': 'bg-gray-500/10 text-gray-400 border-gray-500/20',
-  "Owner's Draw": 'bg-gray-500/10 text-gray-400 border-gray-500/20',
-  'Miscellaneous': 'bg-stone-500/10 text-stone-400 border-stone-500/20',
-  'Uncategorized': 'bg-gray-600/20 text-gray-300 border-gray-500/20'
+  'Inter-account Transfer': 'bg-aura-gray-500/10 text-aura-gray-600 dark:text-gray-400 border-gray-500/20',
+  "Owner's Draw": 'bg-aura-gray-500/10 text-aura-gray-600 dark:text-gray-400 border-gray-500/20',
+  'Miscellaneous': 'bg-stone-500/10 text-stone-600 dark:text-stone-400 border-stone-500/20',
+  'Uncategorized': 'bg-gray-600/20 text-aura-gray-600 dark:text-gray-300 border-gray-500/20'
 };
 
 interface TransactionsViewProps {
@@ -94,29 +94,29 @@ const CategoryEditor = React.memo<{
     };
 
     return (
-        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-dark-primary dark:bg-dark-primary border border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
-            <h4 className="text-white font-bold text-sm">Edit Transaction Details</h4>
+        <div ref={editorRef} className="absolute right-0 z-30 w-80 bg-white dark:bg-dark-primary border border-gray-200 dark:border-gray-600 rounded-xl shadow-2xl mt-2 p-4 flex flex-col gap-3 animate-in fade-in zoom-in-95 duration-200">
+            <h4 className="text-aura-gray-900 dark:text-white font-bold text-sm">Edit Transaction Details</h4>
             <input
                 type="text"
                 placeholder="Search category..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 autoFocus
-                className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan shadow-sm"
             />
-            <div className="max-h-36 overflow-y-auto flex-grow border-y border-gray-700 py-1 scrollbar-thin">
+            <div className="max-h-36 overflow-y-auto flex-grow border-y border-gray-100 dark:border-gray-700 py-1 scrollbar-thin">
                 {filteredCategories.map(cat => (
                     <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`block w-full text-left px-3 py-1.5 text-xs rounded-md mb-0.5 ${selectedCategory === cat ? 'bg-brand-cyan/20 text-brand-cyan font-bold' : 'text-gray-300 hover:bg-white/5'}`}
+                        className={`block w-full text-left px-3 py-1.5 text-xs rounded-md mb-0.5 ${selectedCategory === cat ? 'bg-brand-cyan/20 text-brand-cyan font-bold' : 'text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-50 dark:hover:bg-white/5'}`}
                     >
                         {cat}
                     </button>
                 ))}
             </div>
             <div className="space-y-2">
-                <select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan text-sm">
+                <select value={selectedProjectId} onChange={e => setSelectedProjectId(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan text-sm shadow-sm">
                     <option value="">No Project</option>
                     {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
                 </select>
@@ -125,12 +125,12 @@ const CategoryEditor = React.memo<{
                     placeholder="Receipt URL (optional)"
                     value={receiptUrl}
                     onChange={e => setReceiptUrl(e.target.value)}
-                    className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan"
+                    className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2 text-sm text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan shadow-sm"
                 />
             </div>
-            <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-700">
-                <button onClick={onClose} className="px-3 py-1.5 text-xs rounded-md text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                <button onClick={handleSave} className="px-3 py-1.5 text-xs rounded-md bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90">Save Changes</button>
+            <div className="flex justify-end gap-2 mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                <button onClick={onClose} className="px-3 py-1.5 text-xs rounded-md text-aura-gray-500 dark:text-gray-300 hover:bg-aura-gray-50 dark:hover:bg-dark-secondary transition-all">Cancel</button>
+                <button onClick={handleSave} className="px-3 py-1.5 text-xs rounded-md bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95">Save Changes</button>
             </div>
         </div>
     );
@@ -187,37 +187,37 @@ const AddTransactionModal = React.memo<{
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-            <div className="bg-dark-tertiary dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-700" onClick={e => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-white mb-6">Add New Transaction</h3>
+        <div className="fixed inset-0 bg-aura-gray-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-8 w-full max-w-md shadow-2xl border border-gray-100 dark:border-gray-700" onClick={e => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Add New Transaction</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm text-gray-400 mb-1 block">Date</label>
-                        <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                        <label className="text-xs font-bold text-aura-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1 block">Date</label>
+                        <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                     </div>
-                     <input type="text" placeholder="Narration / Description" value={narration} onChange={e => setNarration(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                    <input type="number" placeholder={`Amount (${currency})`} value={amount} onChange={e => setAmount(e.target.value)} required className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                     <input type="text" placeholder="Narration / Description" value={narration} onChange={e => setNarration(e.target.value)} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                    <input type="number" placeholder={`Amount (${currency})`} value={amount} onChange={e => setAmount(e.target.value)} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold shadow-sm" />
 
-                    <div className="flex gap-2 bg-dark-secondary p-1 rounded-lg">
-                        <button type="button" onClick={() => setType('debit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'debit' ? 'bg-brand-pink text-white shadow' : 'text-gray-400 hover:text-white'}`}>Debit (Out)</button>
-                        <button type="button" onClick={() => setType('credit')} className={`flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-colors ${type === 'credit' ? 'bg-brand-cyan text-black shadow' : 'text-gray-400 hover:text-white'}`}>Credit (In)</button>
+                    <div className="flex gap-2 bg-aura-gray-100 dark:bg-dark-secondary p-1 rounded-xl shadow-inner">
+                        <button type="button" onClick={() => setType('debit')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all ${type === 'debit' ? 'bg-brand-pink text-white shadow-lg' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Debit (Out)</button>
+                        <button type="button" onClick={() => setType('credit')} className={`flex-1 py-2 px-4 rounded-lg text-sm font-bold transition-all ${type === 'credit' ? 'bg-brand-cyan text-black shadow-lg' : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}>Credit (In)</button>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                         <select value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan">
+                         <select value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-bold shadow-sm">
                             {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                          </select>
-                         <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan">
+                         <select value={projectId} onChange={e => setProjectId(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-bold shadow-sm">
                             <option value="">No Project</option>
                             {projects.map(proj => <option key={proj.id} value={proj.id}>{proj.name}</option>)}
                          </select>
                     </div>
 
-                     <input type="text" placeholder="Receipt URL (optional)" value={receiptUrl} onChange={e => setReceiptUrl(e.target.value)} className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
+                     <input type="text" placeholder="Receipt URL (optional)" value={receiptUrl} onChange={e => setReceiptUrl(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                     
-                    <div className="flex justify-end gap-4 pt-4">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-gray-300 hover:bg-dark-secondary">Cancel</button>
-                        <button type="submit" className="px-6 py-2 rounded-lg bg-brand-cyan text-black font-bold hover:bg-brand-cyan/80">Save Transaction</button>
+                    <div className="flex justify-end gap-4 pt-6">
+                        <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-aura-gray-500 dark:text-gray-300 hover:bg-aura-gray-100 dark:hover:bg-dark-secondary transition-all font-bold">Cancel</button>
+                        <button type="submit" className="px-8 py-2.5 rounded-xl bg-brand-cyan text-black font-bold hover:bg-brand-cyan/90 transition-all active:scale-95 shadow-lg shadow-brand-cyan/20">Save Transaction</button>
                     </div>
                 </form>
             </div>
@@ -228,6 +228,7 @@ const AddTransactionModal = React.memo<{
 
 export const TransactionsView = React.memo<TransactionsViewProps>(({ transactions, onUpdateCategory, onAddTransaction, projects, chartOfAccounts }) => {
   const { formatAmount } = useCurrency();
+  const { theme } = useAppStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'all' | 'debit' | 'credit'>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
@@ -304,14 +305,14 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
     />
     
     <Card className="h-full overflow-hidden flex flex-col p-0 border-gray-100 dark:border-white/5">
-       <div className="p-6 pb-4 border-b border-gray-800">
+       <div className="p-6 pb-4 border-b border-gray-200 dark:border-gray-800">
            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-white">Transactions Ledger</h2>
-              <p className="text-gray-400 mt-1 text-sm">Manage your financial records.</p>
+              <h2 className="text-2xl font-bold text-aura-gray-900 dark:text-white">Transactions Ledger</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Manage your financial records.</p>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setIsScannerOpen(true)} className="bg-dark-tertiary hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-gray-700">
+              <button onClick={() => setIsScannerOpen(true)} className="bg-white dark:bg-dark-tertiary hover:bg-gray-100 dark:hover:bg-white/10 text-aura-gray-900 dark:text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-gray-200 dark:border-gray-700">
                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><line x1="21" y1="5" x2="10" y2="5"/><line x1="21" y1="2" x2="21" y2="8"/><line x1="24" y1="5" x2="18" y2="5"/></svg>
                  Scan Receipt
               </button>
@@ -338,33 +339,33 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
 
       <div className="overflow-x-auto flex-grow relative">
         <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
+          <thead className="sticky top-0 z-20 bg-aura-gray-50/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
             <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                 <Tooltip content="The date the transaction was recorded in your bank or manually.">Date</Tooltip>
               </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                 <Tooltip content="The description of the transaction.">Narration</Tooltip>
               </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                 <Tooltip content="The financial value of the transaction in your selected currency.">Amount</Tooltip>
               </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">
+              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
                 <Tooltip content="The accounting category assigned to this transaction.">Category</Tooltip>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-800/50">
+          <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
             {filteredTransactions.map((t) => (
-              <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
-                <td className="p-4 whitespace-nowrap text-gray-400 text-sm font-mono">{new Date(t.date).toLocaleDateString()}</td>
-                <td className="p-4 max-w-sm text-gray-200">
+              <tr key={t.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
+                <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm font-mono">{new Date(t.date).toLocaleDateString()}</td>
+                <td className="p-4 max-w-sm text-aura-gray-900 dark:text-gray-200">
                     <div className="flex flex-col">
                         <span className="truncate font-medium" title={t.narration}>{t.narration}</span>
                         {t.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(t.projectId)}</span>}
                     </div>
                 </td>
-                <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
+                <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-aura-gray-900 dark:text-white'}`}>
                   {t.type === 'credit' ? '+' : ''} {formatAmount(t.amount)}
                 </td>
                 <td className="p-4 relative">
@@ -388,11 +389,11 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
         </table>
          {filteredTransactions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="bg-dark-secondary p-4 rounded-full mb-3">
+              <div className="bg-aura-gray-50 dark:bg-dark-secondary p-4 rounded-full mb-3 shadow-inner">
                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
               </div>
-              <h3 className="text-white font-medium mb-1">No transactions found</h3>
-              <p className="text-gray-500 text-sm">Try adjusting your filters or search term.</p>
+              <h3 className="text-aura-gray-900 dark:text-white font-bold text-lg mb-1">No transactions found</h3>
+              <p className="text-aura-gray-500 dark:text-gray-400 text-sm font-medium">Try adjusting your filters or search term.</p>
           </div>
         )}
       </div>
