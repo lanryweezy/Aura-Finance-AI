@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      width: 1200px;
+      height: 630px;
+      background-color: #070919;
+      font-family: 'Inter', sans-serif;
+      color: #F8FAFC;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .background-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(155, 93, 229, 0.15) 0%, rgba(0, 245, 212, 0.05) 50%, rgba(7, 9, 25, 0) 100%);
+      z-index: 0;
+    }
+
+    .content {
+      z-index: 1;
+      text-align: center;
+      max-width: 900px;
+      padding: 40px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      width: 64px;
+      height: 64px;
+      margin-right: 16px;
+    }
+
+    .logo-text {
+      font-size: 42px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    h1 {
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      letter-spacing: -2px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(to right, #00F5D4, #9B5DE5, #F15BB5);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      font-size: 28px;
+      color: #94A3B8;
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 8px 16px;
+      background: rgba(0, 245, 212, 0.1);
+      border: 1px solid rgba(0, 245, 212, 0.2);
+      border-radius: 100px;
+      color: #00F5D4;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-glow"></div>
+  <div class="content">
+    <div class="logo-container">
+      <svg class="logo" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="32" height="32" rx="8" fill="url(#grad1)"/>
+        <path d="M25 16a9 9 0 1 1-6.219-8.56" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <defs>
+          <linearGradient id="grad1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#00F5D4"/>
+            <stop offset="1" stop-color="#9B5DE5"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="logo-text">Aura Finance</span>
+    </div>
+
+    <div class="badge">Agentic AI for SMEs</div>
+
+    <h1>The Operating System for <span class="gradient-text">Autonomous Finance.</span></h1>
+
+    <p>Automate bookkeeping, payroll, and tax compliance with Nigerian localized intelligence.</p>
+  </div>
+</body>
+</html>
