@@ -5,6 +5,8 @@ import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
+import { LandingView } from './components/LandingView';
+import { LegalView } from './components/LegalView';
 import { Spinner } from './components/ui/Spinner';
 
 // Lazy load non-critical views
@@ -28,7 +30,6 @@ const ProjectsView = lazy(() => import('./components/ProjectsView').then(m => ({
 const SettingsView = lazy(() => import('./components/SettingsView').then(m => ({ default: m.SettingsView })));
 const SubscriptionView = lazy(() => import('./components/SubscriptionView').then(m => ({ default: m.SubscriptionView })));
 const ContactsView = lazy(() => import('./components/ContactsView').then(m => ({ default: m.ContactsView })));
-const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
 
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { useToast } from './components/ui/Toast';
@@ -56,6 +57,8 @@ import type { CategorizedTransaction, View, Employee, PayrollSummary, BankConnec
 
 export default function App(): React.ReactNode {
   const { showToast } = useToast();
+  const [showAuth, setShowAuth] = useState(false);
+  const [legalType, setLegalType] = useState<'privacy' | 'terms' | null>(null);
   const store = useAppStore();
   const {
     user, setUser,
@@ -504,7 +507,42 @@ export default function App(): React.ReactNode {
   };
 
   if (!user) {
-    return <AuthView onLogin={handleLogin} />;
+    if (legalType) {
+        return (
+            <div className="bg-dark-primary min-h-screen">
+                <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setLegalType(null)}>
+                        <div className="bg-gradient-to-br from-brand-cyan to-brand-purple p-2 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        </div>
+                        <span className="text-xl font-black tracking-tighter">AURA</span>
+                    </div>
+                    <button onClick={() => setLegalType(null)} className="text-sm font-bold text-brand-cyan hover:underline">
+                        Back to Landing
+                    </button>
+                </nav>
+                <div className="pt-10">
+                    <LegalView type={legalType} />
+                </div>
+            </div>
+        );
+    }
+
+    if (showAuth) {
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setShowAuth(false)}
+                    className="absolute top-8 left-8 z-[100] text-gray-400 hover:text-white flex items-center gap-2 font-bold transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back
+                </button>
+                <AuthView onLogin={handleLogin} />
+            </div>
+        );
+    }
+    return <LandingView onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onViewLegal={setLegalType} />;
   }
 
   return (

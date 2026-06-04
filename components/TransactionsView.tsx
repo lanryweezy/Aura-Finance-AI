@@ -1,10 +1,13 @@
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { List } from 'react-window';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { Icons } from './ui/Icons';
 
 const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   // Income
@@ -18,7 +21,7 @@ const CATEGORY_COLOR_MAP: { [key: string]: string } = {
   'Utilities': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   'Software & Subscriptions': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
   'Marketing & Advertising': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-  'Rent & Leases': 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  'Rent & Leases': 'bg-rose-500/10 text-rose-400 border-red-500/20',
   'Travel': 'bg-amber-500/10 text-amber-400 border-amber-500/20',
   'Meals & Entertainment': 'bg-pink-500/10 text-pink-400 border-pink-500/20',
   'Hardware': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
@@ -53,8 +56,51 @@ const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInt
   return (
     <button onClick={onClick} disabled={!isInteractive} className={`px-2.5 py-1 text-[11px] font-semibold rounded-md border ${colorClasses} ${buttonClasses} flex items-center gap-1.5 whitespace-nowrap`}>
       {category}
-      {isInteractive && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+      {isInteractive && <Icons.ChevronDown />}
     </button>
+  );
+});
+
+const TransactionRow = React.memo<{
+  transaction: CategorizedTransaction;
+  formatAmount: (val: number) => string;
+  getProjectName: (id?: string) => string | undefined;
+  onEdit: (id: string) => void;
+  isEditing: boolean;
+  allAvailableCategories: string[];
+  projects: Project[];
+  onSave: (id: string, cat: string, proj?: string, url?: string) => void;
+  onCloseEditor: () => void;
+  style: React.CSSProperties;
+}>(({ transaction, formatAmount, getProjectName, onEdit, isEditing, allAvailableCategories, projects, onSave, onCloseEditor, style }) => {
+  return (
+    <div style={style} className="flex hover:bg-white/[0.02] transition-colors group border-b border-gray-800/50">
+      <div className="w-[15%] p-4 whitespace-nowrap text-gray-400 text-sm font-mono flex items-center">{new Date(transaction.date).toLocaleDateString()}</div>
+      <div className="w-[45%] p-4 text-gray-200 flex items-center">
+          <div className="flex flex-col min-w-0">
+              <span className="truncate font-medium" title={transaction.narration}>{transaction.narration}</span>
+              {transaction.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(transaction.projectId)}</span>}
+          </div>
+      </div>
+      <div className={`w-[20%] p-4 font-mono font-medium flex items-center ${transaction.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
+        {transaction.type === 'credit' ? '+' : ''} {formatAmount(transaction.amount)}
+      </div>
+      <div className="w-[20%] p-4 relative flex items-center">
+          <div className="flex items-center gap-2">
+              {transaction.receiptUrl && <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><Icons.Receipt /></a>}
+              <CategoryBadge category={transaction.category} onClick={() => onEdit(transaction.id)} isInteractive={true} />
+          </div>
+        {isEditing && (
+          <CategoryEditor
+              transaction={transaction}
+              allCategories={allAvailableCategories}
+              projects={projects}
+              onSave={onSave}
+              onClose={onCloseEditor}
+          />
+        )}
+      </div>
+    </div>
   );
 });
 
@@ -265,14 +311,32 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [transactions, searchTerm, typeFilter, categoryFilter, dateFilter, projectFilter]);
 
-  const handleCategorySave = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
+  const handleCategorySave = useCallback((transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {
     onUpdateCategory(transactionId, newCategory, newProjectId, newReceiptUrl);
     setEditingId(null);
-  };
+  }, [onUpdateCategory]);
 
-  const getProjectName = (projectId?: string) => {
+  const getProjectName = useCallback((projectId?: string) => {
     return projects.find(p => p.id === projectId)?.name;
-  }
+  }, [projects]);
+
+  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const t = filteredTransactions[index];
+    return (
+      <TransactionRow
+        style={style}
+        transaction={t}
+        formatAmount={formatAmount}
+        getProjectName={getProjectName}
+        onEdit={setEditingId}
+        isEditing={editingId === t.id}
+        allAvailableCategories={allAvailableCategories}
+        projects={projects}
+        onSave={handleCategorySave}
+        onCloseEditor={() => setEditingId(null)}
+      />
+    );
+  }, [filteredTransactions, formatAmount, getProjectName, editingId, allAvailableCategories, projects, handleCategorySave]);
 
   return (
     <>
@@ -298,11 +362,11 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
             </div>
             <div className="flex gap-3">
               <button onClick={() => setIsScannerOpen(true)} className="bg-dark-tertiary hover:bg-white/10 text-white font-semibold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors border border-gray-700">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><line x1="21" y1="5" x2="10" y2="5"/><line x1="21" y1="2" x2="21" y2="8"/><line x1="24" y1="5" x2="18" y2="5"/></svg>
+                 <Icons.Scan />
                  Scan Receipt
               </button>
               <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors flex-shrink-0 shadow-[0_0_10px_rgba(0,245,212,0.3)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <Icons.Plus />
                 Add Transaction
               </button>
             </div>
@@ -312,7 +376,7 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
            <div className="flex flex-col gap-3 p-1">
              <div className="flex items-center gap-3 bg-dark-secondary border border-gray-700 p-2 rounded-xl">
                  <div className="flex-grow relative">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <Icons.Search />
                     <input
                     type="text"
                     placeholder="Search narration..."
@@ -373,52 +437,32 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
            </div>
        </div>
 
-      <div className="overflow-y-auto flex-grow relative">
-        <table className="w-full text-left border-collapse">
-          <thead className="sticky top-0 z-20 bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
-            <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Date</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Narration</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Amount</th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Category</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800/50">
-            {filteredTransactions.map((t) => (
-              <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
-                <td className="p-4 whitespace-nowrap text-gray-400 text-sm font-mono">{new Date(t.date).toLocaleDateString()}</td>
-                <td className="p-4 max-w-sm text-gray-200">
-                    <div className="flex flex-col">
-                        <span className="truncate font-medium" title={t.narration}>{t.narration}</span>
-                        {t.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(t.projectId)}</span>}
-                    </div>
-                </td>
-                <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
-                  {t.type === 'credit' ? '+' : ''} {formatAmount(t.amount)}
-                </td>
-                <td className="p-4 relative">
-                    <div className="flex items-center gap-2">
-                        {t.receiptUrl && <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg></a>}
-                        <CategoryBadge category={t.category} onClick={() => setEditingId(t.id)} isInteractive={true} />
-                    </div>
-                  {editingId === t.id && (
-                    <CategoryEditor
-                        transaction={t}
-                        allCategories={allAvailableCategories}
-                        projects={projects}
-                        onSave={handleCategorySave}
-                        onClose={() => setEditingId(null)}
-                    />
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="flex-grow relative overflow-hidden">
+        <div className="flex bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-700">
+            <div className="w-[15%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Date</div>
+            <div className="w-[45%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Narration</div>
+            <div className="w-[20%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Amount</div>
+            <div className="w-[20%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-400">Category</div>
+        </div>
+        <div className="h-full">
+            <AutoSizer>
+                {({ height, width }) => (
+                <List
+                    height={height - 56}
+                    itemCount={filteredTransactions.length}
+                    itemSize={64}
+                    width={width}
+                    className="scrollbar-thin"
+                >
+                    {Row}
+                </List>
+                )}
+            </AutoSizer>
+        </div>
          {filteredTransactions.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center bg-dark-primary">
               <div className="bg-dark-secondary p-4 rounded-full mb-3">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="gray" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                 <Icons.EmptySearch />
               </div>
               <h3 className="text-white font-medium mb-1">No transactions found</h3>
               <p className="text-gray-500 text-sm">Try adjusting your filters or search term.</p>

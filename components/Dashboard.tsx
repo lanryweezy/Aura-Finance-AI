@@ -1,12 +1,13 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import React, { useState, useEffect, useMemo, Suspense, useCallback } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { useCurrency } from './ui/CurrencyProvider';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
+
+const DashboardChart = React.lazy(() => import('./reports/DashboardChart'));
 
 interface DashboardProps {
   user: { name: string } | null;
@@ -304,10 +305,10 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
     );
   }, [transactions]);
   
-  const chartData = [
+  const chartData = useMemo(() => [
     { name: 'Total Income', value: summary.income, color: '#00F5D4' },
     { name: 'Total Expenses', value: summary.expenses, color: '#F15BB5' },
-  ];
+  ], [summary]);
   
   const lastSyncTime = useMemo(() => {
     if (connections.length === 0) return null;
@@ -318,17 +319,22 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
     return latestSync.toLocaleString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   }, [connections]);
 
+  const handleQuickAction = useCallback((view: View) => {
+    onQuickAction?.(view);
+  }, [onQuickAction]);
+
+  const handleScanOpen = useCallback(() => setIsScannerOpen(true), []);
+  const handleScanClose = useCallback(() => setIsScannerOpen(false), []);
+  const handleAddTransaction = useCallback((data: Omit<CategorizedTransaction, 'id' | 'balance'>) => {
+    onAddTransaction?.(data);
+  }, [onAddTransaction]);
 
   return (
     <>
     <ReceiptScannerModal 
         isOpen={isScannerOpen} 
-        onClose={() => setIsScannerOpen(false)} 
-        onSave={(data) => {
-            if (onAddTransaction) {
-                onAddTransaction(data);
-            }
-        }} 
+        onClose={handleScanClose}
+        onSave={handleAddTransaction}
     />
 
     <div className="space-y-8 animate-in fade-in duration-500">
@@ -353,25 +359,25 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             title="Scan Receipt" 
             color="bg-brand-cyan text-brand-cyan" 
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/><line x1="21" y1="5" x2="10" y2="5"/><line x1="21" y1="2" x2="21" y2="8"/><line x1="24" y1="5" x2="18" y2="5"/></svg>}
-            onClick={() => setIsScannerOpen(true)}
+            onClick={handleScanOpen}
         />
         <QuickActionCard 
             title="Create Invoice" 
             color="bg-brand-purple text-brand-purple" 
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>}
-            onClick={() => onQuickAction?.('receivables')}
+            onClick={() => handleQuickAction('receivables')}
         />
         <QuickActionCard 
             title="Record Bill" 
             color="bg-brand-pink text-brand-pink" 
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>}
-            onClick={() => onQuickAction?.('payables')}
+            onClick={() => handleQuickAction('payables')}
         />
         <QuickActionCard 
             title="Add Employee" 
             color="bg-blue-400 text-blue-400" 
             icon={<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>}
-            onClick={() => onQuickAction?.('payroll')}
+            onClick={() => handleQuickAction('payroll')}
         />
       </div>
 
@@ -420,23 +426,9 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             </select>
           </div>
           {transactions.length > 0 ? (
-               <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={chartData} layout="vertical" margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff1a" horizontal={false} />
-                        <XAxis type="number" stroke="#888888" tickFormatter={(value) => formatAmount(value, { compact: true })} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" stroke="#888888" width={100} axisLine={false} tickLine={false} />
-                        <Tooltip 
-                            cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
-                            contentStyle={{ backgroundColor: '#1C203F', border: '1px solid #333', borderRadius: '8px' }}
-                            formatter={(value: number) => formatAmount(value)}
-                        />
-                        <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={40}>
-                            {chartData.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+               <Suspense fallback={<div className="h-[300px] flex items-center justify-center"><Spinner /></div>}>
+                    <DashboardChart data={chartData} />
+               </Suspense>
           ) : (
              <div className="flex flex-col items-center justify-center h-[300px]">
                 <p className="text-gray-400">No transaction data available.</p>
