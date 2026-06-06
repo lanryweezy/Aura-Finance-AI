@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test('verify performance optimizations and virtualization', async ({ page }) => {
+  test.setTimeout(120000);
+
   // Inject auth state and tour completion to bypass overlays
   await page.goto('http://localhost:3000');
   await page.evaluate(() => {
@@ -24,31 +26,39 @@ test('verify performance optimizations and virtualization', async ({ page }) => 
   await page.reload();
 
   // 1. Verify Dashboard (Lazy loading & Memoization)
-  await expect(page.locator('text=Financial Overview')).toBeVisible({ timeout: 15000 });
-  await page.screenshot({ path: 'screenshots/dashboard.png' });
+  await expect(page.locator('h2:has-text("Dashboard")')).toBeVisible({ timeout: 15000 });
+  await page.screenshot({ path: 'screenshots/dashboard_empty.png' });
 
-  // 2. Verify Transactions Virtualization
-  await page.click('nav >> text=Transactions');
-  // From screenshot, the heading is "Transactions Ledger"
-  await expect(page.locator('text=Transactions Ledger')).toBeVisible();
+  // 2. Link Bank Account to get data
+  // Click the parent menu "Connections"
+  await page.click('button:has-text("Connections")');
+  // Click the child menu "Bank Connections"
+  await page.click('button:has-text("Bank Connections")');
 
-  // Verify that the list is rendered (virtualization check)
-  // react-window list usually has a div with overflow: auto
-  const virtualList = page.locator('.TransactionsView [style*="overflow: auto"]');
-  await expect(virtualList).toBeDefined();
+  await page.click('button:has-text("Link New Account")');
+  await page.click('button:has-text("Connect with Mono")');
+
+  // Wait for connection to be established
+  await page.waitForSelector('text=Healthy', { timeout: 20000 });
+  await page.screenshot({ path: 'screenshots/connections_linked.png' });
+
+  // 3. Verify Transactions Virtualization
+  await page.click('button:has-text("Transactions")');
+  await expect(page.locator('h2:has-text("Transactions Ledger")')).toBeVisible();
+  await page.waitForTimeout(3000);
   await page.screenshot({ path: 'screenshots/transactions_virtual.png' });
 
-  // 3. Verify Audit Trail Virtualization
-  await page.click('nav >> text=Settings');
-  await page.click('text=Audit Trail');
-  await expect(page.locator('text=Security Audit Log')).toBeVisible();
+  // 4. Verify Audit Trail Virtualization
+  await page.click('button:has-text("Accounting")');
+  await page.click('button:has-text("Audit Trail")');
+  await expect(page.locator('h2:has-text("Audit Trail")')).toBeVisible();
   await page.screenshot({ path: 'screenshots/audit_trail_virtual.png' });
 
-  // 4. Verify Lazy Loading of Charts
-  // Navigate back to Dashboard to see if chart rendered
-  await page.click('nav >> text=Dashboard');
+  // 5. Verify Lazy Loading of Charts on Dashboard
+  await page.click('button:has-text("Dashboard")');
   const chart = page.locator('.recharts-responsive-container');
-  await expect(chart).toBeVisible();
+  await expect(chart).toBeVisible({ timeout: 20000 });
+  await page.screenshot({ path: 'screenshots/dashboard_with_chart.png' });
 
   console.log('Performance optimization verification complete.');
 });

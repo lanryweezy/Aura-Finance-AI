@@ -29,3 +29,47 @@ export const exportToCSV = (filename: string, data: any[]) => {
         document.body.removeChild(link);
     }
 };
+
+export const exportFirsVatSchedule = (invoices: any[], periodStart: string, periodEnd: string) => {
+    const schedule = invoices.map(inv => ({
+        'Customer Name': inv.customer,
+        'TIN': 'N/A', // Placeholder for TIN
+        'Invoice Date': new Date(inv.issueDate).toLocaleDateString(),
+        'Invoice Number': inv.id.slice(-6).toUpperCase(),
+        'Net Amount': inv.amount,
+        'VAT Amount (7.5%)': inv.vat,
+        'Gross Amount': inv.total
+    }));
+
+    exportToCSV(`FIRS_VAT_Schedule_${periodStart}_to_${periodEnd}`, schedule);
+};
+
+export const exportFirsWhtSchedule = (invoices: any[], transactions: any[], periodStart: string, periodEnd: string) => {
+    // Suffered WHT (Income)
+    const incomeSchedule = invoices.filter(i => i.whtApplied).map(inv => ({
+        'Beneficiary/Supplier': inv.customer,
+        'TIN': 'N/A',
+        'Nature of Transaction': 'Services/Supply',
+        'Date': new Date(inv.issueDate).toLocaleDateString(),
+        'Gross Amount': inv.amount,
+        'WHT Rate': '5%',
+        'WHT Amount': inv.amount * 0.05,
+        'Type': 'Suffered (Credit)'
+    }));
+
+    // Payable WHT (Expenses)
+    const expenseSchedule = transactions
+        .filter(t => t.type === 'debit' && (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors'))
+        .map(t => ({
+            'Beneficiary/Supplier': t.narration,
+            'TIN': 'N/A',
+            'Nature of Transaction': t.category,
+            'Date': new Date(t.date).toLocaleDateString(),
+            'Gross Amount': t.amount,
+            'WHT Rate': '5%',
+            'WHT Amount': t.amount * 0.05,
+            'Type': 'Payable (Debit)'
+        }));
+
+    exportToCSV(`FIRS_WHT_Schedule_${periodStart}_to_${periodEnd}`, [...incomeSchedule, ...expenseSchedule]);
+};

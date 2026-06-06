@@ -11,6 +11,86 @@ export interface PayrollDeductions {
   netSalary: number;
 }
 
+export interface CorporateTaxLiability {
+  profitBeforeTax: number;
+  annualTurnover: number;
+  cit: number;
+  citRate: number;
+  tet: number;
+  naseniLevy: number;
+  policeTrustFund: number;
+  totalTax: number;
+  effectiveTaxRate: number;
+}
+
+export interface VatSummary {
+  outputVat: number;
+  inputVat: number;
+  netVatPayable: number;
+}
+
+export interface WhtSummary {
+  whtSuffered: number; // On Income
+  whtPayable: number;  // On Expenses
+}
+
+export const VAT_RATE = 0.075;
+
+export const calculateCorporateTax = (
+  profitBeforeTax: number,
+  annualTurnover: number
+): CorporateTaxLiability => {
+  // 1. Company Income Tax (CIT)
+  // Small companies (<25M) - 0%
+  // Medium companies (25M - 100M) - 20%
+  // Large companies (>100M) - 30%
+  let citRate = 0;
+  if (annualTurnover > 100000000) citRate = 0.30;
+  else if (annualTurnover > 25000000) citRate = 0.20;
+
+  const cit = Math.max(0, profitBeforeTax * citRate);
+
+  // 2. Tertiary Education Tax (TET) - 3% of assessable profit
+  const tet = Math.max(0, profitBeforeTax * 0.03);
+
+  // 3. NASENI Levy - 0.25% of profit before tax (for turnover > 100M)
+  const naseniLevy = annualTurnover > 100000000 ? Math.max(0, profitBeforeTax * 0.0025) : 0;
+
+  // 4. Police Trust Fund - 0.005% of net profit
+  const policeTrustFund = Math.max(0, profitBeforeTax * 0.00005);
+
+  const totalTax = cit + tet + naseniLevy + policeTrustFund;
+
+  return {
+    profitBeforeTax,
+    annualTurnover,
+    cit,
+    citRate: citRate * 100,
+    tet,
+    naseniLevy,
+    policeTrustFund,
+    totalTax,
+    effectiveTaxRate: profitBeforeTax > 0 ? (totalTax / profitBeforeTax) * 100 : 0
+  };
+};
+
+export const calculateVat = (sales: number, taxableExpenses: number): VatSummary => {
+  const outputVat = sales * VAT_RATE;
+  const inputVat = taxableExpenses * VAT_RATE;
+  return {
+    outputVat,
+    inputVat,
+    netVatPayable: Math.max(0, outputVat - inputVat)
+  };
+};
+
+export const calculateWht = (incomeSubjectToWht: number, expensesSubjectToWht: number, rate: number = 0.05): WhtSummary => {
+  return {
+    whtSuffered: incomeSubjectToWht * rate,
+    whtPayable: expensesSubjectToWht * rate
+  };
+};
+
 export const calculateDeductions = (
   grossSalary: number, 
   oneTimeBonuses: number = 0, 

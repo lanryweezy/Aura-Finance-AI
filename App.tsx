@@ -489,7 +489,7 @@ export default function App(): React.ReactNode {
       projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
       settings: <SettingsView />,
       subscription: <SubscriptionView />,
-      chat: <AIChat transactions={transactions} />,
+      chat: <AIChat transactions={transactions} invoices={invoices} bills={bills} />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />
     };

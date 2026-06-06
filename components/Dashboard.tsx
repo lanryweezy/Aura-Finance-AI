@@ -279,8 +279,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
   useEffect(() => {
     const fetchAllData = async () => {
       setLoadingInsights(true);
-      if (transactions.length > 0) {
-        const fetchedInsights = await getFinancialInsights(transactions);
+      if (transactions.length > 0 || invoices.length > 0) {
+        const fetchedInsights = await getFinancialInsights(transactions, invoices, bills);
         setInsights(fetchedInsights);
       } else {
         setInsights([]);
@@ -288,7 +288,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       setLoadingInsights(false);
     };
     fetchAllData();
-  }, [transactions]);
+  }, [transactions, invoices, bills]);
 
 
   const summary = useMemo(() => {
@@ -436,12 +436,15 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
             </div>
           )}
         </Card>
-        <Card className="lg:col-span-2 flex flex-col">
-            <div className="flex items-center gap-2 mb-4">
-                 <div className="p-1.5 bg-gradient-to-br from-brand-cyan to-brand-purple rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                 </div>
-                <h3 className="text-lg font-bold text-white">AI Advisor</h3>
+        <Card className="lg:col-span-2 flex flex-col border-brand-cyan/20">
+            <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-gradient-to-br from-brand-cyan to-brand-purple rounded-lg animate-pulse">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-white">TaxPro Agent</h3>
+                </div>
+                <span className="text-[10px] bg-brand-cyan/10 text-brand-cyan px-2 py-0.5 rounded-full border border-brand-cyan/20 uppercase font-bold tracking-wider">Agentic</span>
             </div>
             <div className="flex-grow overflow-y-auto pr-1 custom-scrollbar">
                 {loadingInsights ? (

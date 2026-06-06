@@ -99,7 +99,11 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 };
 
 
-export const getFinancialInsights = async (transactions: CategorizedTransaction[]): Promise<FinancialInsight[]> => {
+export const getFinancialInsights = async (
+  transactions: CategorizedTransaction[],
+  invoices: Invoice[] = [],
+  bills: Bill[] = []
+): Promise<FinancialInsight[]> => {
   if (!aiClient || !API_KEY) {
     return [{ title: 'AI Analysis Disabled', description: 'Set your Gemini API key.', priority: 'Medium' }];
   }
@@ -108,9 +112,17 @@ export const getFinancialInsights = async (transactions: CategorizedTransaction[
       return [{ title: 'Plan Limit Reached', description: 'You have reached your AI insights limit for this month. Please upgrade your plan.', priority: 'High' }];
   }
 
-  if (transactions.length === 0) return [];
+  if (transactions.length === 0 && invoices.length === 0) return [];
 
-  const prompt = `Generate 3 concise financial insights for a Nigerian SME based on: ${JSON.stringify(transactions)}`;
+  const prompt = `You are TaxPro, an agentic tax assistant for Nigerian SMEs.
+  Analyze the following data for tax optimization, compliance (VAT, WHT, CIT), and proactive savings.
+  Identify missing WHT credits, VAT inconsistencies, or tax-deductible opportunities.
+
+  Transactions: ${JSON.stringify(transactions.slice(0, 20))}
+  Invoices: ${JSON.stringify(invoices.slice(0, 10))}
+  Bills: ${JSON.stringify(bills.slice(0, 10))}
+
+  Generate 3-4 proactive insights. Return as JSON array of objects with {title, description, priority}.`;
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
