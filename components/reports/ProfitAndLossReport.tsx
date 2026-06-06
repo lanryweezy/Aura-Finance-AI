@@ -1,8 +1,10 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from 'recharts';
+import React, { Suspense } from 'react';
 import { Card } from '../ui/Card';
+import { Spinner } from '../ui/Spinner';
 import type { PandLData } from '../../types';
 import { useCurrency } from "../ui/CurrencyProvider";
+
+const ExpenseBreakdownChart = React.lazy(() => import('./ExpenseBreakdownChart'));
 
 interface ProfitAndLossReportProps {
     data: PandLData;
@@ -27,11 +29,9 @@ const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isH
 export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, onDrillDown }) => {
     const { formatAmount } = useCurrency();
     
-    const expenseChartData = Object.entries(data.expensesByCategory)
+    const expenseChartData = React.useMemo(() => Object.entries(data.expensesByCategory)
         .map(([name, value]) => ({ name, value: Number(value) }))
-        .sort((a,b) => (b.value as number) - (a.value as number));
-
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#9B5DE5', '#F15BB5', '#4ade80', '#fb923c'];
+        .sort((a,b) => (b.value as number) - (a.value as number)), [data.expensesByCategory]);
 
     return (
         <Card className="border-gray-100 dark:border-white/5 shadow-xl">
@@ -59,6 +59,11 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                     </table>
                 </div>
                 <div className="md:col-span-2 space-y-8">
+                     <div>
+                        <h3 className="text-lg font-semibold text-white mb-4 text-center">Expense Breakdown</h3>
+                        <Suspense fallback={<div className="h-[200px] flex items-center justify-center"><Spinner /></div>}>
+                            <ExpenseBreakdownChart data={expenseChartData} />
+                        </Suspense>
                      <div className="bg-aura-gray-50 dark:bg-dark-secondary/20 p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
                         <h3 className="text-lg font-bold text-aura-gray-900 dark:text-white mb-6 text-center">Expense Breakdown</h3>
                         <ResponsiveContainer width="100%" height={200}>

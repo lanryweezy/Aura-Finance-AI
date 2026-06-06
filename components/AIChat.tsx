@@ -33,6 +33,22 @@ const getBudgetTool: FunctionDeclaration = {
     description: 'Fetches the user\'s budget data. Call this when the user asks about their budget or how much they have left to spend.',
 };
 
+const getTaxComplianceTool: FunctionDeclaration = {
+    name: 'getTaxCompliance',
+    description: 'Calculates Nigerian tax compliance and liabilities (CIT, VAT, WHT, PAYE) for a given period.',
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            startDate: { type: Type.STRING, description: 'ISO date string for start of period' },
+            endDate: { type: Type.STRING, description: 'ISO date string for end of period' }
+        },
+        required: ['startDate', 'endDate']
+    }
+};
+
+const flagTaxAnomaliesTool: FunctionDeclaration = {
+    name: 'flagTaxAnomalies',
+    description: 'Analyzes transactions and invoices to find missing WHT credits or incorrect VAT applications.',
 const getInvoicesTool: FunctionDeclaration = {
     name: 'getInvoices',
     description: 'Fetches the user\'s invoices. Call this when the user asks about sales, customers, or pending payments.',
@@ -46,7 +62,13 @@ const getBillsTool: FunctionDeclaration = {
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
 
 const suggestedPrompts = [
+    "What is my estimated tax liability?",
+    "Am I compliant with Nigerian VAT regulations?",
     "What was my biggest expense?",
+    "Summarize my income sources.",
+];
+
+export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills }) => {
     "Am I profitable this month?",
     "How much did I spend on software?",
     "Forecast my cashflow for next month.",
@@ -103,6 +125,10 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
   ];
 
   useEffect(() => {
+    const systemInstruction = `You are O-Heidi, a friendly, proactive, and expert financial AI assistant for Nigerian small business owners.
+    You specialize in Nigerian tax laws (CIT, VAT, WHT, PAYE, TET).
+    You have tools to fetch financial and tax data. You should proactively analyze the user's situation and offer actionable advice, especially regarding tax savings and compliance.
+    Be concise, helpful, and use ${currency} for currency. Do not invent data; always use the provided tools to get real information.`;
     const selectedAgent = agents.find(a => a.id === activeAgent) || agents[0];
     const systemInstruction = `${selectedAgent.instruction}
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
@@ -113,6 +139,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
             model: 'gemini-2.0-flash',
             config: {
                 systemInstruction,
+                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getTaxComplianceTool, flagTaxAnomaliesTool] }]
                 tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool] }]
             },
         });
@@ -176,6 +203,40 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
               } else if (call.name === 'getBudget') {
                    // Mock budget data for the example since it's not passed as a prop
                   toolResult = { budget: { total: 500000, spent: 420000, remaining: 80000 } };
+              } else if (call.name === 'getTaxCompliance') {
+                  const args = call.args as { startDate: string, endDate: string };
+                  // We need to simulate the tax calculation here similar to TaxFilingView
+                  // Since we don't have all data here, we provide a summary based on current transactions
+                  const start = new Date(args.startDate);
+                  const end = new Date(args.endDate);
+                  const periodTxs = transactions.filter(t => {
+                      const d = new Date(t.date);
+                      return d >= start && d <= end;
+                  });
+                  const revenue = periodTxs.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
+                  const expenses = periodTxs.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+
+                  toolResult = {
+                      period: `${args.startDate} to ${args.endDate}`,
+                      revenue,
+                      expenses,
+                      estimatedProfit: revenue - expenses,
+                      estimatedCIT: (revenue - expenses) * 0.2, // Simplified for AI
+                      vatStatus: "VAT registered. Output VAT is 7.5% of sales.",
+                      advice: "Ensure all invoices have WHT applied to minimize year-end liability."
+                  };
+              } else if (call.name === 'flagTaxAnomalies') {
+                  // Proactive agentic logic: find transactions over 50k without WHT
+                  const anomalies = transactions.filter(t => t.type === 'debit' && t.amount > 50000 && !t.narration.toLowerCase().includes('wht'));
+                  const missingVat = invoices.filter(i => i.vat === 0 && i.amount > 0);
+
+                  toolResult = {
+                      whtAnomalies: anomalies.length,
+                      missingVatCount: missingVat.length,
+                      topWhtAnomalies: anomalies.slice(0, 5).map(a => ({ desc: a.narration, amount: a.amount })),
+                      missingVatInvoices: missingVat.slice(0, 5).map(i => ({ customer: i.customer, amount: i.amount })),
+                      recommendation: "Review these transactions for WHT and VAT compliance to avoid FIRS penalties and interest."
+                  };
               } else if (call.name === 'getInvoices') {
                   toolResult = { invoices: invoices.slice(0, 20) };
               } else if (call.name === 'getBills') {

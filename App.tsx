@@ -575,39 +575,52 @@ export default function App(): React.ReactNode {
       );
     }
 
-    const views: Record<View, React.ReactNode> = {
-        dashboard: <Dashboard user={user} transactions={transactions} connections={connections} bills={bills} invoices={invoices} onQuickAction={(v) => navigate(`/${v}`)} onAddTransaction={handleAddNewTransaction} />,
-        transactions: <TransactionsView transactions={transactions} onUpdateCategory={handleUpdateTransaction} onAddTransaction={handleAddNewTransaction} projects={projects} chartOfAccounts={chartOfAccounts} />,
-        reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
-        payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
-        receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
-        estimates: withUpgrade('estimates', 'Growth', 'Professional Estimates', 'Create and send branded estimates to your customers to win more business.', <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />),
-        purchaseOrders: withUpgrade('purchaseOrders', 'Growth', 'Purchase Orders', 'Streamline your procurement process with professional purchase orders.', <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />),
-        payroll: withUpgrade('payroll', 'Growth', 'Automated Payroll', 'Run payroll for your team in minutes. Automated tax calculations and payslips.', <PayrollView employees={employees} payrollSummary={payrollSummary} payrollHistory={payrollHistory} onAddEmployee={handleAddEmployee} onUpdateEmployee={handleUpdateEmployee} onRemoveEmployee={handleRemoveEmployee} onRunPayroll={handleRunPayroll} />),
-        inventory: withUpgrade('inventory', 'Growth', 'Inventory Management', 'Track stock levels, set low-stock alerts, and manage products across multiple warehouses.', <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />),
-        contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
-        taxFiling: withUpgrade('taxFiling', 'Growth', 'Tax Compliance', 'Automatically calculate VAT, WHT, and PAYE. Stay compliant with local tax laws.', <TaxFilingView transactions={transactions} />),
-        connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
-        integrations: <IntegrationsView />,
-        chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
-        journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
-        budgeting: withUpgrade('budgeting', 'Growth', 'Smart Budgeting', 'Plan your spending and stay on track with real-time budget vs actual reporting.', <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />),
-        auditTrail: withUpgrade('auditTrail', 'Enterprise', 'Compliance Audit Trail', 'Maintain a detailed history of all changes for full accountability and audit readiness.', <AuditTrailView logs={auditLog} />),
-        projects: withUpgrade('projects', 'Growth', 'Project Accounting', 'Track profitability and expenses for specific projects or departments.', <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />),
-        fixedAssets: withUpgrade('fixedAssets', 'Enterprise', 'Fixed Assets Registry', 'Track depreciation and manage the lifecycle of your company\'s physical assets.', <FixedAssetsView assets={fixedAssets} onAddAsset={handleAddFixedAsset} onDisposeAsset={handleDisposeAsset} />),
-        reconciliation: <BankReconciliationView connections={connections} transactions={transactions} />,
-        recurring: <RecurringTransactionsView invoices={invoices} bills={bills} />,
-        yearEnd: withUpgrade('yearEnd', 'Enterprise', 'Year-End Closing', 'Guided wizard for closing your books and preparing for the next fiscal year.', <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />),
-        settings: <SettingsView />,
-        subscription: <SubscriptionView />,
-        chat: <AIChat transactions={transactions} bills={bills} invoices={invoices} />,
-        privacy: <LegalView type="privacy" />,
-        terms: <LegalView type="terms" />,
-        blog: <BlogView />,
-        about: <AboutView />,
-        careers: <CareersView />,
-        contact: <ContactView />,
-        security: <SecurityView />
+    const viewMap: Record<View, React.ReactNode> = {
+      dashboard: <Dashboard
+                    user={user}
+                    transactions={transactions} 
+                    connections={connections}
+                    bills={bills}
+                    invoices={invoices}
+                    onQuickAction={setActiveView}
+                    onAddTransaction={handleAddNewTransaction}
+                 />,
+      transactions: <TransactionsView
+                        transactions={transactions}
+                        onUpdateCategory={handleUpdateTransaction}
+                        onAddTransaction={handleAddNewTransaction}
+                        projects={projects}
+                        chartOfAccounts={chartOfAccounts}
+                    />,
+      reports: <FinancialReportsView transactions={transactions} payrollSummary={payrollSummary} bills={bills} invoices={invoices} inventory={inventory} projects={projects} chartOfAccounts={chartOfAccounts}/>,
+      payables: <PayablesView bills={bills} onAddBill={handleAddBill} onPayBill={handlePayBill} inventoryItems={inventory} />,
+      receivables: <ReceivablesView invoices={invoices} onAddInvoice={handleAddInvoice} onRecordPayment={handleRecordInvoicePayment} inventoryItems={inventory} />,
+      estimates: <EstimatesView estimates={estimates} onAddEstimate={handleAddEstimate} onConvertToInvoice={handleConvertToInvoice} inventoryItems={inventory} />,
+      purchaseOrders: <PurchaseOrdersView purchaseOrders={purchaseOrders} onAddPurchaseOrder={handleAddPurchaseOrder} onConvertToBill={handleConvertToBill} inventoryItems={inventory} />,
+      payroll: <PayrollView
+                    employees={employees} 
+                    payrollSummary={payrollSummary}
+                    payrollHistory={payrollHistory}
+                    onAddEmployee={handleAddEmployee}
+                    onUpdateEmployee={handleUpdateEmployee}
+                    onRemoveEmployee={handleRemoveEmployee}
+                    onRunPayroll={handleRunPayroll}
+                />,
+      inventory: <InventoryView items={inventory} onAddItem={handleAddInventoryItem} onUpdateItem={handleUpdateInventoryItem} />,
+      contacts: <ContactsView contacts={contacts} invoices={invoices} bills={bills} onAddContact={handleAddContact} onUpdateContact={handleUpdateContact} />,
+      taxFiling: <TaxFilingView transactions={transactions} />,
+      connections: <ConnectionsView onConnectionsUpdated={handleConnectionsUpdated} />,
+      integrations: <IntegrationsView />,
+      chartOfAccounts: <ChartOfAccountsView accounts={chartOfAccounts} setAccounts={setChartOfAccounts} />,
+      journalEntries: <JournalEntriesView entries={journalEntries} onAddEntry={handleAddJournalEntry} accounts={chartOfAccounts} />,
+      budgeting: <BudgetingView budgets={budgets} onSaveBudgets={handleSaveBudgets} expenseCategories={chartOfAccounts.filter(a => a.type === 'Expense').map(a => a.name)} />,
+      auditTrail: <AuditTrailView logs={auditLog} />,
+      projects: <ProjectsView projects={projects} transactions={transactions} onAddProject={handleAddProject} />,
+      settings: <SettingsView />,
+      subscription: <SubscriptionView />,
+      chat: <AIChat transactions={transactions} invoices={invoices} bills={bills} />,
+      privacy: <LegalView type="privacy" />,
+      terms: <LegalView type="terms" />
     };
 
     return (
@@ -618,6 +631,42 @@ export default function App(): React.ReactNode {
   };
 
   if (!user) {
+    if (legalType) {
+        return (
+            <div className="bg-dark-primary min-h-screen">
+                <nav className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+                    <div className="flex items-center gap-3 cursor-pointer" onClick={() => setLegalType(null)}>
+                        <div className="bg-gradient-to-br from-brand-cyan to-brand-purple p-2 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                        </div>
+                        <span className="text-xl font-black tracking-tighter">AURA</span>
+                    </div>
+                    <button onClick={() => setLegalType(null)} className="text-sm font-bold text-brand-cyan hover:underline">
+                        Back to Landing
+                    </button>
+                </nav>
+                <div className="pt-10">
+                    <LegalView type={legalType} />
+                </div>
+            </div>
+        );
+    }
+
+    if (showAuth) {
+        return (
+            <div className="relative">
+                <button
+                    onClick={() => setShowAuth(false)}
+                    className="absolute top-8 left-8 z-[100] text-gray-400 hover:text-white flex items-center gap-2 font-bold transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back
+                </button>
+                <AuthView onLogin={handleLogin} />
+            </div>
+        );
+    }
+    return <LandingView onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onViewLegal={setLegalType} />;
     return (
       <Routes>
         <Route path="/" element={<LandingView onGetStarted={() => navigate('/auth?signup=true')} onLogin={() => navigate('/auth')} onNavigate={(v) => navigate(`/${v}`)} />} />

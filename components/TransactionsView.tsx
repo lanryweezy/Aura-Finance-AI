@@ -1,11 +1,14 @@
 
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { List } from 'react-window';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { Card } from './ui/Card';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { Tooltip } from './ui/Tooltip';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { Icons } from './ui/Icons';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
 
@@ -56,8 +59,51 @@ const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInt
   return (
     <button onClick={onClick} disabled={!isInteractive} className={`px-2.5 py-1 text-[11px] font-semibold rounded-md border ${colorClasses} ${buttonClasses} flex items-center gap-1.5 whitespace-nowrap`}>
       {category}
-      {isInteractive && <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>}
+      {isInteractive && <Icons.ChevronDown />}
     </button>
+  );
+});
+
+const TransactionRow = React.memo<{
+  transaction: CategorizedTransaction;
+  formatAmount: (val: number) => string;
+  getProjectName: (id?: string) => string | undefined;
+  onEdit: (id: string) => void;
+  isEditing: boolean;
+  allAvailableCategories: string[];
+  projects: Project[];
+  onSave: (id: string, cat: string, proj?: string, url?: string) => void;
+  onCloseEditor: () => void;
+  style: React.CSSProperties;
+}>(({ transaction, formatAmount, getProjectName, onEdit, isEditing, allAvailableCategories, projects, onSave, onCloseEditor, style }) => {
+  return (
+    <div style={style} className="flex hover:bg-white/[0.02] transition-colors group border-b border-gray-800/50">
+      <div className="w-[15%] p-4 whitespace-nowrap text-gray-400 text-sm font-mono flex items-center">{new Date(transaction.date).toLocaleDateString()}</div>
+      <div className="w-[45%] p-4 text-gray-200 flex items-center">
+          <div className="flex flex-col min-w-0">
+              <span className="truncate font-medium" title={transaction.narration}>{transaction.narration}</span>
+              {transaction.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(transaction.projectId)}</span>}
+          </div>
+      </div>
+      <div className={`w-[20%] p-4 font-mono font-medium flex items-center ${transaction.type === 'credit' ? 'text-green-400' : 'text-white'}`}>
+        {transaction.type === 'credit' ? '+' : ''} {formatAmount(transaction.amount)}
+      </div>
+      <div className="w-[20%] p-4 relative flex items-center">
+          <div className="flex items-center gap-2">
+              {transaction.receiptUrl && <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><Icons.Receipt /></a>}
+              <CategoryBadge category={transaction.category} onClick={() => onEdit(transaction.id)} isInteractive={true} />
+          </div>
+        {isEditing && (
+          <CategoryEditor
+              transaction={transaction}
+              allCategories={allAvailableCategories}
+              projects={projects}
+              onSave={onSave}
+              onClose={onCloseEditor}
+          />
+        )}
+      </div>
+    </div>
   );
 });
 
@@ -285,9 +331,27 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
     showToast('Transaction updated successfully.', 'success');
   };
 
-  const getProjectName = (projectId?: string) => {
+  const getProjectName = useCallback((projectId?: string) => {
     return projects.find(p => p.id === projectId)?.name;
-  }
+  }, [projects]);
+
+  const Row = useCallback(({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const t = filteredTransactions[index];
+    return (
+      <TransactionRow
+        style={style}
+        transaction={t}
+        formatAmount={formatAmount}
+        getProjectName={getProjectName}
+        onEdit={setEditingId}
+        isEditing={editingId === t.id}
+        allAvailableCategories={allAvailableCategories}
+        projects={projects}
+        onSave={handleCategorySave}
+        onCloseEditor={() => setEditingId(null)}
+      />
+    );
+  }, [filteredTransactions, formatAmount, getProjectName, editingId, allAvailableCategories, projects, handleCategorySave]);
 
   return (
     <>
@@ -317,7 +381,7 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
                  Scan Receipt
               </button>
               <button onClick={() => setIsAddModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/80 text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors flex-shrink-0 shadow-[0_0_10px_rgba(0,245,212,0.3)]">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                <Icons.Plus />
                 Add Transaction
               </button>
             </div>

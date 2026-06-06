@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NAV_ITEMS, NavItem } from '../constants';
 import type { View, Permission } from '../types';
 import { usePermissions } from '../services/hooks/usePermissions';
@@ -10,6 +10,31 @@ interface SidebarProps {
   setActiveView: (view: View) => void;
   onLogout: () => void;
 }
+
+const prefetchView = (view: string) => {
+    switch (view) {
+      case 'transactions': import('./TransactionsView'); break;
+      case 'reports': import('./FinancialReportsView'); break;
+      case 'payables': import('./PayablesView'); break;
+      case 'receivables': import('./ReceivablesView'); break;
+      case 'payroll': import('./PayrollView'); break;
+      case 'taxFiling': import('./TaxFilingView'); break;
+      case 'connections': import('./ConnectionsView'); break;
+      case 'integrations': import('./IntegrationsView'); break;
+      case 'chartOfAccounts': import('./ChartOfAccountsView'); break;
+      case 'journalEntries': import('./JournalEntriesView'); break;
+      case 'purchaseOrders': import('./PurchaseOrdersView'); break;
+      case 'estimates': import('./EstimatesView'); break;
+      case 'inventory': import('./InventoryView'); break;
+      case 'budgeting': import('./BudgetingView'); break;
+      case 'auditTrail': import('./AuditTrailView'); break;
+      case 'projects': import('./ProjectsView'); break;
+      case 'settings': import('./SettingsView'); break;
+      case 'subscription': import('./SubscriptionView'); break;
+      case 'chat': import('./AIChat'); break;
+      case 'contacts': import('./ContactsView'); break;
+    }
+};
 
 const NavMenu: React.FC<{
     item: NavItem;
@@ -72,10 +97,17 @@ const NavMenu: React.FC<{
         }
     };
 
+    const handleMouseEnter = () => {
+        if (!hasChildren) {
+            prefetchView(item.id);
+        }
+    };
+
     if (isChild) {
         return (
              <button
               onClick={() => setActiveView(item.id)}
+              onMouseEnter={handleMouseEnter}
               className={`flex items-center gap-4 py-2 pr-3 pl-12 w-full rounded-lg transition-all duration-200 text-sm ${
                 activeView === item.id 
                 ? 'text-brand-cyan font-semibold bg-white/5 border-r-2 border-brand-cyan' 
@@ -91,6 +123,7 @@ const NavMenu: React.FC<{
         <div className="mb-1">
             <button
               onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
               className={`flex items-center justify-between gap-4 p-3 w-full rounded-xl transition-all duration-300 group ${
                 isParentActive 
                 ? 'bg-gradient-to-r from-brand-cyan/10 to-transparent backdrop-blur-md text-brand-cyan font-semibold border-l-4 border-brand-cyan shadow-[0_0_20px_rgba(0,245,212,0.15)]'

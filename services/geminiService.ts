@@ -154,6 +154,17 @@ export const getFinancialInsights = async (
       return [{ title: 'Plan Limit Reached', description: 'You have reached your AI insights limit for this month. Please upgrade your plan.', priority: 'High' }];
   }
 
+  if (transactions.length === 0 && invoices.length === 0) return [];
+
+  const prompt = `You are TaxPro, an agentic tax assistant for Nigerian SMEs.
+  Analyze the following data for tax optimization, compliance (VAT, WHT, CIT), and proactive savings.
+  Identify missing WHT credits, VAT inconsistencies, or tax-deductible opportunities.
+
+  Transactions: ${JSON.stringify(transactions.slice(0, 20))}
+  Invoices: ${JSON.stringify(invoices.slice(0, 10))}
+  Bills: ${JSON.stringify(bills.slice(0, 10))}
+
+  Generate 3-4 proactive insights. Return as JSON array of objects with {title, description, priority}.`;
   const context = {
     transactions: transactions.slice(0, 50),
     pendingBills: bills.filter(b => b.status !== 'Paid'),

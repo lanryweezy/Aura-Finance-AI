@@ -15,6 +15,9 @@
     "lucide-react": "^0.469.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-is": "19.2.6",
+    "react-virtualized-auto-sizer": "2.0.3",
+    "react-window": "2.2.7",
     "react-router-dom": "^7.15.1",
     "recharts": "^3.0.2",
     "zustand": "^5.0.13"
@@ -23,6 +26,7 @@
     "@playwright/test": "^1.60.0",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
+    "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.27",
     "playwright": "^1.59.1",
