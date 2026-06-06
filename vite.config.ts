@@ -18,6 +18,36 @@ export default defineConfig(({ mode }) => {
         VitePWA({
           registerType: 'autoUpdate',
           includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'masked-icon.svg'],
+          workbox: {
+            globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+            runtimeCaching: [
+              {
+                urlPattern: /^https:\/\/generativelanguage\.googleapis\.com\/.*/i,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'gemini-api-cache',
+                  expiration: {
+                    maxEntries: 10,
+                    maxAgeSeconds: 60 * 60 * 24 // 24 hours
+                  },
+                  cacheableResponse: {
+                    statuses: [0, 200]
+                  }
+                }
+              },
+              {
+                urlPattern: /\/api\/.*/i,
+                handler: 'NetworkFirst',
+                options: {
+                  cacheName: 'api-data-cache',
+                  expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 60 * 60 * 12 // 12 hours
+                  }
+                }
+              }
+            ]
+          },
           manifest: {
             name: 'Aura Finance AI',
             short_name: 'Aura',
@@ -44,6 +74,29 @@ export default defineConfig(({ mode }) => {
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks(id) {
+              if (id.includes('node_modules')) {
+                return 'vendor';
+              }
+              if (id.includes('services/geminiService') || id.includes('services/reportService')) {
+                return 'ai-services';
+              }
+            }
+          }
+        },
+        chunkSizeWarningLimit: 1000,
+        sourcemap: false,
+        minify: 'terser',
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+          }
+        }
       },
       resolve: {
         alias: {

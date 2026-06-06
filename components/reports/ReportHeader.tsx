@@ -11,6 +11,7 @@ interface ReportHeaderProps {
     comparePeriod: ReportPeriod | null;
     setComparePeriod: (period: ReportPeriod | null) => void;
     onPrint: () => void;
+    onShare: () => void;
     projects: Project[];
     projectFilter: string;
     setProjectFilter: (id: string) => void;
@@ -21,7 +22,7 @@ const formatDateForInput = (date: Date): string => {
 };
 
 export const ReportHeader: React.FC<ReportHeaderProps> = ({ 
-    activeReport, setActiveReport, reportPeriod, setReportPeriod, onPrint, projects, projectFilter, setProjectFilter 
+    activeReport, setActiveReport, reportPeriod, setReportPeriod, onPrint, onShare, projects, projectFilter, setProjectFilter
 }) => {
 
     const handlePresetChange = (preset: string) => {
@@ -73,26 +74,32 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
         <div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-white">Financial Reports</h2>
-                    <p className="text-gray-400 mt-1">Analyze your performance and financial health.</p>
+                    <h2 className="text-3xl font-bold text-aura-gray-900 dark:text-white">Financial Reports</h2>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Analyze your performance and financial health.</p>
                 </div>
-                 <button onClick={onPrint} className="no-print bg-brand-cyan text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors hover:bg-brand-cyan/80 disabled:bg-gray-600">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Print Report
-                </button>
+                 <div className="flex items-center gap-3">
+                    <button onClick={onShare} className="no-print bg-white dark:bg-dark-secondary text-aura-gray-900 dark:text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-aura-gray-50 dark:hover:bg-dark-tertiary border border-gray-200 dark:border-gray-700 shadow-sm active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                        Share Link
+                    </button>
+                    <button onClick={onPrint} className="no-print bg-brand-cyan text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-brand-cyan/90 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print Report
+                    </button>
+                </div>
             </div>
-            <div className="mt-6 flex flex-wrap items-center gap-4 p-4 bg-dark-tertiary rounded-xl">
-                 <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs text-gray-400">Start Date</label>
-                    <input type="date" value={formatDateForInput(reportPeriod.start)} onChange={(e) => handleDateChange('start', e.target.value)} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white" />
+            <div className="mt-6 flex flex-wrap items-center gap-4 p-5 bg-aura-gray-50 dark:bg-dark-tertiary border border-gray-100 dark:border-gray-800 rounded-2xl shadow-inner">
+                 <div className="flex-1 min-w-[180px]">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Start Date</label>
+                    <input type="date" value={formatDateForInput(reportPeriod.start)} onChange={(e) => handleDateChange('start', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs text-gray-400">End Date</label>
-                    <input type="date" value={formatDateForInput(reportPeriod.end)} onChange={(e) => handleDateChange('end', e.target.value)} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white" />
+                <div className="flex-1 min-w-[180px]">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
+                    <input type="date" value={formatDateForInput(reportPeriod.end)} onChange={(e) => handleDateChange('end', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs text-gray-400">Presets</label>
-                    <select onChange={(e) => handlePresetChange(e.target.value)} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white">
+                <div className="flex-1 min-w-[180px]">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Presets</label>
+                    <select onChange={(e) => handlePresetChange(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
                         <option>Custom Range</option>
                         <option value="this_month">This Month</option>
                         <option value="last_month">Last Month</option>
@@ -100,21 +107,22 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                         <option value="year_to_date">Year to Date</option>
                     </select>
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                    <label className="text-xs text-gray-400">Project</label>
-                    <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white">
+                <div className="flex-1 min-w-[180px]">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Project</label>
+                    <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
                         <option value="all">All Projects</option>
                         {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
                 </div>
             </div>
-            <div className="mt-4 border-b-2 border-gray-800 flex items-center gap-2">
+            <div className="mt-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-2 overflow-x-auto scrollbar-none">
                 {TABS.map(tab => (
                     <button 
                         key={tab.id}
                         onClick={() => setActiveReport(tab.id)}
-                        className={`py-2 px-4 text-sm font-semibold transition-colors ${activeReport === tab.id ? 'text-brand-cyan border-b-2 border-brand-cyan' : 'text-gray-400 hover:text-white'}`}>
+                        className={`py-3 px-6 text-sm font-bold transition-all relative whitespace-nowrap ${activeReport === tab.id ? 'text-brand-cyan' : 'text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}>
                         {tab.label}
+                        {activeReport === tab.id && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-brand-cyan shadow-[0_0_8px_rgba(0,245,212,0.5)]"></div>}
                     </button>
                 ))}
             </div>

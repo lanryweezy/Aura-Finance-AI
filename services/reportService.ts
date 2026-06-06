@@ -1,5 +1,18 @@
 
-import type { ReportPeriod, CategorizedTransaction, Invoice, Bill, PayrollSummary, ReportData, InventoryItem } from '../types';
+import type { ReportPeriod, CategorizedTransaction, Invoice, Bill, PayrollSummary, ReportData, InventoryItem, Account } from '../types';
+
+export interface FinancialSummary {
+    revenue: number;
+    expenses: number;
+    netProfit: number;
+    totalAssets: number;
+    totalLiabilities: number;
+    cashFlow: {
+        operating: number;
+        investing: number;
+        financing: number;
+    };
+}
 
 const getPeriodTransactions = (transactions: CategorizedTransaction[], period: ReportPeriod) => {
     return transactions.filter(t => {
@@ -98,7 +111,13 @@ export const calculateReportData = (
     const beginningBalanceTransaction = transactionsBefore.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
     const beginningCash = beginningBalanceTransaction?.balance ?? 0;
     
-    const cashFromOperating = pAndL.revenue - pAndL.totalExpenses; // Simplification (Direct method)
+    // Direct Method for Operating Cash Flow
+    const cashFromOperating = periodTransactions
+        .filter(t => t.type === 'credit' && t.category.toLowerCase().includes('revenue'))
+        .reduce((sum, t) => sum + t.amount, 0)
+        - periodTransactions
+        .filter(t => t.type === 'debit' && !["Owner's Draw", "Inter-account Transfer", "Loan Principal", "Capital Injection"].includes(t.category) && !t.category.startsWith('COGS'))
+        .reduce((sum, t) => sum + t.amount, 0);
 
     const ownersDraw = periodTransactions
         .filter(t => t.category === "Owner's Draw")
@@ -126,4 +145,39 @@ export const calculateReportData = (
     };
     
     return { pAndL, balanceSheet, cashFlow };
+};
+
+export const reportService = {
+    getFinancialSummary: (
+        transactions: CategorizedTransaction[],
+        bills: Bill[],
+        invoices: Invoice[],
+        inventory: InventoryItem[],
+        chartOfAccounts: Account[]
+    ): FinancialSummary => {
+        // Simplified summary for the reports view and sharing
+        const revenue = invoices.reduce((sum, inv) => sum + inv.amount, 0);
+        const expenses = bills.reduce((sum, bill) => sum + bill.amount, 0);
+
+        const cashAndBank = transactions.length > 0 ? (transactions[0].balance || 0) : 0;
+        const accountsReceivable = invoices.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + i.total, 0);
+        const accountsPayable = bills.filter(b => b.status !== 'Paid').reduce((sum, b) => sum + b.amount, 0);
+        const inventoryValue = inventory.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0);
+
+        const totalAssets = cashAndBank + accountsReceivable + inventoryValue;
+        const totalLiabilities = accountsPayable;
+
+        return {
+            revenue,
+            expenses,
+            netProfit: revenue - expenses,
+            totalAssets,
+            totalLiabilities,
+            cashFlow: {
+                operating: revenue - expenses, // Simplified
+                investing: 0,
+                financing: 0
+            }
+        };
+    }
 };

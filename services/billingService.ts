@@ -1,11 +1,12 @@
 
 import type { SubscriptionTier } from '../types';
 import { monitoringService } from './monitoringService';
+import { localDb } from './localDb';
 
 declare const PaystackPop: any;
 declare const FlutterwaveCheckout: any;
 
-const STORAGE_KEY = 'aura_subscription_plan';
+const STORAGE_KEY = 'subscription_plan';
 
 export const PLANS: SubscriptionTier[] = [
     {
@@ -13,10 +14,13 @@ export const PLANS: SubscriptionTier[] = [
         name: 'Starter',
         price: 0,
         features: [
+            'Basic Bookkeeping & Reports',
             'Up to 3 Users',
-            '50 Transactions / mo',
-            'Basic Invoicing',
-            'Bank Connections (1 Bank)',
+            '50 Transactions / month',
+            '10 Invoices / month',
+            '1 Bank Connection',
+            'Limited AI Assistant (10 msgs)',
+            'OCR Receipt Scanning (3 scans)',
         ]
     },
     {
@@ -25,12 +29,14 @@ export const PLANS: SubscriptionTier[] = [
         price: 15000,
         highlighted: true,
         features: [
-            'Unlimited Users',
-            'Unlimited Transactions',
-            'AI Insights & Chat',
-            'Payroll (Up to 10 employees)',
-            'Inventory Management',
-            'Priority Support'
+            'Everything in Starter',
+            'Unlimited Users & 5k Txns',
+            'Inventory & Stock Control',
+            'Payroll (Up to 20 employees)',
+            'Tax Filing & Estimations',
+            '5 Bank Connections',
+            'Pro AI Financial Insights',
+            'Project Profitability Tracking',
         ]
     },
     {
@@ -38,12 +44,14 @@ export const PLANS: SubscriptionTier[] = [
         name: 'Enterprise',
         price: 45000,
         features: [
-            'Advanced AI CFO',
-            'Multi-entity Support',
-            'Custom API Integrations',
-            'Dedicated Account Manager',
-            'Audit Trail & Compliance',
-            'Unlimited Payroll'
+            'Everything in Growth',
+            'Multi-entity & Departmental Accounting',
+            'Fixed Assets & Depreciation',
+            'Full Audit Trail & Compliance',
+            'Unlimited AI CFO Brain',
+            'Advanced API Access',
+            'Priority 24/7 Support',
+            'Custom Legal & Tax Compliance',
         ]
     }
 ];
@@ -52,13 +60,12 @@ export const billingService = {
     getPlans: () => PLANS,
 
     getCurrentPlan: (): string => {
-        return localStorage.getItem(STORAGE_KEY) || 'Free';
+        return localDb.load(STORAGE_KEY, 'Free');
     },
 
     initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof PaystackPop === 'undefined') {
             monitoringService.trackError('SERVICE', 'PaystackPop is not defined. Ensure the script is loaded.');
-            // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-PAYSTACK-' + Date.now()), 1000);
             return;
         }
@@ -81,7 +88,6 @@ export const billingService = {
     initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
         if (typeof FlutterwaveCheckout === 'undefined') {
             monitoringService.trackError('SERVICE', 'FlutterwaveCheckout is not defined. Ensure the script is loaded.');
-            // Mock success for development if script is missing
             setTimeout(() => callback('MOCK-FLUTTERWAVE-' + Date.now()), 1000);
             return;
         }
@@ -109,18 +115,26 @@ export const billingService = {
         });
     },
 
-    upgradePlan: (planId: string): Promise<boolean> => {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                localStorage.setItem(STORAGE_KEY, planId);
-                const orgStr = localStorage.getItem('aura_org');
-                if (orgStr) {
-                    const org = JSON.parse(orgStr);
-                    org.plan = planId;
-                    localStorage.setItem('aura_org', JSON.stringify(org));
-                }
-                resolve(true);
-            }, 1000);
-        });
+    upgradePlan: async (planId: string): Promise<boolean> => {
+        return localDb.simulateRequest(() => {
+            localDb.save(STORAGE_KEY, planId);
+            const orgStr = localStorage.getItem('aura_org');
+            if (orgStr) {
+                const org = JSON.parse(orgStr);
+                org.plan = planId;
+                localStorage.setItem('aura_org', JSON.stringify(org));
+            }
+            return true;
+        }, 1000);
+    },
+
+    hasFeature: (plan: string, featureId: string): boolean => {
+        const permissions: Record<string, string[]> = {
+            'Free': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat'],
+            'Growth': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders'],
+            'Enterprise': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders', 'multi_entity', 'fixedAssets', 'auditTrail', 'yearEnd']
+        };
+
+        return permissions[plan]?.includes(featureId) || false;
     }
 };

@@ -3,6 +3,7 @@ import { Type } from "@google/genai";
 import { aiClient, API_KEY } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
+import { localDb } from './localDb';
 import type { ReceiptData } from '../types';
 import { DEFAULT_CATEGORIES } from '../constants/accounting';
 
@@ -32,19 +33,38 @@ export const ocrService = {
         }
 
         if (!aiClient || !API_KEY) {
-            console.warn("No API Key found. Returning mock OCR data.");
-            return new Promise(resolve => {
-                setTimeout(async () => {
-                    await usageService.trackUsage('ocr_scan');
-                    resolve({
-                        merchantName: "Mock Vendor Ltd",
+            return localDb.simulateRequest(async () => {
+                await usageService.trackUsage('ocr_scan');
+
+                // Return slightly dynamic mock data based on filename
+                const name = file.name.toLowerCase();
+                if (name.includes('uber')) {
+                    return {
+                        merchantName: "Uber Technologies",
                         date: new Date().toISOString().split('T')[0],
-                        totalAmount: 15750,
-                        category: "Miscellaneous",
-                        description: "Office Supplies (Mock Scan)"
-                    });
-                }, 2000);
-            });
+                        totalAmount: 4500,
+                        category: "Travel",
+                        description: "Ride from Ikeja (Simulated)"
+                    };
+                }
+                if (name.includes('amazon') || name.includes('jumia')) {
+                    return {
+                        merchantName: name.includes('amazon') ? "Amazon.com" : "Jumia Nigeria",
+                        date: new Date().toISOString().split('T')[0],
+                        totalAmount: 12500,
+                        category: "Office Supplies",
+                        description: "Logistics equipment (Simulated)"
+                    };
+                }
+
+                return {
+                    merchantName: "Aura Vendor Simulation",
+                    date: new Date().toISOString().split('T')[0],
+                    totalAmount: 15750,
+                    category: "Miscellaneous",
+                    description: "Office Supplies (Mock Scan)"
+                };
+            }, 2000);
         }
 
         try {

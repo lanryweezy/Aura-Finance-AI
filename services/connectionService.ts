@@ -1,12 +1,9 @@
 
 import type { BankConnection } from '../types';
+import { localDb } from './localDb';
 
-let mockConnections: BankConnection[] = [];
+const STORAGE_KEY = 'bank_connections';
 
-// Helper to simulate a delay
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Mock bank details that can be "connected"
 const availableAccounts = [
     { bankName: 'GTBank', accountName: 'Aura Business Inc.', last4: '1234' },
     { bankName: 'Kuda Bank', accountName: 'Aura Logistics', last4: '5678' },
@@ -15,45 +12,52 @@ const availableAccounts = [
 ];
 
 export const fetchConnections = async (): Promise<BankConnection[]> => {
-  await sleep(500);
-  return [...mockConnections];
+    return localDb.simulateRequest(() => {
+        return localDb.load<BankConnection[]>(STORAGE_KEY, []);
+    }, 500);
 };
 
 export const simulateConnect = async (provider: 'mono' | 'okra'): Promise<BankConnection> => {
-  await sleep(2500); // Simulate the user interacting with the widget
-  
-  // Pick a random bank that isn't already connected
-  const connectedBankNames = mockConnections.map(c => c.bankName);
-  const unconnectedAccount = availableAccounts.find(acc => !connectedBankNames.includes(acc.bankName));
+    return localDb.simulateRequest(() => {
+        const connections = localDb.load<BankConnection[]>(STORAGE_KEY, []);
+        const connectedBankNames = connections.map(c => c.bankName);
+        const unconnectedAccount = availableAccounts.find(acc => !connectedBankNames.includes(acc.bankName));
 
-  if (!unconnectedAccount) {
-    throw new Error("All available mock accounts are already connected.");
-  }
+        if (!unconnectedAccount) {
+            throw new Error("All available mock accounts are already connected.");
+        }
 
-  const newConnection: BankConnection = {
-    id: `conn_${Date.now()}`,
-    provider,
-    bankName: unconnectedAccount.bankName,
-    accountNumber: `******${unconnectedAccount.last4}`,
-    accountName: unconnectedAccount.accountName,
-    lastSynced: new Date().toISOString(),
-  };
+        const newConnection: BankConnection = {
+            id: `conn_${Date.now()}`,
+            provider,
+            bankName: unconnectedAccount.bankName,
+            accountNumber: `******${unconnectedAccount.last4}`,
+            accountName: unconnectedAccount.accountName,
+            lastSynced: new Date().toISOString(),
+        };
 
-  mockConnections.push(newConnection);
-  return newConnection;
+        localDb.save(STORAGE_KEY, [...connections, newConnection]);
+        return newConnection;
+    }, 2500);
 };
 
 export const unlinkConnection = async (id: string): Promise<void> => {
-  await sleep(700);
-  mockConnections = mockConnections.filter(c => c.id !== id);
+    return localDb.simulateRequest(() => {
+        const connections = localDb.load<BankConnection[]>(STORAGE_KEY, []);
+        const filtered = connections.filter(c => c.id !== id);
+        localDb.save(STORAGE_KEY, filtered);
+    }, 700);
 };
 
 export const syncConnection = async (id: string): Promise<BankConnection> => {
-    await sleep(1500);
-    const connectionIndex = mockConnections.findIndex(c => c.id === id);
-    if(connectionIndex === -1) {
-        throw new Error("Connection not found.");
-    }
-    mockConnections[connectionIndex].lastSynced = new Date().toISOString();
-    return mockConnections[connectionIndex];
+    return localDb.simulateRequest(() => {
+        const connections = localDb.load<BankConnection[]>(STORAGE_KEY, []);
+        const index = connections.findIndex(c => c.id === id);
+        if (index === -1) {
+            throw new Error("Connection not found.");
+        }
+        connections[index].lastSynced = new Date().toISOString();
+        localDb.save(STORAGE_KEY, connections);
+        return connections[index];
+    }, 1500);
 }

@@ -1,60 +1,27 @@
-import { monitoringService } from './monitoringService';
 
-import type { InventoryItem } from '../types';
-import { authService } from './authService';
+import type { InventoryItem, Warehouse } from '../types';
+import { apiClient } from './apiClient';
 
-const getStorageKey = () => `aura_${authService.getTenantId()}_inventory`;
+export const fetchInventoryItems = async (): Promise<InventoryItem[]> => {
+    return await apiClient.get('/inventory');
+};
 
-const initialInventory: InventoryItem[] = [
-    { id: 'inv_item_1', name: 'Web Dev Retainer (Monthly)', sku: 'WD-RETAIN', category: 'Services', type: 'Service', costPrice: 0, salePrice: 500000, quantity: 9999 },
-    { id: 'inv_item_2', name: 'Social Media Management', sku: 'SMM-BASIC', category: 'Services', type: 'Service', costPrice: 0, salePrice: 250000, quantity: 9999 },
-    { id: 'inv_item_3', name: 'Laptop - 16" Pro', sku: 'HW-LAP-PRO16', category: 'Hardware', type: 'Product', costPrice: 950000, salePrice: 1250000, quantity: 5 },
-    { id: 'inv_item_4', name: 'Ergonomic Office Chair', sku: 'HW-CHR-ERGO', category: 'Furniture', type: 'Product', costPrice: 85000, salePrice: 150000, quantity: 12 },
-];
+export const addInventoryItem = async (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
+    return await apiClient.post('/inventory', item);
+};
 
-const loadInventory = (): InventoryItem[] => {
-    const stored = localStorage.getItem(getStorageKey());
-    if (stored) {
-        try {
-            return JSON.parse(stored);
-        } catch (e) {
-            monitoringService.trackError('SERVICE', e, { message: 'Failed to parse inventory' });
-            return initialInventory;
-        }
+export const updateInventoryItem = async (item: InventoryItem): Promise<InventoryItem> => {
+    return await apiClient.put(`/inventory/${item.id}`, item);
+};
+
+export const updateStock = async (id: string, change: number): Promise<void> => {
+    const item = await apiClient.get(`/inventory/${id}`);
+    if (item) {
+        item.quantity += change;
+        await apiClient.put(`/inventory/${id}`, item);
     }
-    return initialInventory;
 };
 
-export const fetchInventoryItems = (): Promise<InventoryItem[]> => {
-    return new Promise(resolve => {
-        setTimeout(() => resolve(loadInventory()), 400);
-    });
+export const fetchWarehouses = async (): Promise<Warehouse[]> => {
+    return await apiClient.get('/warehouses');
 };
-
-export const addInventoryItem = (item: Omit<InventoryItem, 'id'>): Promise<InventoryItem> => {
-    return new Promise(resolve => {
-        const current = loadInventory();
-        const newItem: InventoryItem = { ...item, id: `inv_item_${Date.now()}` };
-        const updated = [newItem, ...current];
-        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
-        setTimeout(() => resolve(newItem), 300);
-    });
-};
-
-export const updateInventoryItem = (item: InventoryItem): Promise<InventoryItem> => {
-     return new Promise(resolve => {
-        const current = loadInventory();
-        const updated = current.map(i => i.id === item.id ? item : i);
-        localStorage.setItem(getStorageKey(), JSON.stringify(updated));
-        setTimeout(() => resolve(item), 300);
-    });
-};
-
-export const updateStock = (itemId: string, quantityChange: number): void => {
-    const current = loadInventory();
-    const itemIndex = current.findIndex(i => i.id === itemId);
-    if(itemIndex > -1) {
-        current[itemIndex].quantity += quantityChange;
-        localStorage.setItem(getStorageKey(), JSON.stringify(current));
-    }
-}

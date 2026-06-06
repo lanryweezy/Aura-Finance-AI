@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+.high-contrast {
+    @apply bg-hc-bg text-hc-text !important;
+}
+
+.high-contrast * {
+    @apply border-hc-border text-hc-text !important;
+    background-image: none !important;
+}
+
+.high-contrast button, .high-contrast a, .high-contrast select, .high-contrast input {
+    @apply border-2 border-hc-border bg-hc-bg text-hc-text !important;
+    outline: 2px solid transparent !important;
+}
+
+.high-contrast button:hover, .high-contrast a:hover {
+    @apply bg-hc-accent text-hc-bg !important;
+}
+
+.high-contrast .bg-brand-cyan, .high-contrast .text-brand-cyan {
+    @apply bg-hc-accent text-hc-bg border-hc-accent !important;
+}
+
 @layer base {
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
@@ -25,15 +47,75 @@
   body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    @apply transition-colors duration-300;
+  }
+
+  .dark body {
     @apply bg-dark-primary text-light-primary;
+  }
+
+  body:not(.dark) {
+    @apply bg-light-primary text-aura-gray-900;
   }
 }
 
 @layer components {
   .glass-panel {
+    @apply backdrop-blur-xl transition-all duration-300;
     background: rgba(16, 20, 44, 0.6);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .light .glass-panel {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    @apply shadow-xl shadow-gray-200/50;
+  }
+
+  .premium-card {
+    @apply rounded-3xl transition-all duration-500 border;
+    background: theme('colors.dark-secondary');
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .light .premium-card {
+    background: theme('colors.light-secondary');
+    border-color: theme('colors.aura-gray-100');
+    @apply shadow-lg shadow-gray-100/50;
+  }
+
+  .aura-button-primary {
+    @apply bg-brand-cyan text-black font-black py-3 px-8 rounded-2xl transition-all active:scale-95 shadow-lg shadow-brand-cyan/20 hover:shadow-brand-cyan/40 hover:-translate-y-0.5;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes shine {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .animate-shine {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    background-size: 200% 100%;
+    animation: shine 3s linear infinite;
   }
 }

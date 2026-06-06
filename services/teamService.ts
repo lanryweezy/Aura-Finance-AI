@@ -1,7 +1,14 @@
 
 import { apiClient } from './apiClient';
 
-export type UserRole = 'Owner' | 'Admin' | 'Accountant' | 'Viewer';
+export type UserRole = 'Owner' | 'Admin' | 'Accountant' | 'Viewer' | string;
+
+export interface PermissionSet {
+    id: string;
+    name: string;
+    permissions: string[];
+    isCustom: boolean;
+}
 
 export interface TeamMember {
     id: string;
@@ -14,26 +21,11 @@ export interface TeamMember {
 
 export const teamService = {
     fetchMembers: async (): Promise<TeamMember[]> => {
-        try {
-            return await apiClient.get('/team');
-        } catch {
-            // Local fallback
-            const stored = localStorage.getItem('aura_team_dev');
-            try {
-                return stored ? JSON.parse(stored) : [
-                    { id: 'tm_1', name: 'Admin User', email: 'admin@company.com', role: 'Admin', status: 'Active', joinedAt: new Date().toISOString() }
-                ];
-            } catch (parseErr) {
-                console.warn("Failed to parse local storage fallback", parseErr);
-                return [
-                    { id: 'tm_1', name: 'Admin User', email: 'admin@company.com', role: 'Admin', status: 'Active', joinedAt: new Date().toISOString() }
-                ];
-            }
-        }
+        return await apiClient.get('/team');
     },
 
     inviteMember: async (name: string, email: string, role: UserRole): Promise<TeamMember> => {
-        return await apiClient.post('/team/invite', { name, email, role });
+        return await apiClient.post('/team', { name, email, role, status: 'Pending', joinedAt: new Date().toISOString() });
     },
 
     removeMember: async (id: string): Promise<void> => {
@@ -41,6 +33,33 @@ export const teamService = {
     },
 
     updateRole: async (id: string, role: UserRole): Promise<TeamMember> => {
-        return await apiClient.put(`/team/${id}/role`, { role });
+        const members = await teamService.fetchMembers();
+        const member = members.find(m => m.id === id);
+        if (member) {
+            return await apiClient.put(`/team/${id}`, { ...member, role });
+        }
+        throw new Error("Member not found");
+    },
+
+    fetchCustomRoles: async (): Promise<PermissionSet[]> => {
+        return await apiClient.get('/custom_roles');
+    },
+
+    saveCustomRole: async (role: Omit<PermissionSet, 'id' | 'isCustom'>): Promise<PermissionSet> => {
+        return await apiClient.post('/custom_roles', { ...role, isCustom: true });
+    },
+
+    deleteCustomRole: async (id: string): Promise<void> => {
+        await apiClient.delete(`/custom_roles/${id}`);
+    },
+
+    getSystemRolePermissions: (role: string): string[] => {
+        const permissions: Record<string, string[]> = {
+            'Owner': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_payroll', 'manage_inventory', 'manage_contacts', 'manage_accounting', 'manage_settings'],
+            'Admin': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_payroll', 'manage_inventory', 'manage_contacts', 'manage_accounting', 'manage_settings'],
+            'Accountant': ['view_dashboard', 'view_transactions', 'view_reports', 'manage_payables', 'manage_receivables', 'manage_accounting', 'manage_contacts'],
+            'Viewer': ['view_dashboard', 'view_transactions', 'view_reports']
+        };
+        return permissions[role] || [];
     }
 };

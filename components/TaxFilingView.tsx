@@ -151,37 +151,24 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         <div className="space-y-8">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h2 className="text-3xl font-bold text-white">Tax Command Center</h2>
-                    <p className="text-gray-400 mt-1">Nigerian Tax Compliance & Filing Assistant</p>
+                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Tax Filing Assistant</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Generate reports for your VAT, WHT, and CIT filings.</p>
                 </div>
-                <button onClick={handlePrint} disabled={!period.start || !period.end} className="bg-brand-cyan text-black font-bold py-2 px-4 rounded-lg flex items-center gap-2 transition-colors hover:bg-brand-cyan/80 disabled:bg-gray-600 disabled:cursor-not-allowed">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                    Export Compliance Report
+                <button onClick={handlePrint} disabled={!period.start || !period.end} className="bg-brand-cyan text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all hover:bg-brand-cyan/90 disabled:opacity-50 shadow-lg shadow-brand-cyan/20 active:scale-95">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Print Report
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <Card className="lg:col-span-2">
-                    <div className="flex flex-col md:flex-row items-center gap-4">
-                        <div className="flex-1 w-full">
-                            <label htmlFor="start-date" className="text-sm font-medium text-gray-300">Start Date</label>
-                            <input id="start-date" type="date" value={period.start} onChange={e => setPeriod(p => ({...p, start: e.target.value}))} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                        </div>
-                        <div className="flex-1 w-full">
-                            <label htmlFor="end-date" className="text-sm font-medium text-gray-300">End Date</label>
-                            <input id="end-date" type="date" value={period.end} onChange={e => setPeriod(p => ({...p, end: e.target.value}))} className="w-full mt-1 bg-dark-secondary border border-gray-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-brand-cyan" />
-                        </div>
+            <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+                <div className="flex flex-col md:flex-row items-center gap-6">
+                    <div className="flex-1 w-full">
+                        <label htmlFor="start-date" className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">Start Date</label>
+                        <input id="start-date" type="date" value={period.start} onChange={e => setPeriod(p => ({...p, start: e.target.value}))} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium" />
                     </div>
-                </Card>
-                <Card className="bg-brand-purple/10 border-brand-purple/20 flex flex-col justify-center">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-brand-purple flex items-center justify-center text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
-                        </div>
-                        <div>
-                            <p className="text-xs text-brand-purple-light font-bold uppercase tracking-wider">Compliance Health</p>
-                            <p className="text-lg font-bold text-white">94% Compliant</p>
-                        </div>
+                    <div className="flex-1 w-full">
+                        <label htmlFor="end-date" className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
+                        <input id="end-date" type="date" value={period.end} onChange={e => setPeriod(p => ({...p, end: e.target.value}))} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium" />
                     </div>
                 </Card>
             </div>

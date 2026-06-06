@@ -5,11 +5,12 @@ import type { CategorizedTransaction, ChatMessage } from '../types';
 import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
+import { Bill, Invoice } from '../types';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
-  invoices: Invoice[];
   bills: Bill[];
+  invoices: Invoice[];
 }
 
 // Define the tools the AI can use
@@ -48,6 +49,14 @@ const getTaxComplianceTool: FunctionDeclaration = {
 const flagTaxAnomaliesTool: FunctionDeclaration = {
     name: 'flagTaxAnomalies',
     description: 'Analyzes transactions and invoices to find missing WHT credits or incorrect VAT applications.',
+const getInvoicesTool: FunctionDeclaration = {
+    name: 'getInvoices',
+    description: 'Fetches the user\'s invoices. Call this when the user asks about sales, customers, or pending payments.',
+};
+
+const getBillsTool: FunctionDeclaration = {
+    name: 'getBills',
+    description: 'Fetches the user\'s bills. Call this when the user asks about expenses, vendors, or upcoming payments.',
 };
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
@@ -60,18 +69,70 @@ const suggestedPrompts = [
 ];
 
 export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills }) => {
+    "Am I profitable this month?",
+    "How much did I spend on software?",
+    "Forecast my cashflow for next month.",
+];
+
+type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations';
+
+interface Agent {
+    id: AgentType;
+    name: string;
+    role: string;
+    color: string;
+    instruction: string;
+}
+
+export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices }) => {
   const { currency } = useCurrency();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeAgent, setActiveAgent] = useState<AgentType>('CFO');
   const chatInstance = useRef<Chat | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const agents: Agent[] = [
+    {
+        id: 'CFO',
+        name: 'O-Heidi (CFO)',
+        role: 'Chief Financial Officer',
+        color: 'from-brand-cyan to-brand-purple',
+        instruction: `You are O-Heidi, a world-class AI CFO for Nigerian SMEs. Focus on growth, runway, cashflow forecasting, and strategic investment. Use ${currency}.`
+    },
+    {
+        id: 'Tax',
+        name: 'TaxPro AI',
+        role: 'Tax & Compliance Expert',
+        color: 'from-orange-400 to-red-500',
+        instruction: `You are TaxPro AI, an expert in Nigerian tax law (FIRS, LIRS). Focus on VAT, WHT, CIT, and compliance deadlines. Use ${currency}.`
+    },
+    {
+        id: 'Payroll',
+        name: 'PayMaster AI',
+        role: 'Payroll & HR Agent',
+        color: 'from-green-400 to-blue-500',
+        instruction: `You are PayMaster AI, specializing in Nigerian payroll. Focus on PAYE, Pension, NHF, and salary disbursements. Use ${currency}.`
+    },
+    {
+        id: 'Operations',
+        name: 'OpsBot AI',
+        role: 'Finance Operations',
+        color: 'from-pink-400 to-brand-purple',
+        instruction: `You are OpsBot AI. Focus on bills, invoices, vendor payments, and day-to-day transaction management. Use ${currency}.`
+    }
+  ];
 
   useEffect(() => {
     const systemInstruction = `You are O-Heidi, a friendly, proactive, and expert financial AI assistant for Nigerian small business owners.
     You specialize in Nigerian tax laws (CIT, VAT, WHT, PAYE, TET).
     You have tools to fetch financial and tax data. You should proactively analyze the user's situation and offer actionable advice, especially regarding tax savings and compliance.
     Be concise, helpful, and use ${currency} for currency. Do not invent data; always use the provided tools to get real information.`;
+    const selectedAgent = agents.find(a => a.id === activeAgent) || agents[0];
+    const systemInstruction = `${selectedAgent.instruction}
+    You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
+    Be concise, helpful. Do not invent data; always use the provided tools to get real information.`;
 
     if(process.env.API_KEY) {
         chatInstance.current = ai.chats.create({
@@ -79,6 +140,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills })
             config: {
                 systemInstruction,
                 tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getTaxComplianceTool, flagTaxAnomaliesTool] }]
+                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool] }]
             },
         });
 
@@ -98,7 +160,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills })
     }
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions]);
+  }, [transactions, currency, activeAgent]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -175,6 +237,10 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills })
                       missingVatInvoices: missingVat.slice(0, 5).map(i => ({ customer: i.customer, amount: i.amount })),
                       recommendation: "Review these transactions for WHT and VAT compliance to avoid FIRS penalties and interest."
                   };
+              } else if (call.name === 'getInvoices') {
+                  toolResult = { invoices: invoices.slice(0, 20) };
+              } else if (call.name === 'getBills') {
+                  toolResult = { bills: bills.slice(0, 20) };
               } else {
                   toolResult = { error: 'Unknown function' };
               }
@@ -216,35 +282,52 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills })
   };
 
   return (
-    <Card className="h-full flex flex-col">
-      <h2 className="text-2xl font-bold text-white mb-4">Chat with O-Heidi AI</h2>
-      <div className="flex-grow overflow-y-auto p-4 space-y-6 bg-dark-secondary rounded-lg">
+    <Card className="h-full flex flex-col bg-white dark:bg-dark-tertiary shadow-xl border-gray-100 dark:border-white/5">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h2 className="text-2xl font-bold text-aura-gray-900 dark:text-white">Aura AI Workforce</h2>
+          <div className="flex bg-aura-gray-100 dark:bg-dark-tertiary p-1 rounded-xl border border-gray-200 dark:border-white/5 shadow-inner">
+              {agents.map(agent => (
+                  <button
+                    key={agent.id}
+                    onClick={() => {
+                        setActiveAgent(agent.id);
+                        setMessages([]); // Clear chat when switching agents
+                    }}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activeAgent === agent.id ? `bg-gradient-to-r ${agent.color} text-white shadow-lg` : 'text-aura-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white'}`}
+                  >
+                      {agent.id}
+                  </button>
+              ))}
+          </div>
+      </div>
+
+      <div className="flex-grow overflow-y-auto p-4 space-y-6 bg-aura-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-white/5 shadow-inner min-h-0">
         {messages.map((msg) => (
           <div key={msg.id} className={`flex items-end gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
             {msg.role === 'model' && (
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-cyan to-brand-pink flex-shrink-0 flex items-center justify-center font-bold text-black">
-                AI
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${agents.find(a => a.id === activeAgent)?.color || 'from-brand-cyan to-brand-purple'} flex-shrink-0 flex items-center justify-center font-bold text-black shadow-lg`}>
+                {activeAgent.slice(0, 1)}
               </div>
             )}
-            <div className={`max-w-xl p-4 rounded-2xl ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-dark-tertiary text-gray-200 rounded-bl-none'}`}>
+            <div className={`max-w-xl p-4 rounded-2xl shadow-sm ${msg.role === 'user' ? 'bg-brand-purple text-white rounded-br-none' : 'bg-white dark:bg-dark-tertiary text-aura-gray-800 dark:text-gray-200 rounded-bl-none border border-gray-100 dark:border-gray-700'}`}>
               <p className="whitespace-pre-wrap">{msg.text}{isLoading && msg.id === messages[messages.length-1].id && <span className="animate-pulse">▍</span>}</p>
             </div>
              {msg.role === 'user' && (
-              <img src="https://picsum.photos/seed/user1/40/40" alt="User" className="w-10 h-10 rounded-full flex-shrink-0" />
+              <img src="https://picsum.photos/seed/user1/40/40" alt="User" className="w-10 h-10 rounded-full flex-shrink-0 shadow-md border border-white/20" />
             )}
           </div>
         ))}
          <div ref={messagesEndRef} />
       </div>
 
-       <div className="pt-4 mt-4 border-t border-gray-700/50">
+       <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700/50">
         {!isLoading && messages.length <= 2 && (
             <div className="flex flex-wrap gap-2 mb-3">
                 {suggestedPrompts.map(prompt => (
                     <button 
                         key={prompt} 
                         onClick={() => handleSend(prompt)}
-                        className="px-3 py-1.5 bg-dark-tertiary border border-gray-700 rounded-full text-sm text-gray-300 hover:bg-dark-primary hover:border-brand-cyan"
+                        className="px-3 py-1.5 bg-white dark:bg-dark-tertiary border border-gray-200 dark:border-gray-700 rounded-full text-xs font-bold text-aura-gray-600 dark:text-gray-300 hover:bg-aura-gray-50 dark:hover:bg-dark-primary hover:border-brand-cyan transition-all shadow-sm active:scale-95"
                     >
                         {prompt}
                     </button>
@@ -258,7 +341,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills })
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSend()}
             placeholder="Ask about your finances..."
-            className="w-full bg-dark-tertiary border-2 border-gray-600 rounded-lg p-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all"
+            className="w-full bg-aura-gray-50 dark:bg-dark-tertiary border-2 border-gray-200 dark:border-gray-600 rounded-xl p-3 text-aura-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-inner"
             disabled={isLoading || !chatInstance.current}
             />
             <button

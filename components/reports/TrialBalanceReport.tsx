@@ -50,42 +50,44 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts
     }, [balances]);
 
     return (
-        <Card>
-            <h2 className="text-2xl font-semibold text-white mb-4">Trial Balance</h2>
-            <p className="text-sm text-gray-400 mb-6">As at {period.end.toLocaleDateString()}</p>
-             <table className="w-full text-white">
-                <thead>
-                    <tr className="border-b-2 border-gray-600">
-                        <th className="p-3 text-left font-semibold">Account</th>
-                        <th className="p-3 text-right font-semibold">Debit ({currency})</th>
-                        <th className="p-3 text-right font-semibold">Credit ({currency})</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-800">
-                    {balances.map(item => {
-                         const isDebit = ['Asset', 'Expense'].includes(item.type);
-                         const isCredit = ['Liability', 'Equity', 'Revenue'].includes(item.type);
-                        return (
-                             <tr key={item.name}>
-                                <td className="p-3">{item.name}</td>
-                                <td className="p-3 text-right font-mono">
-                                    {(isDebit && item.balance > 0) || (isCredit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
-                                </td>
-                                <td className="p-3 text-right font-mono">
-                                     {(isCredit && item.balance > 0) || (isDebit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
-                                </td>
-                            </tr>
-                        )
-                    })}
-                </tbody>
-                <tfoot>
-                    <tr className="trial-balance-total text-lg">
-                        <td className="p-3 font-bold">Total</td>
-                        <td className="p-3 text-right font-bold font-mono">{formatAmount(totals.debit)}</td>
-                        <td className="p-3 text-right font-bold font-mono">{formatAmount(totals.credit)}</td>
-                    </tr>
-                </tfoot>
-            </table>
+        <Card className="border-gray-100 dark:border-white/5 shadow-xl">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Trial Balance</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">As at {period.end.toLocaleDateString()}</p>
+             <div className="overflow-x-auto">
+                <table className="w-full">
+                    <thead>
+                        <tr className="bg-aura-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-gray-800">
+                            <th className="p-4 text-left text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Account</th>
+                            <th className="p-4 text-right text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Debit ({currency})</th>
+                            <th className="p-4 text-right text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Credit ({currency})</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
+                        {balances.map(item => {
+                            const isDebit = ['Asset', 'Expense'].includes(item.type);
+                            const isCredit = ['Liability', 'Equity', 'Revenue'].includes(item.type);
+                            return (
+                                <tr key={item.name} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/5 transition-colors group">
+                                    <td className="p-4 text-sm font-bold text-aura-gray-900 dark:text-white">{item.name}</td>
+                                    <td className="p-4 text-right font-mono text-sm text-aura-gray-600 dark:text-gray-300">
+                                        {(isDebit && item.balance > 0) || (isCredit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
+                                    </td>
+                                    <td className="p-4 text-right font-mono text-sm text-aura-gray-600 dark:text-gray-300">
+                                        {(isCredit && item.balance > 0) || (isDebit && item.balance < 0) ? formatAmount(Math.abs(item.balance)) : '-'}
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                    </tbody>
+                    <tfoot>
+                        <tr className="trial-balance-total bg-aura-gray-100 dark:bg-dark-secondary/20">
+                            <td className="p-4 font-black text-aura-gray-900 dark:text-white uppercase tracking-widest text-xs">Total</td>
+                            <td className="p-4 text-right font-black font-mono text-brand-cyan text-lg">{formatAmount(totals.debit)}</td>
+                            <td className="p-4 text-right font-black font-mono text-brand-cyan text-lg">{formatAmount(totals.credit)}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+             </div>
         </Card>
     );
 };
