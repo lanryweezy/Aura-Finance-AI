@@ -1,0 +1,3 @@
+## 2025-05-18 - `Promise.all` Rejections Blocking Page Load
+**Learning:** `TaxFilingView` relied on `Promise.all` to fetch parallel dependencies (invoices, employees). Because `Promise.all` fails fast on the first rejection, a failure in one service caused the entire initialization block to throw, meaning `setIsLoading(false)` was skipped. The component became permanently stuck in a loading state.
+**Action:** Used `Promise.allSettled` to fetch independent collections, allowing partial degradation. Fallbacks to empty arrays were safely mapped for rejected promises, and `setIsLoading(false)` was moved to a `finally` block to guarantee state resolution.
