@@ -21,13 +21,25 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
     useEffect(() => {
         const loadData = async () => {
             setIsLoading(true);
-            const [fetchedInvoices, fetchedEmployees] = await Promise.all([
-                fetchInvoices(),
-                fetchEmployees()
-            ]);
-            setInvoices(fetchedInvoices);
-            setEmployees(fetchedEmployees);
-            setIsLoading(false);
+            try {
+                const results = await Promise.allSettled([
+                    fetchInvoices(),
+                    fetchEmployees()
+                ]);
+
+                // Fallback to empty arrays if fetching fails to allow graceful degradation
+                const fetchedInvoices = results[0].status === 'fulfilled' ? results[0].value : [];
+                const fetchedEmployees = results[1].status === 'fulfilled' ? results[1].value : [];
+
+                setInvoices(fetchedInvoices);
+                setEmployees(fetchedEmployees);
+            } catch (error) {
+                console.error("Unexpected error in TaxFilingView loadData", error);
+                setInvoices([]);
+                setEmployees([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadData();
     }, []);
