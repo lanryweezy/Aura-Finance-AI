@@ -105,32 +105,6 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                     </select>
                 </div>
             </div>
-            <Card className="flex-grow p-0 overflow-hidden flex flex-col">
-                <div className="flex bg-dark-tertiary border-b border-gray-700 font-semibold text-gray-400 text-sm flex-shrink-0">
-                    <div className="w-[25%] p-4">Timestamp</div>
-                    <div className="w-[15%] p-4">Module</div>
-                    <div className="w-[20%] p-4">User</div>
-                    <div className="w-[40%] p-4">Action</div>
-                </div>
-                <div className="flex-grow relative">
-                    <AutoSizer>
-                        {({ height, width }) => (
-                            <List
-                                height={height}
-                                itemCount={filteredLogs.length}
-                                itemSize={56}
-                                width={width}
-                                className="scrollbar-thin"
-                            >
-                                {Row}
-                            </List>
-                        )}
-                    </AutoSizer>
-                    {filteredLogs.length === 0 && (
-                        <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-                            No activity found for this filter.
-                        </div>
-                    )}
             <Card className="overflow-hidden border-gray-100 dark:border-white/5 shadow-xl">
                 <div className="overflow-x-auto max-h-[calc(100vh-300px)]">
                     <table className="w-full text-left">

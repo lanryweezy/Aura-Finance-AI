@@ -156,7 +156,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
 
 
     if (isLoading) {
-        return <div className="flex items-center justify-center h-full"><Spinner /><p className="ml-4">Loading Tax Data...</p></div>
+        return <div className="flex items-center justify-center h-full"><Spinner /><p className="ml-4">Loading Tax Data...</p></div>;
     }
 
     return (
@@ -182,8 +182,8 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                         <label htmlFor="end-date" className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
                         <input id="end-date" type="date" value={period.end} onChange={e => setPeriod(p => ({...p, end: e.target.value}))} className="w-full bg-gray-50 dark:bg-dark-secondary border border-gray-100 dark:border-gray-700 rounded-xl p-3 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-medium" />
                     </div>
-                </Card>
-            </div>
+                </div>
+            </Card>
 
             <div className="flex gap-2 border-b border-gray-800">
                 {(['summary', 'vat', 'wht', 'cit', 'paye'] as const).map(tab => (
