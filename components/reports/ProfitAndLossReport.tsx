@@ -1,4 +1,6 @@
 import React, { Suspense } from 'react';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF6666'];
 import { Card } from '../ui/Card';
 import { Spinner } from '../ui/Spinner';
 import type { PandLData } from '../../types';
@@ -48,13 +50,13 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                             
                             <ReportRow label="Operating Expenses" isHeader className="pt-6" formatAmount={formatAmount} onDrillDown={() => onDrillDown('All Expenses', 'debit', Object.keys(data.expensesByCategory))}/>
                             {Object.entries(data.expensesByCategory).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([category, amount]) => (
-                                <ReportRow key={category} label={category} value={-amount} className="text-red-600 dark:text-red-400" formatAmount={formatAmount} onDrillDown={() => onDrillDown(category, 'debit', [category])} />
+                                <ReportRow key={category} label={category} value={-amount} className="text-red-600 dark:text-red-400" formatAmount={formatAmount} onDrillDown={() => onDrillDown(category, "debit", [category])} />
                             ))}
                             <ReportRow label="Total Operating Expenses" value={-data.totalExpenses} isTotal formatAmount={formatAmount} />
                             
-                            <ReportRow label="Net Operating Income" value={data.netOperatingIncome} isTotal isProfit className={`text-xl ${data.netOperatingIncome >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} formatAmount={formatAmount} />
+                            <ReportRow label="Net Operating Income" value={data.netOperatingIncome} isTotal isProfit className={`text-xl ${data.netOperatingIncome >= 0 ? "text-brand-cyan" : "text-brand-pink"}`} formatAmount={formatAmount} />
 
-                            <ReportRow label="Net Profit" value={data.netProfit} isTotal isProfit className={`text-2xl font-black ${data.netProfit >= 0 ? 'text-brand-cyan' : 'text-brand-pink'}`} formatAmount={formatAmount} />
+                            <ReportRow label="Net Profit" value={data.netProfit} isTotal isProfit className={`text-2xl font-black ${data.netProfit >= 0 ? "text-brand-cyan" : "text-brand-pink"}`} formatAmount={formatAmount} />
                         </tbody>
                     </table>
                 </div>
@@ -64,6 +66,7 @@ export const ProfitAndLossReport: React.FC<ProfitAndLossReportProps> = ({ data, 
                         <Suspense fallback={<div className="h-[200px] flex items-center justify-center"><Spinner /></div>}>
                             <ExpenseBreakdownChart data={expenseChartData} />
                         </Suspense>
+                     </div>
                      <div className="bg-aura-gray-50 dark:bg-dark-secondary/20 p-6 rounded-2xl border border-gray-100 dark:border-white/5 shadow-inner">
                         <h3 className="text-lg font-bold text-aura-gray-900 dark:text-white mb-6 text-center">Expense Breakdown</h3>
                         <ResponsiveContainer width="100%" height={200}>

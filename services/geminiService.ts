@@ -97,6 +97,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
     const jsonText = response.text.trim();
     const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
+    if (!Array.isArray(batchResult)) throw new Error("AI output is not an array");
 
     batchResult.forEach(t => {
         const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
@@ -156,15 +157,6 @@ export const getFinancialInsights = async (
 
   if (transactions.length === 0 && invoices.length === 0) return [];
 
-  const prompt = `You are TaxPro, an agentic tax assistant for Nigerian SMEs.
-  Analyze the following data for tax optimization, compliance (VAT, WHT, CIT), and proactive savings.
-  Identify missing WHT credits, VAT inconsistencies, or tax-deductible opportunities.
-
-  Transactions: ${JSON.stringify(transactions.slice(0, 20))}
-  Invoices: ${JSON.stringify(invoices.slice(0, 10))}
-  Bills: ${JSON.stringify(bills.slice(0, 10))}
-
-  Generate 3-4 proactive insights. Return as JSON array of objects with {title, description, priority}.`;
   const context = {
     transactions: transactions.slice(0, 50),
     pendingBills: bills.filter(b => b.status !== 'Paid'),
@@ -189,7 +181,9 @@ export const getFinancialInsights = async (
     await usageService.trackUsage('ai_insight');
 
     const jsonText = response.text.trim();
-    return JSON.parse(jsonText) as FinancialInsight[];
+    const insights = JSON.parse(jsonText) as FinancialInsight[];
+    if (!Array.isArray(insights)) throw new Error("AI output is not an array");
+    return insights;
 
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);

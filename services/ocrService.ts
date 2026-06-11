@@ -96,6 +96,7 @@ export const ocrService = {
 
             const jsonText = response.text.trim();
             const data = JSON.parse(jsonText) as ReceiptData;
+            if (!data || typeof data !== "object" || !data.merchantName || typeof data.totalAmount !== "number" || !data.date) throw new Error("AI output is missing required fields");
 
             await usageService.trackUsage('ocr_scan');
 

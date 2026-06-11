@@ -49,6 +49,7 @@ const getTaxComplianceTool: FunctionDeclaration = {
 const flagTaxAnomaliesTool: FunctionDeclaration = {
     name: 'flagTaxAnomalies',
     description: 'Analyzes transactions and invoices to find missing WHT credits or incorrect VAT applications.',
+};
 const getInvoicesTool: FunctionDeclaration = {
     name: 'getInvoices',
     description: 'Fetches the user\'s invoices. Call this when the user asks about sales, customers, or pending payments.',
@@ -68,11 +69,6 @@ const suggestedPrompts = [
     "Summarize my income sources.",
 ];
 
-export const AIChat: React.FC<AIChatProps> = ({ transactions, invoices, bills }) => {
-    "Am I profitable this month?",
-    "How much did I spend on software?",
-    "Forecast my cashflow for next month.",
-];
 
 type AgentType = 'CFO' | 'Tax' | 'Payroll' | 'Operations';
 
@@ -125,10 +121,6 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
   ];
 
   useEffect(() => {
-    const systemInstruction = `You are O-Heidi, a friendly, proactive, and expert financial AI assistant for Nigerian small business owners.
-    You specialize in Nigerian tax laws (CIT, VAT, WHT, PAYE, TET).
-    You have tools to fetch financial and tax data. You should proactively analyze the user's situation and offer actionable advice, especially regarding tax savings and compliance.
-    Be concise, helpful, and use ${currency} for currency. Do not invent data; always use the provided tools to get real information.`;
     const selectedAgent = agents.find(a => a.id === activeAgent) || agents[0];
     const systemInstruction = `${selectedAgent.instruction}
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
@@ -139,8 +131,7 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
             model: 'gemini-2.0-flash',
             config: {
                 systemInstruction,
-                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getTaxComplianceTool, flagTaxAnomaliesTool] }]
-                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getInvoicesTool, getBillsTool] }]
+                tools: [{ functionDeclarations: [fetchTransactionsTool, getBudgetTool, getTaxComplianceTool, flagTaxAnomaliesTool, getInvoicesTool, getBillsTool] }]
             },
         });
 
