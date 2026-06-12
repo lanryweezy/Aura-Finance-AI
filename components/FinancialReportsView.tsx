@@ -240,7 +240,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                     <div className="bg-brand-cyan/10 border border-brand-cyan/20 rounded-2xl p-6 animate-in zoom-in duration-300 shadow-lg shadow-brand-cyan/10">
                         <div className="flex justify-between items-center mb-4">
                             <h4 className="text-brand-cyan font-bold uppercase tracking-widest text-xs">Secure Shareable Link</h4>
-                            <button onClick={() => setSharedLink(null)} className="text-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
+                            <button onClick={() => setSharedLink(null)} aria-label="Close share link" className="text-gray-500 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </div>
