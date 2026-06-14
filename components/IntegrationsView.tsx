@@ -7,11 +7,33 @@ interface Integration {
   name: string;
   logoUrl: string;
   description: string;
-  category: 'Payment Gateways' | 'HR & Payroll' | 'E-commerce' | 'Productivity';
+  category: 'Payment Gateways' | 'HR & Payroll' | 'E-commerce' | 'Productivity' | 'Accounting';
   status: 'Coming Soon' | 'Active';
 }
 
 const allIntegrations: Integration[] = [
+  // Accounting
+  {
+    name: 'QuickBooks',
+    logoUrl: 'https://logo.clearbit.com/quickbooks.intuit.com',
+    description: 'Two-way sync of invoices, bills, and ledgers for your external accountants.',
+    category: 'Accounting',
+    status: 'Coming Soon',
+  },
+  {
+    name: 'Xero',
+    logoUrl: 'https://logo.clearbit.com/xero.com',
+    description: 'Push verified transactions and mapped accounts directly to Xero.',
+    category: 'Accounting',
+    status: 'Coming Soon',
+  },
+  {
+    name: 'ZohoBooks',
+    logoUrl: 'https://logo.clearbit.com/zoho.com',
+    description: 'Keep your ZohoBooks ledger in perfect harmony with Aura.',
+    category: 'Accounting',
+    status: 'Coming Soon',
+  },
   // Payment Gateways
   {
     name: 'Paystack',
@@ -82,7 +104,14 @@ const allIntegrations: Integration[] = [
   {
     name: 'Slack',
     logoUrl: 'https://logo.clearbit.com/slack.com',
-    description: 'Get key financial notifications and alerts directly in your Slack workspace.',
+    description: 'Approve expenses, receive alerts, and chat with O-Heidi AI directly in Slack.',
+    category: 'Productivity',
+    status: 'Coming Soon',
+  },
+  {
+    name: 'Microsoft Teams',
+    logoUrl: 'https://logo.clearbit.com/microsoft.com',
+    description: 'Bring Aura expense approvals and financial reporting into MS Teams.',
     category: 'Productivity',
     status: 'Coming Soon',
   },
@@ -96,6 +125,7 @@ const allIntegrations: Integration[] = [
 ];
 
 const integrationCategories = [
+    'Accounting',
     'Payment Gateways',
     'HR & Payroll',
     'E-commerce',

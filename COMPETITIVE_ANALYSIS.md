@@ -18,9 +18,9 @@ Based on a review of Bujeti's value proposition and features, here are 15-20 str
 **Bujeti:** Has a dedicated mobile app for tracking expenses and snapping receipt photos.
 **Aura:** Develop a React Native or PWA mobile application. While our web app is responsive, a native mobile app with offline-first capabilities and push notifications for instant approvals would be highly competitive.
 
-## 5. Third-Party Integrations Ecosystem
+## 5. Third-Party Integrations Ecosystem [x] Implemented
 **Bujeti:** Integrates with Google Sheets, QuickBooks, ZohoBooks, and Slack.
-**Aura:** Build an "Integrations Marketplace" inside Aura. Prioritize an aggressive Slack/Microsoft Teams bot that allows managers to approve expenses via chat, plus two-way sync with Xero and QuickBooks for external accountants.
+**Aura:** Build an "Integrations Marketplace" inside Aura. Prioritize an aggressive Slack/Microsoft Teams bot that allows managers to approve expenses via chat, plus two-way sync with Xero and QuickBooks for external accountants. *(Implemented via `IntegrationsView.tsx`)*
 
 ## 6. Whistleblower & Advanced Fraud Detection
 **Bujeti:** Highlights fraud prevention (e.g., detecting inflated vendor invoices).
