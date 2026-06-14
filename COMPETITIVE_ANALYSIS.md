@@ -54,9 +54,9 @@ Based on a review of Bujeti's value proposition and features, here are 15-20 str
 **Bujeti:** Receipt capturing.
 **Aura:** Enhance our `ocrService.ts` to automatically match scanned receipts to bank feeds using amount, date, and merchant name, requiring zero human intervention for 90% of transactions.
 
-## 14. Expense Policy Enforcement Engine
+## 14. Expense Policy Enforcement Engine [x] Implemented
 **Bujeti:** Restricts merchant categories.
-**Aura:** Build an AI policy engine. Instead of just hard limits, the AI can read a natural language company policy ("No alcohol on company meals", "Flights must be economy") and flag violations on scanned receipts.
+**Aura:** Build an AI policy engine. Instead of just hard limits, the AI can read a natural language company policy ("No alcohol on company meals", "Flights must be economy") and flag violations on scanned receipts. *(Implemented via `ocrService.ts` and `ReceiptScannerModal.tsx`)*
 
 ## 15. Offline Mode for Field Agents
 **Bujeti:** Works in low-connectivity environments.

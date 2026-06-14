@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useCallback } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { Spinner } from './Spinner';
 import { ocrService } from '../../services/ocrService';
 import type { ReceiptData, CategorizedTransaction } from '../../types';
@@ -203,6 +204,20 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                                     className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm"
                                 />
                             </div>
+
+                            {scannedData.policyViolations && scannedData.policyViolations.length > 0 && (
+                                <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
+                                    <AlertTriangle size={18} className="text-red-400 mt-0.5 flex-shrink-0" />
+                                    <div>
+                                        <h5 className="text-red-400 text-sm font-bold mb-1">Policy Violations Detected</h5>
+                                        <ul className="text-red-300 text-xs list-disc pl-4 space-y-1">
+                                            {scannedData.policyViolations.map((violation, idx) => (
+                                                <li key={idx}>{violation}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            )}
 
                              <div className="flex gap-3 pt-4">
                                 <button onClick={() => setStep('upload')} className="flex-1 py-2.5 rounded-xl border border-gray-600 text-gray-300 hover:bg-white/5 transition-colors text-sm">Rescan</button>

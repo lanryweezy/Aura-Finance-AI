@@ -23,6 +23,7 @@ export interface ReceiptData {
     totalAmount: number;
     category: string;
     description: string;
+    policyViolations?: string[];
 }
 
 export interface FinancialInsight {

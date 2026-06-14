@@ -32,6 +32,8 @@ export const ocrService = {
             throw new Error("Plan limit reached for AI Receipt Scanning. Please upgrade your plan.");
         }
 
+        const companyPolicy = "Flights must be economy class. No alcohol on company meals. Individual meals capped at 15,000 NGN. Weekend expenses require explicit justification.";
+
         if (!aiClient || !API_KEY) {
             return localDb.simulateRequest(async () => {
                 await usageService.trackUsage('ocr_scan');
@@ -44,7 +46,8 @@ export const ocrService = {
                         date: new Date().toISOString().split('T')[0],
                         totalAmount: 4500,
                         category: "Travel",
-                        description: "Ride from Ikeja (Simulated)"
+                        description: "Ride from Ikeja (Simulated)",
+                        policyViolations: []
                     };
                 }
                 if (name.includes('amazon') || name.includes('jumia')) {
@@ -53,7 +56,18 @@ export const ocrService = {
                         date: new Date().toISOString().split('T')[0],
                         totalAmount: 12500,
                         category: "Office Supplies",
-                        description: "Logistics equipment (Simulated)"
+                        description: "Logistics equipment (Simulated)",
+                        policyViolations: []
+                    };
+                }
+                if (name.includes('alcohol') || name.includes('wine')) {
+                     return {
+                        merchantName: "Lagos Winery Simulation",
+                        date: new Date().toISOString().split('T')[0],
+                        totalAmount: 25000,
+                        category: "Meals & Entertainment",
+                        description: "Dinner with client (Mock Scan)",
+                        policyViolations: ["Policy violation: No alcohol on company meals.", "Policy violation: Individual meals capped at 15,000 NGN. Amount is 25,000."]
                     };
                 }
 
@@ -62,7 +76,8 @@ export const ocrService = {
                     date: new Date().toISOString().split('T')[0],
                     totalAmount: 15750,
                     category: "Miscellaneous",
-                    description: "Office Supplies (Mock Scan)"
+                    description: "Office Supplies (Mock Scan)",
+                    policyViolations: []
                 };
             }, 2000);
         }
@@ -72,7 +87,7 @@ export const ocrService = {
             const imagePart = await fileToGenerativePart(file);
             const categories = DEFAULT_CATEGORIES.map(c => c.name).join(', ');
 
-            const prompt = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}].`;
+            const prompt = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}]. Also, check the receipt against this company policy: "${companyPolicy}". If any violations are found, list them in policyViolations.`;
 
             const receiptSchema = {
                 type: Type.OBJECT,
@@ -82,6 +97,11 @@ export const ocrService = {
                     totalAmount: { type: Type.NUMBER },
                     description: { type: Type.STRING },
                     category: { type: Type.STRING },
+                    policyViolations: {
+                        type: Type.ARRAY,
+                        items: { type: Type.STRING },
+                        description: "A list of strings describing any policy violations found based on the provided company policy."
+                    }
                 },
                 required: ["merchantName", "date", "totalAmount", "description", "category"],
             };
