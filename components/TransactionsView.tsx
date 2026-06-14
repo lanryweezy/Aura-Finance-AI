@@ -366,6 +366,8 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
       isOpen={isScannerOpen}
       onClose={() => setIsScannerOpen(false)}
       onSave={onAddTransaction}
+      transactions={transactions}
+      onMatch={(id, newCategory, newNarration, newReceiptUrl) => onUpdateCategory(id, newCategory, undefined, newReceiptUrl)}
     />
     
     <Card className="h-full overflow-hidden flex flex-col p-0 border-gray-100 dark:border-white/5">

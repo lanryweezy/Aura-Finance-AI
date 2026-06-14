@@ -584,6 +584,7 @@ export default function App(): React.ReactNode {
                     invoices={invoices}
                     onQuickAction={setActiveView}
                     onAddTransaction={handleAddNewTransaction}
+                    onUpdateTransaction={handleUpdateTransaction}
                  />,
       transactions: <TransactionsView
                         transactions={transactions}
@@ -666,7 +667,6 @@ export default function App(): React.ReactNode {
             </div>
         );
     }
-    return <LandingView onStart={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onViewLegal={setLegalType} />;
     return (
       <Routes>
         <Route path="/" element={<LandingView onGetStarted={() => navigate('/auth?signup=true')} onLogin={() => navigate('/auth')} onNavigate={(v) => navigate(`/${v}`)} />} />

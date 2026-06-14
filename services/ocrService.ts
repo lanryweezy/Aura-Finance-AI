@@ -4,7 +4,7 @@ import { aiClient, API_KEY, withTimeout } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { localDb } from './localDb';
-import type { ReceiptData } from '../types';
+import type { ReceiptData, CategorizedTransaction } from '../types';
 import { DEFAULT_CATEGORIES } from '../constants/accounting';
 
 const fileToGenerativePart = async (file: File): Promise<{ inlineData: { data: string; mimeType: string } }> => {
@@ -126,5 +126,25 @@ export const ocrService = {
             monitoringService.trackError('OCR_ENGINE', error as Error);
             throw new Error("Failed to scan receipt. Please try again manually.");
         }
+    },
+
+    matchReceiptToTransaction: (receipt: ReceiptData, transactions: CategorizedTransaction[]): string | null => {
+        const receiptDate = new Date(receipt.date).getTime();
+        const receiptAmount = receipt.totalAmount;
+
+        for (const tx of transactions) {
+            if (tx.type === 'debit') {
+                const txDate = new Date(tx.date).getTime();
+                const daysDiff = Math.abs(txDate - receiptDate) / (1000 * 3600 * 24);
+
+                // Match if exact amount and date is within +/- 3 days
+                if (tx.amount === receiptAmount && daysDiff <= 3) {
+                    monitoringService.log('info', 'OCR_ENGINE', `Receipt automatically matched to transaction ${tx.id}`);
+                    return tx.id;
+                }
+            }
+        }
+
+        return null;
     }
 };

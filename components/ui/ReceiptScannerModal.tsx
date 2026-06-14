@@ -11,9 +11,11 @@ interface ReceiptScannerModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSave: (transactionData: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
+    transactions?: CategorizedTransaction[];
+    onMatch?: (id: string, newCategory: string, newNarration: string, newReceiptUrl?: string) => void;
 }
 
-export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen, onClose, onSave }) => {
+export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen, onClose, onSave, transactions, onMatch }) => {
     const { showToast } = useToast();
     const [step, setStep] = useState<'upload' | 'scanning' | 'review'>('upload');
     const [file, setFile] = useState<File | null>(null);
@@ -79,13 +81,26 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
     const handleConfirm = () => {
         if (!scannedData) return;
         
+        const narration = `${scannedData.merchantName} - ${scannedData.description}`;
+        const receiptUrl = previewUrl || undefined;
+
+        if (transactions && onMatch) {
+            const matchedId = ocrService.matchReceiptToTransaction(scannedData, transactions);
+            if (matchedId) {
+                onMatch(matchedId, scannedData.category, narration, receiptUrl);
+                showToast(`Receipt matched automatically to transaction #${matchedId.slice(-4)}`, 'success');
+                handleClose();
+                return;
+            }
+        }
+
         onSave({
             date: new Date(scannedData.date).toISOString(),
             amount: Number(scannedData.totalAmount),
-            narration: `${scannedData.merchantName} - ${scannedData.description}`,
+            narration,
             type: 'debit',
             category: scannedData.category,
-            receiptUrl: previewUrl || undefined // In a real app, upload this URL first
+            receiptUrl
         });
         handleClose();
     };

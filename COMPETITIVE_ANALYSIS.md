@@ -50,9 +50,9 @@ Based on a review of Bujeti's value proposition and features, here are 15-20 str
 **Bujeti:** Tax management features.
 **Aura:** Move beyond tax calculation (`TaxFilingView.tsx` simulation) to actual automated remittance via Remita integration for PAYE, VAT, and WHT.
 
-## 13. AI Receipt Matching
+## 13. AI Receipt Matching [x] Implemented
 **Bujeti:** Receipt capturing.
-**Aura:** Enhance our `ocrService.ts` to automatically match scanned receipts to bank feeds using amount, date, and merchant name, requiring zero human intervention for 90% of transactions.
+**Aura:** Enhance our `ocrService.ts` to automatically match scanned receipts to bank feeds using amount, date, and merchant name, requiring zero human intervention for 90% of transactions. *(Implemented via `matchReceiptToTransaction` in `ocrService.ts` and automated matching in `ReceiptScannerModal.tsx`)*
 
 ## 14. Expense Policy Enforcement Engine [x] Implemented
 **Bujeti:** Restricts merchant categories.

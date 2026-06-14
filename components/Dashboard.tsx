@@ -25,6 +25,7 @@ interface DashboardProps {
   invoices: Invoice[];
   onQuickAction?: (view: View) => void;
   onAddTransaction?: (transaction: Omit<CategorizedTransaction, 'id' | 'balance'>) => void;
+  onUpdateTransaction?: (id: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => void;
 }
 
 const InsightCard = React.memo<{ insight: FinancialInsight }>(({ insight }) => {
@@ -288,7 +289,7 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
     );
 });
 
-export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills: propsBills, invoices: propsInvoices, onQuickAction, onAddTransaction }) => {
+export const Dashboard = React.memo<DashboardProps>(({ user, transactions, connections, bills: propsBills, invoices: propsInvoices, onQuickAction, onAddTransaction, onUpdateTransaction }) => {
   const { formatAmount } = useCurrency();
   const [insights, setInsights] = useState<FinancialInsight[]>([]);
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
@@ -399,6 +400,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
         isOpen={isScannerOpen} 
         onClose={handleScanClose}
         onSave={handleAddTransaction}
+        transactions={transactions}
+        onMatch={(id, newCategory, newNarration, newReceiptUrl) => onUpdateTransaction?.(id, newCategory, undefined, newReceiptUrl)}
     />
 
     <div className="space-y-8 animate-in fade-in duration-500">
