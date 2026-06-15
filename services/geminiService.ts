@@ -1,6 +1,6 @@
 
 import { Type } from "@google/genai";
-import { aiClient, API_KEY } from './aiConfig';
+import { aiClient, API_KEY, withTimeout } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { localDb } from './localDb';
@@ -87,13 +87,13 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
   try {
     monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash",
+    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         responseSchema: transactionSchema as any,
       },
-    });
+    }), 10000);
 
     const jsonText = response.text.trim();
     const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
@@ -170,13 +170,13 @@ export const getFinancialInsights = async (
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash",
+    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
             responseMimeType: "application/json",
             responseSchema: insightsSchema as any,
         },
-    });
+    }), 10000);
     
     await usageService.trackUsage('ai_insight');
 
@@ -199,7 +199,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
     await usageService.trackUsage('ai_insight');
     return response.text.trim();
   } catch (error) {
@@ -220,7 +220,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
     try {
         monitoringService.trackAIUsage('report_analysis', prompt);
-        const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+        const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
         await usageService.trackUsage('ai_insight');
         return response.text.trim();
     } catch (error) {
@@ -237,7 +237,7 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
 
   try {
     monitoringService.trackAIUsage('invoice_reminder', prompt);
-    const response = await aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt });
+    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
     await usageService.trackUsage('ai_chat');
     return response.text.trim();
   } catch (error) {
