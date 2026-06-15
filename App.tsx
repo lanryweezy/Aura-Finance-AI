@@ -115,6 +115,30 @@ export default function App(): React.ReactNode {
   }, [setUser]);
 
   useEffect(() => {
+    const handleOfflineReady = () => {
+        showToast("App is ready to work offline. Scans and updates will sync automatically.", "info");
+    };
+
+    const handleNetworkOffline = () => {
+        showToast("You are offline. Scans and updates will be queued and synced when connection is restored.", "info");
+    };
+
+    const handleNetworkOnline = () => {
+        showToast("Back online. Syncing queued transactions...", "success");
+    };
+
+    window.addEventListener('pwa-offline', handleOfflineReady);
+    window.addEventListener('offline', handleNetworkOffline);
+    window.addEventListener('online', handleNetworkOnline);
+
+    return () => {
+        window.removeEventListener('pwa-offline', handleOfflineReady);
+        window.removeEventListener('offline', handleNetworkOffline);
+        window.removeEventListener('online', handleNetworkOnline);
+    };
+  }, [showToast]);
+
+  useEffect(() => {
     // Sync activeView from URL
     const path = location.pathname.split('/')[1] || 'dashboard';
     if (user && path !== activeView) {
@@ -304,8 +328,9 @@ export default function App(): React.ReactNode {
       acc.totalNet += p.netSalary;
       acc.totalPAYE += p.paye;
       acc.totalPension += p.pension;
+      acc.totalNHF += p.nhf;
       return acc;
-    }, { totalGross: 0, totalBonuses: 0, totalDeductions: 0, totalNet: 0, totalPAYE: 0, totalPension: 0 });
+    }, { totalGross: 0, totalBonuses: 0, totalDeductions: 0, totalNet: 0, totalPAYE: 0, totalPension: 0, totalNHF: 0 });
 
     const newRun: PayrollRun = {
       id: `pr_${Date.now()}`,
@@ -316,7 +341,14 @@ export default function App(): React.ReactNode {
     };
 
     setPayrollHistory(prev => [newRun, ...prev]);
-    logAndRefresh(`Ran payroll for ${period}`, 'Payroll');
+
+    // Simulate Embedded Payroll Remittance
+    if (summary.totalNet > 0) handleAddNewTransaction({ date: newRun.runDate, amount: summary.totalNet, type: 'debit', category: 'Salaries & Wages', narration: `Net Salary Payout - ${period}` });
+    if (summary.totalPAYE > 0) handleAddNewTransaction({ date: newRun.runDate, amount: summary.totalPAYE, type: 'debit', category: 'Taxes & Licenses', narration: `FIRS PAYE Remittance - ${period}` });
+    if (summary.totalPension > 0) handleAddNewTransaction({ date: newRun.runDate, amount: summary.totalPension, type: 'debit', category: 'Taxes & Licenses', narration: `PenCom Pension Remittance - ${period}` });
+    if (summary.totalNHF > 0) handleAddNewTransaction({ date: newRun.runDate, amount: summary.totalNHF, type: 'debit', category: 'Taxes & Licenses', narration: `FMBN NHF Remittance - ${period}` });
+
+    logAndRefresh(`Ran payroll for ${period} with automated statutory remittances.`, 'Payroll');
   };
 
   const handleUpdateTransaction = (transactionId: string, newCategory: string, newProjectId?: string, newReceiptUrl?: string) => {

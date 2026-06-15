@@ -20,6 +20,9 @@ const updateSW = registerSW({
       updateSW(true);
     }
   },
+  onOfflineReady() {
+    window.dispatchEvent(new CustomEvent('pwa-offline'));
+  },
 });
 
 const root = ReactDOM.createRoot(rootElement);

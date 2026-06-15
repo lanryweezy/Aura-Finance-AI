@@ -45,6 +45,32 @@ export default defineConfig(({ mode }) => {
                     maxAgeSeconds: 60 * 60 * 12 // 12 hours
                   }
                 }
+              },
+              {
+                urlPattern: /\/api\/.*/i,
+                handler: 'NetworkOnly',
+                method: 'POST',
+                options: {
+                  backgroundSync: {
+                    name: 'api-post-syncQueue',
+                    options: {
+                      maxRetentionTime: 24 * 60 // Retry for max 24 hours
+                    }
+                  }
+                }
+              },
+              {
+                urlPattern: /\/api\/.*/i,
+                handler: 'NetworkOnly',
+                method: 'PUT',
+                options: {
+                  backgroundSync: {
+                    name: 'api-put-syncQueue',
+                    options: {
+                      maxRetentionTime: 24 * 60 // Retry for max 24 hours
+                    }
+                  }
+                }
               }
             ]
           },

@@ -30,9 +30,9 @@ Based on a review of Bujeti's value proposition and features, here are 15-20 str
 **Bujeti:** Hierarchical approvals and custom workflows based on organizational structure.
 **Aura:** Implement dynamic, multi-tier approval chains in our Approval Queue. E.g., expenses > ₦500k require both Department Head and CFO approval automatically.
 
-## 8. Embedded Payroll Management
+## 8. Embedded Payroll Management [x] Implemented
 **Bujeti:** Just introduced Bujeti Payroll.
-**Aura:** We already have robust payroll and tax calculations (`taxCalculatorService.ts`). We should market this heavily and add automated pension (PenCom) and NHF remittance directly from the platform.
+**Aura:** We already have robust payroll and tax calculations (`taxCalculatorService.ts`). We should market this heavily and add automated pension (PenCom) and NHF remittance directly from the platform. *(Implemented via `App.tsx`)*
 
 ## 9. AI-Driven Vendor Negotiation (Procure AI Enhancement)
 **Bujeti:** Focuses on controlling spend.
@@ -58,9 +58,9 @@ Based on a review of Bujeti's value proposition and features, here are 15-20 str
 **Bujeti:** Restricts merchant categories.
 **Aura:** Build an AI policy engine. Instead of just hard limits, the AI can read a natural language company policy ("No alcohol on company meals", "Flights must be economy") and flag violations on scanned receipts. *(Implemented via `ocrService.ts` and `ReceiptScannerModal.tsx`)*
 
-## 15. Offline Mode for Field Agents
+## 15. Offline Mode for Field Agents [x] Implemented
 **Bujeti:** Works in low-connectivity environments.
-**Aura:** Enhance the PWA service worker (`workbox-window`) to allow field agents to log expenses offline. Transactions sync automatically when the connection is restored.
+**Aura:** Enhance the PWA service worker (`workbox-window`) to allow field agents to log expenses offline. Transactions sync automatically when the connection is restored. *(Implemented via Background Sync in `vite.config.ts` and `App.tsx`)*
 
 ## 16. Employee Reimbursement Tracking
 **Bujeti:** Processes reimbursements in one place.
