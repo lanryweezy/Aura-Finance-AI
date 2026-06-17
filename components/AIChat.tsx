@@ -6,6 +6,7 @@ import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { GoogleGenAI, Chat, Type, FunctionDeclaration } from "@google/genai";
 import { Bill, Invoice } from '../types';
+import { withTimeout } from '../services/aiConfig';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
@@ -173,7 +174,11 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     setMessages(prev => [...prev, { id: modelMessageId, role: 'model', text: '' }]);
 
     try {
-      let responseStream = await chatInstance.current.sendMessageStream({ message: textToSend });
+      // 🤖 Astra: Wrap AI call in a timeout to prevent infinite hanging when the model is slow or unresponsive
+      let responseStream = await withTimeout(
+          chatInstance.current.sendMessageStream({ message: textToSend }),
+          10_000
+      );
       let fullResponseText = '';
       let functionCallMade = false;
 
@@ -237,12 +242,12 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
               }
 
               // Send the tool result back to the model
-               responseStream = await chatInstance.current.sendMessageStream([{
+               responseStream = await withTimeout(chatInstance.current.sendMessageStream([{
                   functionResponse: {
                       name: call.name,
                       response: toolResult
                   }
-              }]);
+              }] as any), 10_000);
 
               // Process the *new* stream after the function call
               for await (const nextChunk of responseStream) {
