@@ -61,7 +61,7 @@ const getBillsTool: FunctionDeclaration = {
     description: 'Fetches the user\'s bills. Call this when the user asks about expenses, vendors, or upcoming payments.',
 };
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || '' });
 
 const suggestedPrompts = [
     "What is my estimated tax liability?",

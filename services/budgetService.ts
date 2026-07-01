@@ -1,14 +1,27 @@
-
 import type { Budget } from '../types';
-import { apiClient } from './apiClient';
+import { supabase } from './supabaseClient';
+import { db } from './db';
+
+const TABLE = 'budgets';
 
 export const fetchBudgets = async (): Promise<Budget[]> => {
-    return await apiClient.get('/budgets');
+  return db.query<Budget>(TABLE);
 };
 
 export const saveBudgets = async (budgets: Budget[]): Promise<void> => {
-    // In our simplified simulator, we can just POST the whole array if we want,
-    // but typically we'd save individual ones or have a bulk endpoint.
-    // For now, let's simulate bulk save.
-    await apiClient.post('/budgets/bulk', budgets);
+  if (!supabase) throw new Error('Supabase not configured');
+  const orgId = db.getOrgId();
+
+  await supabase.from(TABLE).delete().eq('organization_id', orgId);
+
+  if (budgets.length > 0) {
+    const rows = budgets.map(b => ({
+      category: b.category,
+      amount: b.amount,
+      entity_id: b.entityId,
+      organization_id: orgId,
+    }));
+    const { error } = await supabase.from(TABLE).insert(rows);
+    if (error) throw error;
+  }
 };

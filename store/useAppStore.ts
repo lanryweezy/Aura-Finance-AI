@@ -89,7 +89,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     entities: [],
     selectedEntityId: 'aura-main',
     closingHistory: [],
-    auditLog: auditLogService.getLogs(),
+    auditLog: [],
     isLoading: true,
     error: null,
     theme: (localStorage.getItem('aura_theme') as 'light' | 'dark') || 'dark',

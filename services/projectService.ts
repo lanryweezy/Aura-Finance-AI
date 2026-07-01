@@ -1,11 +1,12 @@
-
 import type { Project } from '../types';
-import { apiClient } from './apiClient';
+import { db } from './db';
+
+const TABLE = 'projects';
 
 export const fetchProjects = async (): Promise<Project[]> => {
-    return await apiClient.get('/projects');
+  return db.query<Project>(TABLE);
 };
 
 export const addProject = async (name: string): Promise<Project> => {
-    return await apiClient.post('/projects', { name, status: 'Active' });
+  return db.insert<Project>(TABLE, { name, status: 'Active' });
 };

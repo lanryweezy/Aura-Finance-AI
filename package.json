@@ -20,7 +20,8 @@
     "react-window": "2.2.7",
     "react-router-dom": "^7.15.1",
     "recharts": "^3.0.2",
-    "zustand": "^5.0.13"
+    "zustand": "^5.0.13",
+    "@supabase/supabase-js": "^2.49.4"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

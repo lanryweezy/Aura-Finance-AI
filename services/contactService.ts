@@ -1,19 +1,36 @@
-
 import type { Contact } from '../types';
-import { apiClient } from './apiClient';
+import { db } from './db';
+
+const TABLE = 'contacts';
 
 export const fetchContacts = async (): Promise<Contact[]> => {
-    return await apiClient.get('/contacts');
+  return db.query<Contact>(TABLE);
 };
 
 export const addContact = async (contact: Omit<Contact, 'id'>): Promise<Contact> => {
-    return await apiClient.post('/contacts', contact);
+  return db.insert<Contact>(TABLE, {
+    type: contact.type,
+    name: contact.name,
+    company_name: contact.companyName,
+    email: contact.email,
+    phone: contact.phone,
+    address: contact.address,
+    tin: contact.tin,
+  });
 };
 
 export const updateContact = async (contact: Contact): Promise<Contact> => {
-    return await apiClient.put(`/contacts/${contact.id}`, contact);
+  return db.update<Contact>(TABLE, contact.id, {
+    type: contact.type,
+    name: contact.name,
+    company_name: contact.companyName,
+    email: contact.email,
+    phone: contact.phone,
+    address: contact.address,
+    tin: contact.tin,
+  });
 };
 
 export const removeContact = async (id: string): Promise<void> => {
-    return await apiClient.delete(`/contacts/${id}`);
+  await db.remove(TABLE, id);
 };
