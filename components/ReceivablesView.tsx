@@ -3,6 +3,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
+import { EmailModal } from './EmailModal';
+import { clientPortalService } from '../services/clientPortalService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
@@ -292,6 +294,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [reminderText, setReminderText] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailRecipient, setEmailRecipient] = useState<Invoice | null>(null);
   
   // Filtering
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -477,6 +481,18 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                                 PDF
                             </button>
                             <button 
+                                onClick={() => { setEmailRecipient(invoice); setIsEmailModalOpen(true); }}
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-400/50 hover:bg-blue-50 dark:hover:bg-blue-400/20 transition-all active:scale-95"
+                            >
+                                Email
+                            </button>
+                            <button 
+                                onClick={async () => { const link = await clientPortalService.generateLink(invoice); const url = clientPortalService.getShareableUrl(link.token); await navigator.clipboard.writeText(url); alert('Portal link copied!'); }}
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-orange-600 dark:text-orange-300 border-orange-200 dark:border-orange-400/50 hover:bg-orange-50 dark:hover:bg-orange-400/20 transition-all active:scale-95"
+                            >
+                                Portal
+                            </button>
+                            <button 
                                 onClick={async () => { const { shareInvoiceViaWhatsApp } = await import('../services/shareService'); shareInvoiceViaWhatsApp(invoice); }}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/50 hover:bg-green-50 dark:hover:bg-green-400/20 transition-all active:scale-95"
                             >
@@ -499,6 +515,12 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
           </table>
         </div>
       </Card>
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        recipient={emailRecipient}
+        isInvoice={true}
+      />
     </div>
     </>
   );

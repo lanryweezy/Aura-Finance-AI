@@ -58,6 +58,7 @@ const FixedAssetsView = lazy(() => import('./components/FixedAssetsView').then(m
 const BankReconciliationView = lazy(() => import('./components/BankReconciliationView').then(m => ({ default: m.BankReconciliationView })));
 const RecurringTransactionsView = lazy(() => import('./components/RecurringTransactionsView').then(m => ({ default: m.RecurringTransactionsView })));
 const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').then(m => ({ default: m.YearEndClosingView })));
+const ClientPortalView = lazy(() => import('./components/ClientPortalView').then(m => ({ default: m.ClientPortalView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
 
 export default function App(): React.ReactNode {
@@ -290,6 +291,7 @@ export default function App(): React.ReactNode {
         <main className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-[2.5rem] ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-aura-gray-200 shadow-2xl'} backdrop-blur-sm border-t border-l relative`}>
           {theme === 'dark' && <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50" />}
           <Routes>
+            <Route path="/portal/:token" element={<Suspense fallback={<div className="h-screen flex items-center justify-center bg-dark-primary"><Spinner /></div>}><ClientPortalView /></Suspense>} />
             <Route path="/shared/*" element={<Suspense fallback={<div className="h-screen flex items-center justify-center bg-dark-primary"><Spinner /></div>}><SharedReportView /></Suspense>} />
             <Route path="/:view" element={<ViewWrapper renderView={renderView} />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

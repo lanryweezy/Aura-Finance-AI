@@ -3,6 +3,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Spinner } from './ui/Spinner';
 import { AdvancedFilter } from './ui/AdvancedFilter';
+import { EmailModal } from './EmailModal';
 import { exportToCSV } from '../services/exportService';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
@@ -147,6 +148,8 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
 
   // Filtering
   const [filters, setFilters] = useState<Record<string, any>>({});
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [emailRecipient, setEmailRecipient] = useState<Bill | null>(null);
 
   const filteredBills = useMemo(() => {
     return bills.filter(bill => {
@@ -275,6 +278,12 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                         PDF
                     </button>
                     <button 
+                        onClick={() => { setEmailRecipient(bill); setIsEmailModalOpen(true); }}
+                        className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-400/50 hover:bg-blue-50 dark:hover:bg-blue-400/20 transition-all active:scale-95"
+                    >
+                        Email
+                    </button>
+                    <button 
                         onClick={async () => { const { shareBillViaWhatsApp } = await import('../services/shareService'); shareBillViaWhatsApp(bill); }}
                         className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/50 hover:bg-green-50 dark:hover:bg-green-400/20 transition-all active:scale-95"
                     >
@@ -297,6 +306,12 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
           </table>
         </div>
       </Card>
+      <EmailModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        recipient={emailRecipient}
+        isInvoice={false}
+      />
     </div>
     </>
   );
