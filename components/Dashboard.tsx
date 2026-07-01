@@ -11,6 +11,7 @@ import { ContextualHelp } from './ui/ContextualHelp';
 import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
+import { NLSearch } from './NLSearch';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
@@ -417,7 +418,9 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
       <OnboardingWidget connections={connections} invoices={invoices} />
 
-      <AIAlerts transactions={transactions} />
+      <AIAlerts />
+
+      <NLSearch />
 
       {/* Quick Actions Bar */}
       <div id="quick-actions-bar" className="grid grid-cols-2 md:grid-cols-4 gap-4">
