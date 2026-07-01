@@ -7,6 +7,9 @@ const OPTIONAL_KEYS = [
   'VITE_GEMINI_API_KEY',
   'VITE_PAYSTACK_KEY',
   'VITE_FLW_KEY',
+  'VITE_NRS_API_KEY',
+  'VITE_NRS_SERVICE_ID',
+  'VITE_NRS_API_URL',
 ] as const;
 
 interface EnvStatus {

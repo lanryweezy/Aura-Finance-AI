@@ -440,3 +440,49 @@ begin
     ('WHT Payable', 'Liability', org_id);
 end;
 $$ language plpgsql;
+
+-- ============== NRS SUBMISSIONS ==============
+create table nrs_submissions (
+  id text primary key,
+  invoice_id text not null,
+  irn text not null,
+  csid text,
+  qr_code text,
+  status text not null default 'pending' check (status in ('pending', 'transmitted', 'confirmed', 'failed')),
+  submitted_at timestamptz default now(),
+  confirmed_at timestamptz,
+  error text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== CLIENT PORTAL LINKS ==============
+create table client_portal_links (
+  token text primary key,
+  invoice_id text not null,
+  invoice_number text not null,
+  client_name text not null,
+  total_amount numeric(15,2) not null,
+  currency text default 'NGN',
+  status text not null,
+  viewed_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== AI ALERTS ==============
+create table ai_alerts (
+  id text primary key,
+  type text not null,
+  severity text not null check (severity in ('critical', 'warning', 'info')),
+  title text not null,
+  message text not null,
+  dismissed boolean default false,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_nrs_submissions_org on nrs_submissions(organization_id);
+create index idx_nrs_submissions_irn on nrs_submissions(irn);
+create index idx_client_portal_org on client_portal_links(organization_id);
+create index idx_ai_alerts_org on ai_alerts(organization_id);

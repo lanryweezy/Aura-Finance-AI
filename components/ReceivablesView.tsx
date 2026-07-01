@@ -5,6 +5,8 @@ import { Spinner } from './ui/Spinner';
 import { generateInvoiceReminder } from '../services/geminiService';
 import { EmailModal } from './EmailModal';
 import { clientPortalService } from '../services/clientPortalService';
+import { nrsSubmissionService, type NRSStatus } from '../services/nrsSubmissionService';
+import { nrsApiService } from '../services/nrsApiService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
@@ -296,6 +298,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [isGenerating, setIsGenerating] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [emailRecipient, setEmailRecipient] = useState<Invoice | null>(null);
+  const [nrsStatus, setNrsStatus] = useState<NRSStatus | null>(null);
+  const [submittingNrs, setSubmittingNrs] = useState<string | null>(null);
   
   // Filtering
   const [filters, setFilters] = useState<Record<string, any>>({});
@@ -492,6 +496,22 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                             >
                                 Portal
                             </button>
+                            {nrsApiService.isConfigured() && invoice.status !== 'Paid' && (
+                                <button 
+                                    onClick={async () => {
+                                        setSubmittingNrs(invoice.id);
+                                        setNrsStatus({ stage: 'validating', message: 'Starting NRS submission...' });
+                                        const user = JSON.parse(localStorage.getItem('aura_user') || '{}');
+                                        const org = JSON.parse(localStorage.getItem('aura_org') || '{}');
+                                        await nrsSubmissionService.submitInvoice(invoice, { ...user, ...org }, setNrsStatus);
+                                        setSubmittingNrs(null);
+                                    }}
+                                    disabled={submittingNrs === invoice.id}
+                                    className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-purple-600 dark:text-purple-300 border-purple-200 dark:border-purple-400/50 hover:bg-purple-50 dark:hover:bg-purple-400/20 transition-all active:scale-95 disabled:opacity-50"
+                                >
+                                    {submittingNrs === invoice.id ? (nrsStatus?.stage === 'complete' ? '✓ Sent' : '...') : 'NRS'}
+                                </button>
+                            )}
                             <button 
                                 onClick={async () => { const { shareInvoiceViaWhatsApp } = await import('../services/shareService'); shareInvoiceViaWhatsApp(invoice); }}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/50 hover:bg-green-50 dark:hover:bg-green-400/20 transition-all active:scale-95"
