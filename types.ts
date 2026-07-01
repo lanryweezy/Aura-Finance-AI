@@ -380,7 +380,9 @@ export type View =
     'budgeting' | 'auditTrail' | 'projects' | 'settings' | 'subscription' | 'contacts' |
     'privacy' | 'terms' | 'blog' | 'about' | 'careers' | 'contact' | 'security' |
     // Core Enhancements
-    'fixedAssets' | 'reconciliation' | 'recurring' | 'yearEnd';
+    'fixedAssets' | 'reconciliation' | 'recurring' | 'yearEnd' |
+    // New Features
+    'corporateCards' | 'approvals';
 
 // Financial Report Types
 export interface ReportPeriod {
@@ -425,4 +427,88 @@ export interface ReportData {
   pAndL: PandLData;
   balanceSheet: BalanceSheetData;
   cashFlow: CashFlowData;
+}
+
+// ============== CORPORATE CARDS ==============
+export interface CorporateCard {
+  id: string;
+  name: string;
+  type: 'virtual' | 'physical';
+  status: 'active' | 'frozen' | 'cancelled';
+  last4: string;
+  spendLimit: number;
+  spentAmount: number;
+  currency: string;
+  assignedTo?: string;
+  assignedToName?: string;
+  categoryControls: CardCategoryControl[];
+  isActive: boolean;
+  entityId?: string;
+  createdAt: string;
+}
+
+export interface CardCategoryControl {
+  category: string;
+  enabled: boolean;
+  limit?: number;
+}
+
+export interface CardTransaction {
+  id: string;
+  cardId: string;
+  amount: number;
+  currency: string;
+  merchant: string;
+  category: string;
+  date: string;
+  status: 'pending' | 'completed' | 'declined';
+  reference: string;
+}
+
+// ============== APPROVAL WORKFLOWS ==============
+export type ApprovalEntityType = 'invoice' | 'bill' | 'purchase_order' | 'journal_entry' | 'expense_claim';
+export type ApprovalStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
+
+export interface ApprovalRequest {
+  id: string;
+  entityType: ApprovalEntityType;
+  entityId: string;
+  requestedBy: string;
+  requestedByName: string;
+  amount: number;
+  description: string;
+  status: ApprovalStatus;
+  currentLevel: number;
+  totalLevels: number;
+  approvals: ApprovalStep[];
+  createdAt: string;
+  resolvedAt?: string;
+}
+
+export interface ApprovalStep {
+  level: number;
+  approverId: string;
+  approverName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  comment?: string;
+  actedAt?: string;
+}
+
+export interface ApprovalPolicy {
+  id: string;
+  name: string;
+  entityType: ApprovalEntityType;
+  minAmount: number;
+  maxAmount?: number;
+  levels: ApprovalLevel[];
+  isActive: boolean;
+  entityId?: string;
+  organizationId: string;
+}
+
+export interface ApprovalLevel {
+  level: number;
+  approverRole: string;
+  approverId?: string;
+  approverName?: string;
 }

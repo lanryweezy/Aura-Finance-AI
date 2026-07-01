@@ -486,3 +486,72 @@ create index idx_nrs_submissions_org on nrs_submissions(organization_id);
 create index idx_nrs_submissions_irn on nrs_submissions(irn);
 create index idx_client_portal_org on client_portal_links(organization_id);
 create index idx_ai_alerts_org on ai_alerts(organization_id);
+
+-- ============== CORPORATE CARDS ==============
+create table corporate_cards (
+  id text primary key default ('card_' || replace(uuid_generate_v4()::text, '-', '')),
+  name text not null,
+  type text not null check (type in ('virtual', 'physical')),
+  status text not null default 'active' check (status in ('active', 'frozen', 'cancelled')),
+  last4 text not null,
+  spend_limit numeric(15,2) not null default 500000,
+  spent_amount numeric(15,2) default 0,
+  currency text default 'NGN',
+  assigned_to text,
+  assigned_to_name text,
+  category_controls jsonb default '[]',
+  is_active boolean default true,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table card_transactions (
+  id text primary key default ('ctx_' || replace(uuid_generate_v4()::text, '-', '')),
+  card_id text not null references corporate_cards(id) on delete cascade,
+  amount numeric(15,2) not null,
+  currency text default 'NGN',
+  merchant text not null,
+  category text,
+  date timestamptz default now(),
+  status text not null default 'completed' check (status in ('pending', 'completed', 'declined')),
+  reference text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== APPROVAL WORKFLOWS ==============
+create table approval_policies (
+  id text primary key default ('ap_' || replace(uuid_generate_v4()::text, '-', '')),
+  name text not null,
+  entity_type text not null check (entity_type in ('invoice', 'bill', 'purchase_order', 'journal_entry', 'expense_claim')),
+  min_amount numeric(15,2) not null default 0,
+  max_amount numeric(15,2),
+  levels jsonb not null default '[]',
+  is_active boolean default true,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table approval_requests (
+  id text primary key default ('ar_' || replace(uuid_generate_v4()::text, '-', '')),
+  entity_type text not null,
+  entity_id text not null,
+  requested_by text not null,
+  requested_by_name text not null,
+  amount numeric(15,2) not null,
+  description text not null,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected', 'cancelled')),
+  current_level integer default 1,
+  total_levels integer default 1,
+  approvals jsonb default '[]',
+  resolved_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_corporate_cards_org on corporate_cards(organization_id);
+create index idx_card_transactions_card on card_transactions(card_id);
+create index idx_approval_requests_org on approval_requests(organization_id);
+create index idx_approval_requests_status on approval_requests(status);
