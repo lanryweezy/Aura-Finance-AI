@@ -1,0 +1,29 @@
+{
+  "appId": "com.aura.finance",
+  "appName": "Aura Finance AI",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0A0E29",
+      "androidSplashResourceName": "splash",
+      "showSpinner": true,
+      "spinnerColor": "#00F5D4"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0A0E29"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "style": "DARK"
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#00F5D4"
+    }
+  }
+}

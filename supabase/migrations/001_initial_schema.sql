@@ -555,3 +555,48 @@ create index idx_corporate_cards_org on corporate_cards(organization_id);
 create index idx_card_transactions_card on card_transactions(card_id);
 create index idx_approval_requests_org on approval_requests(organization_id);
 create index idx_approval_requests_status on approval_requests(status);
+
+-- ============== NOTIFICATIONS ==============
+create table notifications (
+  id text primary key default ('notif_' || replace(uuid_generate_v4()::text, '-', '')),
+  type text not null,
+  priority text not null default 'medium' check (priority in ('low', 'medium', 'high', 'critical')),
+  title text not null,
+  message text not null,
+  read boolean default false,
+  action_url text,
+  metadata jsonb,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== USER PERMISSIONS ==============
+create table user_permissions (
+  user_id text primary key,
+  permissions jsonb not null default '[]',
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== AUDIT LOGS V2 ==============
+create table audit_logs_v2 (
+  id text primary key default ('alog_' || replace(uuid_generate_v4()::text, '-', '')),
+  timestamp timestamptz default now(),
+  user_id text not null,
+  user_name text not null,
+  action text not null check (action in ('create', 'update', 'delete', 'approve', 'reject', 'login', 'export', 'submit')),
+  entity_type text not null,
+  entity_id text not null,
+  entity_name text not null,
+  module text not null,
+  changes jsonb,
+  ip_address text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_notifications_org on notifications(organization_id);
+create index idx_notifications_read on notifications(read);
+create index idx_audit_logs_v2_org on audit_logs_v2(organization_id);
+create index idx_audit_logs_v2_entity on audit_logs_v2(entity_type, entity_id);
+create index idx_user_permissions_org on user_permissions(organization_id);

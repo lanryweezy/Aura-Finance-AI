@@ -382,7 +382,7 @@ export type View =
     // Core Enhancements
     'fixedAssets' | 'reconciliation' | 'recurring' | 'yearEnd' |
     // New Features
-    'corporateCards' | 'approvals';
+    'corporateCards' | 'approvals' | 'multiEntity';
 
 // Financial Report Types
 export interface ReportPeriod {

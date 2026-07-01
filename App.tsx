@@ -61,6 +61,7 @@ const YearEndClosingView = lazy(() => import('./components/YearEndClosingView').
 const ClientPortalView = lazy(() => import('./components/ClientPortalView').then(m => ({ default: m.ClientPortalView })));
 const CorporateCardsView = lazy(() => import('./components/CorporateCardsView').then(m => ({ default: m.CorporateCardsView })));
 const ApprovalWorkflowsView = lazy(() => import('./components/ApprovalWorkflowsView').then(m => ({ default: m.ApprovalWorkflowsView })));
+const MultiEntityDashboard = lazy(() => import('./components/MultiEntityDashboard').then(m => ({ default: m.MultiEntityDashboard })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
 
 export default function App(): React.ReactNode {
@@ -241,6 +242,7 @@ export default function App(): React.ReactNode {
       chat: <AIChat transactions={transactions.transactions} invoices={invoices.invoices} bills={bills.bills} />,
       corporateCards: <CorporateCardsView />,
       approvals: <ApprovalWorkflowsView />,
+      multiEntity: <MultiEntityDashboard />,
       fixedAssets: <FixedAssetsView assets={assets.fixedAssets} onAddAsset={assets.handleAdd} onDisposeAsset={assets.handleDispose} />,
       reconciliation: <BankReconciliationView connections={useAppStore.getState().connections} transactions={transactions.transactions} />,
       recurring: <RecurringTransactionsView invoices={invoices.invoices} bills={bills.bills} />,
