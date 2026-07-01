@@ -600,3 +600,136 @@ create index idx_notifications_read on notifications(read);
 create index idx_audit_logs_v2_org on audit_logs_v2(organization_id);
 create index idx_audit_logs_v2_entity on audit_logs_v2(entity_type, entity_id);
 create index idx_user_permissions_org on user_permissions(organization_id);
+
+-- ============== EXPENSES ==============
+create table expenses (
+  id text primary key default ('exp_' || replace(uuid_generate_v4()::text, '-', '')),
+  amount numeric(15,2) not null,
+  category text not null,
+  description text not null,
+  date timestamptz not null,
+  vendor text,
+  receipt_url text,
+  receipt_data jsonb,
+  status text not null default 'draft' check (status in ('draft', 'submitted', 'approved', 'reimbursed', 'rejected')),
+  submitted_by text not null,
+  submitted_by_name text not null,
+  approved_by text,
+  reimbursed_at timestamptz,
+  project_id text,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== BULK PAYMENTS ==============
+create table bulk_payments (
+  id text primary key default ('bp_' || replace(uuid_generate_v4()::text, '-', '')),
+  name text not null,
+  status text not null default 'draft' check (status in ('draft', 'processing', 'completed', 'failed')),
+  total_amount numeric(15,2) not null,
+  recipient_count integer not null,
+  processed_count integer default 0,
+  failed_count integer default 0,
+  currency text default 'NGN',
+  completed_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table bulk_payment_recipients (
+  id text primary key default ('bpr_' || replace(uuid_generate_v4()::text, '-', '')),
+  bulk_payment_id text not null references bulk_payments(id) on delete cascade,
+  name text not null,
+  bank_name text not null,
+  account_number text not null,
+  amount numeric(15,2) not null,
+  status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed')),
+  reference text,
+  error text,
+  created_at timestamptz default now()
+);
+
+-- ============== RECONCILIATION SESSIONS ==============
+create table reconciliation_sessions (
+  id text primary key default ('rs_' || replace(uuid_generate_v4()::text, '-', '')),
+  bank_account_id text not null,
+  period text not null,
+  statement_balance numeric(15,2) not null,
+  book_balance numeric(15,2) default 0,
+  difference numeric(15,2) default 0,
+  matched_count integer default 0,
+  unmatched_count integer default 0,
+  status text not null default 'in_progress' check (status in ('in_progress', 'completed')),
+  completed_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== RECEIPT SCANS ==============
+create table receipt_scans (
+  id text primary key default ('scan_' || replace(uuid_generate_v4()::text, '-', '')),
+  image_url text not null,
+  merchant_name text,
+  date timestamptz,
+  total_amount numeric(15,2),
+  vat numeric(15,2),
+  category text,
+  description text,
+  line_items jsonb default '[]',
+  confidence numeric(3,2),
+  status text not null default 'scanned' check (status in ('scanned', 'confirmed', 'converted')),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== TAX FILINGS ==============
+create table tax_filings (
+  id text primary key default ('tax_' || replace(uuid_generate_v4()::text, '-', '')),
+  type text not null check (type in ('VAT', 'PAYE', 'WHT', 'CIT', 'NHF')),
+  period text not null,
+  jurisdiction text not null default 'Federal',
+  total_revenue numeric(15,2) default 0,
+  total_expenses numeric(15,2) default 0,
+  taxable_amount numeric(15,2) not null,
+  tax_rate numeric(5,2) not null,
+  tax_amount numeric(15,2) not null,
+  status text not null default 'draft' check (status in ('draft', 'filed', 'paid')),
+  filed_at timestamptz,
+  due_date timestamptz,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== RECURRING INVOICES ==============
+create table recurring_invoices (
+  id text primary key default ('ri_' || replace(uuid_generate_v4()::text, '-', '')),
+  customer text not null,
+  description text not null,
+  amount numeric(15,2) not null,
+  vat numeric(15,2) default 0,
+  line_items jsonb default '[]',
+  schedule jsonb not null,
+  project_id text,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== VENDOR PORTAL LINKS ==============
+create table vendor_portal_links (
+  token text primary key,
+  vendor_id text not null,
+  vendor_name text not null,
+  expires_at timestamptz default (now() + interval '30 days'),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_expenses_org on expenses(organization_id);
+create index idx_expenses_status on expenses(status);
+create index idx_bulk_payments_org on bulk_payments(organization_id);
+create index idx_tax_filings_org on tax_filings(organization_id);
+create index idx_recurring_invoices_org on recurring_invoices(organization_id);
+create index idx_vendor_portal_org on vendor_portal_links(organization_id);

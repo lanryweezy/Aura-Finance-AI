@@ -512,3 +512,143 @@ export interface ApprovalLevel {
   approverId?: string;
   approverName?: string;
 }
+
+// ============== EXPENSE MANAGEMENT ==============
+export interface Expense {
+  id: string;
+  amount: number;
+  category: string;
+  description: string;
+  date: string;
+  vendor?: string;
+  receiptUrl?: string;
+  receiptData?: ReceiptData;
+  status: 'draft' | 'submitted' | 'approved' | 'reimbursed' | 'rejected';
+  submittedBy: string;
+  submittedByName: string;
+  approvedBy?: string;
+  reimbursedAt?: string;
+  projectId?: string;
+  entityId?: string;
+  createdAt: string;
+}
+
+// ============== BULK PAYMENTS ==============
+export interface BulkPayment {
+  id: string;
+  name: string;
+  status: 'draft' | 'processing' | 'completed' | 'failed';
+  totalAmount: number;
+  recipientCount: number;
+  processedCount: number;
+  failedCount: number;
+  currency: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface BulkPaymentRecipient {
+  id: string;
+  bulkPaymentId: string;
+  name: string;
+  bankName: string;
+  accountNumber: string;
+  amount: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  reference?: string;
+  error?: string;
+}
+
+// ============== BANK RECONCILIATION ==============
+export interface BankTransaction {
+  id: string;
+  date: string;
+  amount: number;
+  type: 'debit' | 'credit';
+  narration: string;
+  balance: number;
+  category?: string;
+  matched: boolean;
+  matchedTo?: string;
+}
+
+export interface ReconciliationSession {
+  id: string;
+  bankAccountId: string;
+  period: string;
+  statementBalance: number;
+  bookBalance: number;
+  difference: number;
+  matchedCount: number;
+  unmatchedCount: number;
+  status: 'in_progress' | 'completed';
+  createdAt: string;
+  completedAt?: string;
+}
+
+// ============== RECEIPT OCR ==============
+export interface ReceiptScan {
+  id: string;
+  imageUrl: string;
+  merchantName: string;
+  date: string;
+  totalAmount: number;
+  vat: number;
+  category: string;
+  description: string;
+  lineItems: Array<{ description: string; amount: number }>;
+  confidence: number;
+  status: 'scanned' | 'confirmed' | 'converted';
+  createdAt: string;
+}
+
+// ============== TAX FILING ==============
+export interface TaxFiling {
+  id: string;
+  type: 'VAT' | 'PAYE' | 'WHT' | 'CIT' | 'NHF';
+  period: string;
+  jurisdiction: string;
+  totalRevenue: number;
+  totalExpenses: number;
+  taxableAmount: number;
+  taxRate: number;
+  taxAmount: number;
+  status: 'draft' | 'filed' | 'paid';
+  filedAt?: string;
+  dueDate: string;
+  entityId?: string;
+}
+
+// ============== RECURRING INVOICES ==============
+export interface RecurringSchedule {
+  frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
+  startDate: string;
+  nextOccurrence: string;
+  endAfterOccurrences?: number;
+  occurrencesCount: number;
+  isActive: boolean;
+  lastGenerated?: string;
+}
+
+// ============== VENDOR PORTAL ==============
+export interface VendorPortalLink {
+  token: string;
+  vendorId: string;
+  vendorName: string;
+  createdAt: string;
+  expiresAt?: string;
+}
+
+export interface VendorBill {
+  id: string;
+  vendorId: string;
+  vendorName: string;
+  description: string;
+  amount: number;
+  dueDate: string;
+  lineItems: LineItem[];
+  status: 'submitted' | 'approved' | 'rejected' | 'paid';
+  submittedAt: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+}
