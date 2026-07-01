@@ -268,6 +268,18 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                   </td>
                   <td className="p-4"><BillStatusBadge status={bill.status} /></td>
                   <td className="p-4 text-right space-x-2">
+                    <button 
+                        onClick={async () => { const { generateBillPDF } = await import('../services/pdfService'); generateBillPDF(bill); }}
+                        className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                    >
+                        PDF
+                    </button>
+                    <button 
+                        onClick={async () => { const { shareBillViaWhatsApp } = await import('../services/shareService'); shareBillViaWhatsApp(bill); }}
+                        className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/50 hover:bg-green-50 dark:hover:bg-green-400/20 transition-all active:scale-95"
+                    >
+                        WhatsApp
+                    </button>
                     {bill.status !== 'Paid' && (
                         <button 
                             onClick={() => onPayBill(bill.id)}

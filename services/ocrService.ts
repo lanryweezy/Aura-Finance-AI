@@ -3,7 +3,7 @@ import { Type } from "@google/genai";
 import { aiClient, API_KEY, withTimeout } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
-import { localDb } from './localDb';
+import { simulateDelay } from './simulateDelay';
 import type { ReceiptData } from '../types';
 import { DEFAULT_CATEGORIES } from '../constants/accounting';
 
@@ -33,7 +33,7 @@ export const ocrService = {
         }
 
         if (!aiClient || !API_KEY) {
-            return localDb.simulateRequest(async () => {
+            return simulateDelay(async () => {
                 await usageService.trackUsage('ocr_scan');
 
                 // Return slightly dynamic mock data based on filename

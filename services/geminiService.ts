@@ -3,7 +3,7 @@ import { Type } from "@google/genai";
 import { aiClient, API_KEY, withTimeout } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
-import { localDb } from './localDb';
+import { simulateDelay } from './simulateDelay';
 import type { RawTransaction, CategorizedTransaction, FinancialInsight, Invoice, ReportData, PayrollRun, Bill } from '../types';
 
 // Simple in-memory cache for transaction categorization
@@ -122,7 +122,7 @@ export const getFinancialInsights = async (
   if (transactions.length === 0 && bills.length === 0 && invoices.length === 0) return [];
 
   if (!aiClient || !API_KEY) {
-    return localDb.simulateRequest(() => {
+    return simulateDelay(() => {
         const insights: FinancialInsight[] = [];
 
         // Burn rate check

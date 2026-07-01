@@ -464,11 +464,23 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                     </button>
                     {(invoice.status === 'Unpaid' || invoice.status === 'Overdue') && (
                         <>
-                            <button
+                            <button 
                                 onClick={() => handleOpenReminder(invoice)}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-purple-600 dark:text-purple-300 border-purple-200 dark:border-purple-400/50 hover:bg-purple-50 dark:hover:bg-purple-400/20 transition-all active:scale-95"
                             >
                                 AI Reminder
+                            </button>
+                            <button 
+                                onClick={async () => { const { generateInvoicePDF } = await import('../services/pdfService'); generateInvoicePDF(invoice); }}
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                            >
+                                PDF
+                            </button>
+                            <button 
+                                onClick={async () => { const { shareInvoiceViaWhatsApp } = await import('../services/shareService'); shareInvoiceViaWhatsApp(invoice); }}
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/50 hover:bg-green-50 dark:hover:bg-green-400/20 transition-all active:scale-95"
+                            >
+                                WhatsApp
                             </button>
                             <button 
                                 onClick={() => onRecordPayment(invoice.id)}

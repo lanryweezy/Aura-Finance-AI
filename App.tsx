@@ -13,6 +13,7 @@ import { OnboardingTour } from './components/ui/OnboardingTour';
 import { CommandPalette } from './components/ui/CommandPalette';
 import { UpgradeOverlay } from './components/ui/UpgradeOverlay';
 import { useToast } from './components/ui/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useHotkeys } from './services/hooks/useHotkeys';
 import { monitoringService } from './services/monitoringService';
 import { authService } from './services/authService';
@@ -246,7 +247,9 @@ export default function App(): React.ReactNode {
 
     return (
       <Suspense fallback={<div className="p-8">{view === 'dashboard' ? <DashboardSkeleton /> : <TableSkeleton />}</div>}>
-        {views[view] || views.dashboard}
+        <ErrorBoundary viewName={view}>
+          {views[view] || views.dashboard}
+        </ErrorBoundary>
       </Suspense>
     );
   };
