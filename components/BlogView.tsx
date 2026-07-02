@@ -36,7 +36,7 @@ const BLOG_POSTS = [
 ];
 
 export const BlogView: React.FC = () => {
-  console.log("BlogView rendering");
+
   return (
     <div className="max-w-7xl mx-auto py-12 px-6 animate-in fade-in duration-500">
       <div className="text-center mb-16">
