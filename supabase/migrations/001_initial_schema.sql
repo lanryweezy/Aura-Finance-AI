@@ -733,3 +733,46 @@ create index idx_bulk_payments_org on bulk_payments(organization_id);
 create index idx_tax_filings_org on tax_filings(organization_id);
 create index idx_recurring_invoices_org on recurring_invoices(organization_id);
 create index idx_vendor_portal_org on vendor_portal_links(organization_id);
+
+-- ============== PAYMENTS ==============
+create table payments (
+  id text primary key default ('pay_' || replace(uuid_generate_v4()::text, '-', '')),
+  reference text unique not null,
+  amount numeric(15,2) not null,
+  currency text default 'NGN',
+  status text not null default 'pending' check (status in ('pending', 'success', 'failed')),
+  customer_email text,
+  metadata jsonb,
+  paid_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table payment_links (
+  reference text primary key,
+  amount numeric(15,2) not null,
+  description text,
+  metadata jsonb,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== SPEND POLICIES ==============
+create table spend_policies (
+  id text primary key default ('sp_' || replace(uuid_generate_v4()::text, '-', '')),
+  name text not null,
+  max_amount numeric(15,2) not null,
+  max_daily numeric(15,2) not null,
+  max_monthly numeric(15,2) not null,
+  blocked_categories text[] default '{}',
+  blocked_vendors text[] default '{}',
+  allowed_countries text[] default '{NG}',
+  is_active boolean default true,
+  entity_id text references entities(id) on delete set null,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_payments_org on payments(organization_id);
+create index idx_payments_reference on payments(reference);
+create index idx_spend_policies_org on spend_policies(organization_id);
