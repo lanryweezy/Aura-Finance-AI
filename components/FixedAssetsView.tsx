@@ -111,7 +111,7 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-aura-gray-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4" onClick={() => setIsModalOpen(false)}>
-                    <Card className="w-full max-w-lg p-8 space-y-6" onClick={e => e.stopPropagation()}>
+                    <Card className="w-full max-w-lg p-8 space-y-6" onClick={() => {}}>
                         <h3 className="text-2xl font-bold text-aura-gray-900 dark:text-white">New Asset Registration</h3>
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">

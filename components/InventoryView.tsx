@@ -18,11 +18,11 @@ const AddEditItemModal: React.FC<{
 }> = ({ isOpen, onClose, onSave, item }) => {
     const { currency } = useCurrency();
     const [formData, setFormData] = useState<Omit<InventoryItem, 'id'>>({
-        name: '', sku: '', category: '', type: 'Product', costPrice: 0, salePrice: 0, quantity: 0
+        name: '', sku: '', category: '', type: 'Product', costPrice: 0, salePrice: 0, quantity: 0, valuationMethod: 'Average'
     });
 
     useEffect(() => {
-        setFormData(item ? { ...item } : { name: '', sku: '', category: '', type: 'Product', costPrice: 0, salePrice: 0, quantity: 0 });
+        setFormData(item ? { ...item } : { name: '', sku: '', category: '', type: 'Product', costPrice: 0, salePrice: 0, quantity: 0, valuationMethod: 'Average' });
     }, [item, isOpen]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

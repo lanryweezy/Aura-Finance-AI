@@ -104,6 +104,8 @@ export interface PayrollSummary {
     totalNHF: number;
     totalNet: number;
     employeeCount: number;
+    totalBonuses: number;
+    totalDeductions: number;
 }
 
 export interface PayrollAdjustment {
@@ -297,6 +299,8 @@ export interface RecurringSchedule {
     nextOccurrence: string;
     endAfterOccurrences?: number;
     occurrencesCount: number;
+    isActive: boolean;
+    lastGenerated?: string;
 }
 
 // ============== MULTI-ENTITY ==============

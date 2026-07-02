@@ -13,6 +13,7 @@ import { ProfitAndLossReport } from './reports/ProfitAndLossReport';
 import { BalanceSheetReport } from './reports/BalanceSheetReport';
 import { CashFlowStatement } from './reports/CashFlowStatement';
 import { TrialBalanceReport } from './reports/TrialBalanceReport';
+import { authService } from '../services/authService';
 import { AICFOInsights } from './reports/AICFOInsights';
 import { DrillDownModal } from './reports/DrillDownModal';
 import { CashFlowForecast } from './reports/CashFlowForecast';
@@ -330,8 +331,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                 <DrillDownModal
                     isOpen={!!drillDown}
                     onClose={() => setDrillDown(null)}
-                    title={drillDown.title}
-                    transactions={drillDown.transactions}
+                    data={drillDown}
                 />
             )}
         </div>

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
     ResponsiveContainer, Cell, AreaChart, Area, PieChart, Pie
@@ -298,7 +298,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
   const [loadingInsights, setLoadingInsights] = useState<boolean>(true);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
 
-  const { bills, invoices, payrollHistory } = useAppStore();
+  const { bills, invoices, payrollHistory, theme } = useAppStore();
 
   useEffect(() => {
     let isMounted = true;

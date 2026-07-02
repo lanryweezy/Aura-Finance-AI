@@ -18,7 +18,7 @@ export function usePayroll() {
       acc.totalNet += d.netSalary;
       return acc;
     },
-    { totalGross: 0, totalPAYE: 0, totalPension: 0, totalNHF: 0, totalNet: 0, employeeCount: employees.length }
+    { totalGross: 0, totalPAYE: 0, totalPension: 0, totalNHF: 0, totalNet: 0, employeeCount: employees.length, totalBonuses: 0, totalDeductions: 0 }
   );
 
   const log = useCallback(async (action: string) => {

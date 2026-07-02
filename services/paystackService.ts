@@ -142,7 +142,7 @@ export const paystackService = {
     const successful = payments.filter(p => p.status === 'success');
     const totalReceived = successful.reduce((s, p) => s + p.amount, 0);
     const thisMonth = successful.filter(p => {
-      const d = new Date(p.createdAt || p.created_at);
+      const d = new Date(p.createdAt);
       const now = new Date();
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     });

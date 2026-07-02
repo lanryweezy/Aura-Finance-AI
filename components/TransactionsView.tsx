@@ -8,6 +8,7 @@ import { Tooltip } from './ui/Tooltip';
 import type { CategorizedTransaction, Project, Account } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { useAppStore } from '../store/useAppStore';
 import { Icons } from './ui/Icons';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
