@@ -80,15 +80,17 @@ export default defineConfig(({ mode }) => {
           output: {
             manualChunks(id) {
               if (id.includes('node_modules')) {
+                if (id.includes('react-dom') || id.includes('react-router')) return 'react-vendor';
+                if (id.includes('recharts')) return 'charts-vendor';
+                if (id.includes('@google/genai') || id.includes('gemini')) return 'ai-vendor';
+                if (id.includes('zustand')) return 'state-vendor';
                 return 'vendor';
               }
-              if (id.includes('services/geminiService') || id.includes('services/reportService')) {
-                return 'ai-services';
-              }
+              if (id.includes('services/geminiService') || id.includes('services/aiConfig')) return 'ai-services';
             }
           }
         },
-        chunkSizeWarningLimit: 1000,
+        chunkSizeWarningLimit: 500,
         sourcemap: false,
         minify: 'terser',
         terserOptions: {

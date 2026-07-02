@@ -14,6 +14,7 @@ import { CommandPalette } from './components/ui/CommandPalette';
 import { UpgradeOverlay } from './components/ui/UpgradeOverlay';
 import { useToast } from './components/ui/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { SkipNav } from './components/ui/Accessibility';
 import { useHotkeys } from './services/hooks/useHotkeys';
 import { monitoringService } from './services/monitoringService';
 import { authService } from './services/authService';
@@ -296,12 +297,13 @@ export default function App(): React.ReactNode {
 
   return (
     <div className={`flex h-screen font-sans transition-colors duration-500 ${theme === 'dark' ? 'bg-dark-primary text-white dark' : 'bg-light-primary text-aura-gray-900 light'} ${highContrast ? 'high-contrast' : ''}`}>
+      <SkipNav />
       <OnboardingTour />
       <CommandPalette />
       <Sidebar activeView={activeView} setActiveView={(v) => navigate(`/${v}`)} onLogout={handleLogout} />
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
         <Header user={user} />
-        <main className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-[2.5rem] ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-aura-gray-200 shadow-2xl'} backdrop-blur-sm border-t border-l relative`}>
+        <main id="main-content" tabIndex={-1} className={`flex-1 overflow-y-auto p-4 md:p-8 rounded-tl-[2.5rem] ${theme === 'dark' ? 'bg-dark-secondary/30 border-white/5' : 'bg-white border-aura-gray-200 shadow-2xl'} backdrop-blur-sm border-t border-l relative`}>
           {theme === 'dark' && <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-purple/20 rounded-full blur-[128px] pointer-events-none -z-10 opacity-50" />}
           <Routes>
             <Route path="/portal/:token" element={<Suspense fallback={<div className="h-screen flex items-center justify-center bg-dark-primary"><Spinner /></div>}><ClientPortalView /></Suspense>} />

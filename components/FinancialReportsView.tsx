@@ -168,9 +168,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                 </style>
             `);
             printWindow?.document.write('</head><body>');
-            // Sanitize HTML to prevent XSS
-            const sanitized = printContent.innerHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-            printWindow?.document.write(sanitized);
+            printWindow?.document.write(printContent.innerText);
             printWindow?.document.write('</body></html>');
             printWindow?.document.close();
             printWindow?.focus();

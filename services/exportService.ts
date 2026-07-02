@@ -69,3 +69,26 @@ function downloadFile(filename: string, content: string, mimeType: string) {
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+export function exportFirsVatSchedule(invoices: any[], startDate: string, endDate: string) {
+  const data = invoices.map(i => ({
+    invoiceNumber: i.id?.slice(-6) || '',
+    customer: i.customer,
+    date: i.issueDate,
+    amount: i.amount,
+    vat: i.vat,
+    total: i.total,
+  }));
+  exportToCSV(`FIRS-VAT-Schedule-${startDate}-to-${endDate}`, data);
+}
+
+export function exportFirsWhtSchedule(invoices: any[], transactions: any[], startDate: string, endDate: string) {
+  const data = invoices.map(i => ({
+    invoiceNumber: i.id?.slice(-6) || '',
+    customer: i.customer,
+    date: i.issueDate,
+    amount: i.amount,
+    whtApplied: i.whtApplied ? 'Yes' : 'No',
+  }));
+  exportToCSV(`FIRS-WHT-Schedule-${startDate}-to-${endDate}`, data);
+}

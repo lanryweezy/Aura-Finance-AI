@@ -61,8 +61,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                 </style>
             `);
             printWindow?.document.write('</head><body>');
-            const sanitized = printContent.innerHTML.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-            printWindow?.document.write(sanitized);
+            printWindow?.document.write(printContent.innerText);
             printWindow?.document.write('</body></html>');
             printWindow?.document.close();
             printWindow?.focus();

@@ -440,7 +440,8 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
       <Card className="h-full overflow-hidden flex flex-col border-gray-100 dark:border-white/5">
         <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Invoice Details</h3>
         <div className="overflow-y-auto flex-grow">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[900px]">
             <thead className="bg-aura-gray-50 dark:bg-dark-tertiary">
               <tr>
                 <th className="p-4 text-xs font-black uppercase tracking-widest text-aura-gray-500 dark:text-gray-400">Customer</th>
@@ -549,6 +550,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </Card>
       <EmailModal

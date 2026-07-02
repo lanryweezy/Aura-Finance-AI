@@ -1,0 +1,49 @@
+import { describe, it, expect } from 'vitest';
+import { generateCashFlowForecast } from '../forecastingService';
+
+describe('Cash Flow Forecasting', () => {
+  const mockTransactions = [
+    { id: '1', amount: 500000, type: 'credit' as const, date: '2026-06-01', narration: 'Invoice payment', balance: 2000000, category: 'Revenue' },
+    { id: '2', amount: 200000, type: 'debit' as const, date: '2026-06-05', narration: 'Office rent', balance: 1800000, category: 'Rent' },
+    { id: '3', amount: 100000, type: 'debit' as const, date: '2026-06-10', narration: 'Salaries', balance: 1700000, category: 'Salaries' },
+    { id: '4', amount: 300000, type: 'credit' as const, date: '2026-06-15', narration: 'Client payment', balance: 2000000, category: 'Revenue' },
+  ];
+
+  const mockInvoices = [
+    { id: '1', total: 150000, status: 'Unpaid' as const, customer: 'Client A', issueDate: '2026-06-01', dueDate: '2026-07-01' } as any,
+  ];
+
+  const mockBills = [
+    { id: '1', amount: 80000, status: 'Unpaid' as const, vendor: 'Vendor A', issueDate: '2026-06-01', dueDate: '2026-07-01' } as any,
+  ];
+
+  it('should generate 6-month forecast', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(result.forecasts).toHaveLength(6);
+  });
+
+  it('should calculate correct current balance', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(result.currentBalance).toBe(2000000);
+  });
+
+  it('should calculate monthly burn rate', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(result.monthlyBurnRate).toBeGreaterThan(0);
+  });
+
+  it('should calculate runway days', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(result.runwayDays).toBeGreaterThan(0);
+  });
+
+  it('should assign risk level', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(['Low', 'Medium', 'High']).toContain(result.riskLevel);
+  });
+
+  it('should provide recommendations', () => {
+    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+    expect(result.recommendations.length).toBeGreaterThan(0);
+  });
+});
