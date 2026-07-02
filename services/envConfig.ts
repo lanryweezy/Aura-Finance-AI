@@ -10,6 +10,8 @@ const OPTIONAL_KEYS = [
   'VITE_NRS_API_KEY',
   'VITE_NRS_SERVICE_ID',
   'VITE_NRS_API_URL',
+  'VITE_MONO_SECRET',
+  'VITE_SENTRY_DSN',
 ] as const;
 
 interface EnvStatus {

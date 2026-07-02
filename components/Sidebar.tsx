@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { NAV_ITEMS, NavItem } from '../constants';
-import type { View, Permission } from '../types';
+import type { View } from '../types';
 import { usePermissions } from '../services/hooks/usePermissions';
 import { useAppStore } from '../store/useAppStore';
 
@@ -59,7 +59,7 @@ const NavMenu: React.FC<{
     const theme = useAppStore(state => state.theme);
 
     // Mapping view IDs to required permissions
-    const viewPermissionMap: Record<string, Permission> = {
+    const viewPermissionMap: Record<string, string> = {
         'dashboard': 'view_dashboard',
         'transactions': 'view_transactions',
         'reports': 'view_reports',

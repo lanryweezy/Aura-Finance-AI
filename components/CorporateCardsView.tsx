@@ -12,7 +12,7 @@ export const CorporateCardsView: React.FC = () => {
   const [cards, setCards] = useState<CorporateCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [newCard, setNewCard] = useState({ name: '', type: 'virtual' as const, spendLimit: 500000 });
+  const [newCard, setNewCard] = useState<{ name: string; type: 'virtual' | 'physical'; spendLimit: number }>({ name: '', type: 'virtual', spendLimit: 500000 });
 
   useEffect(() => {
     cardService.fetchCards().then(setCards).finally(() => setLoading(false));

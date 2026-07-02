@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_NRS_API_KEY: string;
   readonly VITE_NRS_SERVICE_ID: string;
   readonly VITE_NRS_API_URL: string;
+  readonly VITE_MONO_SECRET: string;
 }
 
 interface ImportMeta {

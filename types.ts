@@ -620,16 +620,6 @@ export interface TaxFiling {
 }
 
 // ============== RECURRING INVOICES ==============
-export interface RecurringSchedule {
-  frequency: 'weekly' | 'monthly' | 'quarterly' | 'yearly';
-  startDate: string;
-  nextOccurrence: string;
-  endAfterOccurrences?: number;
-  occurrencesCount: number;
-  isActive: boolean;
-  lastGenerated?: string;
-}
-
 // ============== VENDOR PORTAL ==============
 export interface VendorPortalLink {
   token: string;

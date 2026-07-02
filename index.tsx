@@ -8,6 +8,9 @@ import { registerSW } from 'virtual:pwa-register';
 import { ToastProvider } from './components/ui/Toast';
 import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { CurrencyProvider } from './components/ui/CurrencyProvider';
+import { initSentry } from './services/sentryService';
+
+initSentry();
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {

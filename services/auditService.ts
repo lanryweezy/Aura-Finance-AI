@@ -79,7 +79,7 @@ export const auditService = {
   },
 
   // Helper: compute changes between old and new objects
-  diff: (oldObj: Record<string, any>, newObj: Record<string, any>, excludeFields: string[] = ['id', 'created_at', 'updated_at']): FieldChange[] {
+  diff(oldObj: Record<string, any>, newObj: Record<string, any>, excludeFields: string[] = ['id', 'created_at', 'updated_at']): FieldChange[] {
     const changes: FieldChange[] = [];
     const allKeys = new Set([...Object.keys(oldObj), ...Object.keys(newObj)]);
     allKeys.forEach(key => {

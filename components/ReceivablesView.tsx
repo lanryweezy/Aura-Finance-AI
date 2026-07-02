@@ -504,7 +504,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                             >
                                 Portal
                             </button>
-                            {nrsApiService.isConfigured() && invoice.status !== 'Paid' && (
+                            {nrsApiService.isConfigured() && (invoice.status as string) !== 'Paid' && (
                                 <button 
                                     onClick={async () => {
                                         setSubmittingNrs(invoice.id);
