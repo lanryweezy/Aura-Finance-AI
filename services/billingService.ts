@@ -79,8 +79,8 @@ export const billingService = {
   hasFeature: (plan: string, featureId: string): boolean => {
     const permissions: Record<string, string[]> = {
       'Free': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat'],
-      'Growth': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders', 'corporateCards', 'approvals'],
-      'Enterprise': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders', 'multi_entity', 'fixedAssets', 'auditTrail', 'yearEnd', 'corporateCards', 'approvals'],
+      'Growth': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders', 'corporateCards', 'approvals', 'expenses', 'bulkPayments', 'reconciliation', 'vendorPortal'],
+      'Enterprise': ['dashboard', 'transactions', 'reports', 'receivables', 'payables', 'connections', 'settings', 'chat', 'inventory', 'payroll', 'taxFiling', 'budgeting', 'projects', 'contacts', 'estimates', 'purchaseOrders', 'multi_entity', 'fixedAssets', 'auditTrail', 'yearEnd', 'corporateCards', 'approvals', 'expenses', 'bulkPayments', 'reconciliation', 'vendorPortal'],
     };
     return permissions[plan]?.includes(featureId) || false;
   },
