@@ -2,6 +2,7 @@
 import React from 'react';
 import type { PayrollRun } from '../../types';
 import { useCurrency } from '../ui/CurrencyProvider';
+import { generatePayrollSummaryPDF, generateAllPayslipsPDF, generatePayslipPDF } from '../../services/payrollPdfService';
 
 interface PayrollRunDetailModalProps {
     isOpen: boolean;
@@ -56,6 +57,8 @@ export const PayrollRunDetailModal: React.FC<PayrollRunDetailModalProps> = ({ is
                         <button onClick={handleDownloadPaymentSchedule} className="px-3 py-1.5 bg-blue-500/10 border border-blue-400/50 text-blue-600 dark:text-blue-300 text-sm rounded-md hover:bg-blue-500/20 transition-colors">Download Payment Schedule</button>
                         <button onClick={handleDownloadPAYESchedule} className="px-3 py-1.5 bg-orange-500/10 border border-orange-400/50 text-orange-600 dark:text-orange-300 text-sm rounded-md hover:bg-orange-500/20 transition-colors">Download PAYE Schedule</button>
                         <button onClick={handleDownloadPensionSchedule} className="px-3 py-1.5 bg-cyan-500/10 border border-cyan-400/50 text-cyan-600 dark:text-cyan-300 text-sm rounded-md hover:bg-cyan-500/20 transition-colors">Download Pension Schedule</button>
+                        <button onClick={() => generatePayrollSummaryPDF(run)} className="px-3 py-1.5 bg-brand-cyan/10 border border-brand-cyan/50 text-brand-cyan text-sm rounded-md hover:bg-brand-cyan/20 transition-colors font-bold">📄 Summary PDF</button>
+                        <button onClick={() => generateAllPayslipsPDF(run)} className="px-3 py-1.5 bg-brand-purple/10 border border-brand-purple/50 text-brand-purple text-sm rounded-md hover:bg-brand-purple/20 transition-colors font-bold">📄 All Payslips PDF</button>
                     </div>
                 </div>
 
@@ -66,18 +69,22 @@ export const PayrollRunDetailModal: React.FC<PayrollRunDetailModalProps> = ({ is
                                 <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black">Employee</th>
                                 <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black text-right">Total Income</th>
                                 <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black text-right">Total Deductions</th>
-                                <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black text-right">Net Salary</th>
-                            </tr>
-                        </thead>
-                         <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                             {run.payslips.map(p => (
-                                 <tr key={p.employeeId} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/5 transition-colors">
-                                     <td className="p-3 text-aura-gray-900 dark:text-white font-medium">{p.employeeName}</td>
-                                     <td className="p-3 font-mono text-aura-gray-600 dark:text-gray-300 text-right">{formatAmount(p.totalIncome)}</td>
-                                     <td className="p-3 font-mono text-red-600 dark:text-red-400 text-right">({formatAmount(p.totalDeductions)})</td>
-                                     <td className="p-3 font-mono font-black text-brand-cyan text-right">{formatAmount(p.netSalary)}</td>
-                                 </tr>
-                             ))}
+                                 <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black text-right">Net Salary</th>
+                                 <th className="p-2 text-sm text-gray-500 dark:text-gray-400 uppercase tracking-widest font-black text-right">PDF</th>
+                             </tr>
+                         </thead>
+                          <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                              {run.payslips.map(p => (
+                                  <tr key={p.employeeId} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                                      <td className="p-3 text-aura-gray-900 dark:text-white font-medium">{p.employeeName}</td>
+                                      <td className="p-3 font-mono text-aura-gray-600 dark:text-gray-300 text-right">{formatAmount(p.totalIncome)}</td>
+                                      <td className="p-3 font-mono text-red-600 dark:text-red-400 text-right">({formatAmount(p.totalDeductions)})</td>
+                                      <td className="p-3 font-mono font-black text-brand-cyan text-right">{formatAmount(p.netSalary)}</td>
+                                      <td className="p-3 text-right">
+                                        <button onClick={() => generatePayslipPDF(p, run.period)} className="text-xs text-brand-cyan hover:underline">📄</button>
+                                      </td>
+                                  </tr>
+                              ))}
                         </tbody>
                     </table>
                 </div>
