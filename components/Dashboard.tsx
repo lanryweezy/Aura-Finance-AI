@@ -12,6 +12,9 @@ import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
 import { NLSearch } from './NLSearch';
+import { SavingsInsightsWidget } from './SavingsInsightsWidget';
+import { CloseCheckWidget } from './CloseCheckWidget';
+import { SpendPolicyWidget } from './SpendPolicyWidget';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
@@ -421,6 +424,12 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       <AIAlerts />
 
       <NLSearch />
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <SavingsInsightsWidget />
+        <CloseCheckWidget />
+        <SpendPolicyWidget />
+      </div>
 
       {/* Quick Actions Bar */}
       <div id="quick-actions-bar" className="grid grid-cols-2 md:grid-cols-4 gap-4">
