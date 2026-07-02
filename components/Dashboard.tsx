@@ -15,6 +15,7 @@ import { NLSearch } from './NLSearch';
 import { SavingsInsightsWidget } from './SavingsInsightsWidget';
 import { CloseCheckWidget } from './CloseCheckWidget';
 import { SpendPolicyWidget } from './SpendPolicyWidget';
+import { ForecastingDashboard } from './ForecastingDashboard';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
@@ -429,6 +430,10 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
         <SavingsInsightsWidget />
         <CloseCheckWidget />
         <SpendPolicyWidget />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ForecastingDashboard />
       </div>
 
       {/* Quick Actions Bar */}

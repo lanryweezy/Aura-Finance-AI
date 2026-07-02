@@ -1,75 +1,71 @@
+import type { CategorizedTransaction, Invoice, Bill, PayrollRun, ReportData } from '../types';
 
-export const exportToCSV = (filename: string, data: any[]) => {
-    if (!data || !data.length) return;
+export function exportToCSV(filename: string, data: any[], columns?: string[]) {
+  if (!data || data.length === 0) return;
 
-    const headers = Object.keys(data[0]);
-    const csvContent = [
-        headers.join(','),
-        ...data.map(row =>
-            headers.map(header => {
-                const value = row[header];
-                // Handle strings with commas
-                if (typeof value === 'string' && value.includes(',')) {
-                    return `"${value}"`;
-                }
-                return value;
-            }).join(',')
-        )
-    ].join('\n');
+  const headers = columns || Object.keys(data[0]);
+  const rows = data.map(row => headers.map(h => {
+    const val = row[h];
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
+    return String(val);
+  }).join(','));
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${filename}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-};
+  const csv = [headers.join(','), ...rows].join('\n');
+  downloadFile(`${filename}.csv`, csv, 'text/csv');
+}
 
-export const exportFirsVatSchedule = (invoices: any[], periodStart: string, periodEnd: string) => {
-    const schedule = invoices.map(inv => ({
-        'Customer Name': inv.customer,
-        'TIN': 'N/A', // Placeholder for TIN
-        'Invoice Date': new Date(inv.issueDate).toLocaleDateString(),
-        'Invoice Number': inv.id.slice(-6).toUpperCase(),
-        'Net Amount': inv.amount,
-        'VAT Amount (7.5%)': inv.vat,
-        'Gross Amount': inv.total
-    }));
+export function exportToExcel(filename: string, data: any[], columns?: string[]) {
+  // Simple HTML table export that Excel can open
+  const headers = columns || Object.keys(data[0]);
+  const headerRow = `<tr>${headers.map(h => `<th style="font-weight:bold;background:#f0f0f0;padding:8px;border:1px solid #ddd">${h}</th>`).join('')}</tr>`;
+  const dataRows = data.map(row =>
+    `<tr>${headers.map(h => `<td style="padding:8px;border:1px solid #ddd">${row[h] ?? ''}</td>`).join('')}</tr>`
+  ).join('');
 
-    exportToCSV(`FIRS_VAT_Schedule_${periodStart}_to_${periodEnd}`, schedule);
-};
+  const html = `<html><head><meta charset="utf-8"></head><body><table>${headerRow}${dataRows}</table></body></html>`;
+  downloadFile(`${filename}.xls`, html, 'application/vnd.ms-excel');
+}
 
-export const exportFirsWhtSchedule = (invoices: any[], transactions: any[], periodStart: string, periodEnd: string) => {
-    // Suffered WHT (Income)
-    const incomeSchedule = invoices.filter(i => i.whtApplied).map(inv => ({
-        'Beneficiary/Supplier': inv.customer,
-        'TIN': 'N/A',
-        'Nature of Transaction': 'Services/Supply',
-        'Date': new Date(inv.issueDate).toLocaleDateString(),
-        'Gross Amount': inv.amount,
-        'WHT Rate': '5%',
-        'WHT Amount': inv.amount * 0.05,
-        'Type': 'Suffered (Credit)'
-    }));
+export function exportToJSON(filename: string, data: any[]) {
+  downloadFile(`${filename}.json`, JSON.stringify(data, null, 2), 'application/json');
+}
 
-    // Payable WHT (Expenses)
-    const expenseSchedule = transactions
-        .filter(t => t.type === 'debit' && (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors'))
-        .map(t => ({
-            'Beneficiary/Supplier': t.narration,
-            'TIN': 'N/A',
-            'Nature of Transaction': t.category,
-            'Date': new Date(t.date).toLocaleDateString(),
-            'Gross Amount': t.amount,
-            'WHT Rate': '5%',
-            'WHT Amount': t.amount * 0.05,
-            'Type': 'Payable (Debit)'
-        }));
+export function printElement(elementId: string) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
 
-    exportToCSV(`FIRS_WHT_Schedule_${periodStart}_to_${periodEnd}`, [...incomeSchedule, ...expenseSchedule]);
-};
+  const printWindow = window.open('', '_blank');
+  if (!printWindow) return;
+
+  printWindow.document.write(`
+    <html><head>
+      <title>Print</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+        th { background: #f5f5f5; font-weight: bold; }
+        h1 { font-size: 18px; margin-bottom: 8px; }
+        h2 { font-size: 14px; color: #666; margin-bottom: 16px; }
+        .total { font-weight: bold; border-top: 2px solid #333; }
+        @media print { body { padding: 0; } }
+      </style>
+    </head><body>${element.innerHTML}</body></html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  setTimeout(() => { printWindow.print(); printWindow.close(); }, 500);
+}
+
+function downloadFile(filename: string, content: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

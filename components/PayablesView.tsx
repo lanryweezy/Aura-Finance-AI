@@ -5,6 +5,7 @@ import { Spinner } from './ui/Spinner';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { EmailModal } from './EmailModal';
 import { exportToCSV } from '../services/exportService';
+import { exportToCSV } from '../services/exportService';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -205,10 +206,13 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
                 <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Accounts Payable</h2>
                 <p className="text-gray-600 dark:text-gray-400 mt-1 font-medium">Manage vendor bills, purchase orders, and outgoing payments.</p>
             </div>
-            <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                Add New Bill
-            </button>
+            <div className="flex gap-2">
+                <button onClick={() => exportToCSV('bills', filteredBills.map(b => ({ id: b.id.slice(-6), vendor: b.vendor, amount: b.amount, status: b.status, issueDate: b.issueDate, dueDate: b.dueDate })))} className="px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-500 hover:bg-white/10">📊 CSV</button>
+                <button onClick={() => setIsModalOpen(true)} className="bg-brand-cyan hover:bg-brand-cyan/90 text-black font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 transition-all shadow-lg shadow-brand-cyan/20 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                    Add New Bill
+                </button>
+            </div>
         </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

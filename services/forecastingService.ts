@@ -1,79 +1,105 @@
+import type { CategorizedTransaction, Invoice, Bill, PayrollRun } from '../types';
 
-import { CategorizedTransaction, Invoice, Bill, PayrollRun } from '../types';
-
-export interface ForecastingResult {
-    predictedRunwayDays: number;
-    monthlyBurnRate: number;
-    predictedRevenueNextMonth: number;
-    riskLevel: 'Low' | 'Medium' | 'High';
-    recommendations: string[];
+export interface CashFlowForecast {
+  month: string;
+  projectedIncome: number;
+  projectedExpenses: number;
+  netCashFlow: number;
+  cumulativeBalance: number;
 }
 
-export const forecastingService = {
-    calculateForecast: (
-        transactions: CategorizedTransaction[],
-        bills: Bill[],
-        invoices: Invoice[],
-        payroll: PayrollRun[]
-    ): ForecastingResult => {
-        // 1. Calculate Monthly Burn Rate (Average of last 3 months expenses)
-        const now = new Date();
-        const threeMonthsAgo = new Date();
-        threeMonthsAgo.setMonth(now.getMonth() - 3);
+export interface ForecastResult {
+  forecasts: CashFlowForecast[];
+  currentBalance: number;
+  monthlyBurnRate: number;
+  runwayDays: number;
+  riskLevel: 'Low' | 'Medium' | 'High';
+  recommendations: string[];
+}
 
-        const recentExpenses = transactions
-            .filter(t => t.type === 'debit' && new Date(t.date) >= threeMonthsAgo)
-            .reduce((sum, t) => sum + t.amount, 0);
+export function generateCashFlowForecast(
+  transactions: CategorizedTransaction[],
+  invoices: Invoice[],
+  bills: Bill[],
+  payroll: PayrollRun[],
+  months: number = 6
+): ForecastResult {
+  const now = new Date();
+  const forecasts: CashFlowForecast[] = [];
 
-        const monthlyBurnRate = recentExpenses / 3 || 1; // Avoid division by zero
+  // Calculate historical averages
+  const last3Months = transactions.filter(t => {
+    const d = new Date(t.date);
+    const threeMonthsAgo = new Date(now.getTime() - 90 * 86400000);
+    return d >= threeMonthsAgo;
+  });
 
-        // 2. Current Cash Balance (Simplified sum of last balances or mock)
-        const currentCash = transactions.length > 0 ? (transactions[0].balance || 5000000) : 5000000;
+  const avgMonthlyIncome = last3Months.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0) / 3;
+  const avgMonthlyExpenses = last3Months.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0) / 3;
 
-        // 3. Predicted Runway
-        const predictedRunwayDays = Math.round((currentCash / (monthlyBurnRate / 30)));
+  // Pending receivables (expected income)
+  const pendingReceivables = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
+  // Pending payables (expected expenses)
+  const pendingPayables = bills.filter(b => b.status !== 'Paid').reduce((s, b) => s + b.amount, 0);
+  // Monthly payroll
+  const latestPayroll = payroll.length > 0 ? payroll[0] : null;
+  const monthlyPayroll = latestPayroll ? latestPayroll.summary.totalNet : 0;
 
-        // 4. Predicted Revenue (Average of last 3 months income + pending invoices)
-        const recentIncome = transactions
-            .filter(t => t.type === 'credit' && new Date(t.date) >= threeMonthsAgo)
-            .reduce((sum, t) => sum + t.amount, 0);
+  // Current balance (from latest transaction)
+  const currentBalance = transactions.length > 0 ? (transactions[0].balance || 5000000) : 5000000;
 
-        const avgMonthlyIncome = recentIncome / 3;
-        const pendingInvoicesTotal = invoices
-            .filter(i => i.status !== 'Paid')
-            .reduce((sum, i) => sum + i.total, 0);
+  let cumulativeBalance = currentBalance;
 
-        // Simple prediction: avg income + 70% of pending invoices
-        const predictedRevenueNextMonth = avgMonthlyIncome + (pendingInvoicesTotal * 0.7);
+  for (let i = 0; i < months; i++) {
+    const monthDate = new Date(now.getFullYear(), now.getMonth() + i + 1, 1);
+    const monthName = monthDate.toLocaleString('default', { month: 'short', year: 'numeric' });
 
-        // 5. Risk Level & Recommendations
-        let riskLevel: 'Low' | 'Medium' | 'High' = 'Low';
-        const recommendations: string[] = [];
+    // Project income (avg + portion of receivables)
+    const projectedIncome = avgMonthlyIncome + (i === 0 ? pendingReceivables * 0.3 : avgMonthlyIncome * (1 + i * 0.02));
+    // Project expenses (avg + payroll + portion of payables)
+    const projectedExpenses = avgMonthlyExpenses + monthlyPayroll + (i === 0 ? pendingPayables * 0.4 : avgMonthlyExpenses * (1 + i * 0.01));
+    const netCashFlow = projectedIncome - projectedExpenses;
+    cumulativeBalance += netCashFlow;
 
-        if (predictedRunwayDays < 30) {
-            riskLevel = 'High';
-            recommendations.push("Critical: Cash runway is less than 30 days. Prioritize invoice collection.");
-        } else if (predictedRunwayDays < 90) {
-            riskLevel = 'Medium';
-            recommendations.push("Warning: Runway is below 90 days. Review non-essential expenses.");
-        }
+    forecasts.push({
+      month: monthName,
+      projectedIncome: Math.round(projectedIncome),
+      projectedExpenses: Math.round(projectedExpenses),
+      netCashFlow: Math.round(netCashFlow),
+      cumulativeBalance: Math.round(cumulativeBalance),
+    });
+  }
 
-        if (pendingInvoicesTotal > avgMonthlyIncome) {
-            recommendations.push("High volume of pending receivables. Consider automated reminders.");
-        }
+  const monthlyBurnRate = avgMonthlyExpenses + monthlyPayroll;
+  const runwayDays = monthlyBurnRate > 0 ? Math.round((currentBalance / monthlyBurnRate) * 30) : 999;
 
-        const upcomingBills = bills.filter(b => b.status === 'Unpaid').reduce((sum, b) => sum + b.amount, 0);
-        if (upcomingBills > currentCash) {
-            riskLevel = 'High';
-            recommendations.push("Upcoming bills exceed current cash balance.");
-        }
+  let riskLevel: 'Low' | 'Medium' | 'High' = 'Low';
+  const recommendations: string[] = [];
 
-        return {
-            predictedRunwayDays,
-            monthlyBurnRate,
-            predictedRevenueNextMonth,
-            riskLevel,
-            recommendations
-        };
-    }
-};
+  if (runwayDays < 30) {
+    riskLevel = 'High';
+    recommendations.push('Critical: Less than 30 days of runway. Cut non-essential spending immediately.');
+    recommendations.push('Accelerate receivables collection — send reminders for all overdue invoices.');
+  } else if (runwayDays < 90) {
+    riskLevel = 'Medium';
+    recommendations.push('Warning: Runway is under 90 days. Review upcoming bills and defer non-critical payments.');
+  }
+
+  if (pendingReceivables > avgMonthlyIncome * 2) {
+    recommendations.push(`High receivables (₦${pendingReceivables.toLocaleString()}). Follow up with overdue clients.`);
+  }
+
+  if (pendingPayables > currentBalance * 0.5) {
+    recommendations.push('Upcoming bills exceed 50% of current balance. Negotiate payment terms with vendors.');
+  }
+
+  if (forecasts.some(f => f.netCashFlow < 0)) {
+    recommendations.push('Negative cash flow projected in one or more months. Review pricing or cut costs.');
+  }
+
+  if (recommendations.length === 0) {
+    recommendations.push('Cash flow looks healthy. Consider investing surplus in growth initiatives.');
+  }
+
+  return { forecasts, currentBalance, monthlyBurnRate: Math.round(monthlyBurnRate), runwayDays, riskLevel, recommendations };
+}

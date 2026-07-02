@@ -9,6 +9,7 @@ import { clientPortalService } from '../services/clientPortalService';
 import { nrsSubmissionService, type NRSStatus } from '../services/nrsSubmissionService';
 import { nrsApiService } from '../services/nrsApiService';
 import type { InvoiceUploadData } from '../services/invoiceUploadService';
+import { exportToCSV, exportToExcel } from '../services/exportService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
@@ -391,6 +392,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                 <p className="text-gray-500 dark:text-gray-400 mt-1 font-medium">Invoicing, customer payments, and revenue tracking.</p>
             </div>
             <div className="flex gap-2">
+                <button onClick={() => exportToCSV('invoices', filteredInvoices.map(i => ({ id: i.id.slice(-6), customer: i.customer, amount: i.amount, total: i.total, status: i.status, issueDate: i.issueDate, dueDate: i.dueDate })))} className="px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs font-bold text-gray-500 hover:bg-white/10">📊 CSV</button>
                 <button onClick={() => setIsUploadModalOpen(true)} className="bg-white/5 dark:bg-white/5 text-gray-700 dark:text-gray-300 font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 transition-all border border-gray-200 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/10 active:scale-95">
                     📄 Upload
                 </button>
@@ -491,6 +493,12 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
                             >
                                 PDF
+                            </button>
+                            <button 
+                                onClick={() => { const { printElement } = require('../services/exportService'); }}
+                                className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                            >
+                                🖨️
                             </button>
                             <button 
                                 onClick={() => { setEmailRecipient(invoice); setIsEmailModalOpen(true); }}
