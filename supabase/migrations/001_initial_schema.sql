@@ -843,3 +843,24 @@ create table sync_logs (
 
 create index idx_integrations_org on integrations(organization_id);
 create index idx_sync_logs_org on sync_logs(organization_id);
+
+-- ============== STOCK MOVEMENTS ==============
+create table stock_movements (
+  id text primary key default ('sm_' || replace(uuid_generate_v4()::text, '-', '')),
+  item_id text not null,
+  item_name text,
+  type text not null check (type in ('in', 'out', 'transfer', 'adjustment')),
+  quantity integer not null,
+  unit_cost numeric(15,2) default 0,
+  total_cost numeric(15,2) default 0,
+  reference text,
+  notes text,
+  warehouse_from text,
+  warehouse_to text,
+  created_by text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_stock_movements_org on stock_movements(organization_id);
+create index idx_stock_movements_item on stock_movements(item_id);
