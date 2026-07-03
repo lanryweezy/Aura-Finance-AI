@@ -951,3 +951,76 @@ create index idx_credit_notes_org on credit_notes(organization_id);
 create index idx_overtime_org on overtime_records(organization_id);
 create index idx_leave_requests_org on leave_requests(organization_id);
 create index idx_leave_balances_org on leave_balances(organization_id);
+
+-- ============== MILEAGE ENTRIES ==============
+create table mileage_entries (
+  id text primary key default ('me_' || replace(uuid_generate_v4()::text, '-', '')),
+  employee_id text not null,
+  date timestamptz not null,
+  start_location text,
+  end_location text,
+  kilometers numeric(8,2) not null,
+  purpose text,
+  rate_per_km numeric(10,2) default 100,
+  amount numeric(15,2) not null,
+  approved boolean default false,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== SALARY ADVANCES ==============
+create table salary_advances (
+  id text primary key default ('sa_' || replace(uuid_generate_v4()::text, '-', '')),
+  employee_id text not null,
+  employee_name text,
+  amount numeric(15,2) not null,
+  repayment_months integer not null,
+  monthly_deduction numeric(15,2) not null,
+  reason text,
+  status text not null default 'active' check (status in ('active', 'completed', 'cancelled')),
+  start_date timestamptz default now(),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== BONUS SCHEMES ==============
+create table bonus_schemes (
+  id text primary key default ('bs_' || replace(uuid_generate_v4()::text, '-', '')),
+  name text not null,
+  type text not null check (type in ('performance', 'attendance', 'target', 'custom')),
+  calculation text,
+  is_active boolean default true,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== REMITTANCE RECORDS ==============
+create table remittance_records (
+  id text primary key default ('rem_' || replace(uuid_generate_v4()::text, '-', '')),
+  type text not null check (type in ('pension', 'nhf')),
+  period text not null,
+  total_amount numeric(15,2) not null,
+  employee_count integer not null,
+  status text not null default 'draft' check (status in ('draft', 'submitted', 'confirmed')),
+  submitted_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== ACTIVE SESSIONS ==============
+create table active_sessions (
+  id text primary key default ('sess_' || replace(uuid_generate_v4()::text, '-', '')),
+  user_id text not null,
+  user_name text,
+  ip_address text,
+  user_agent text,
+  last_active timestamptz default now(),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_mileage_org on mileage_entries(organization_id);
+create index idx_salary_advances_org on salary_advances(organization_id);
+create index idx_bonus_schemes_org on bonus_schemes(organization_id);
+create index idx_remittance_org on remittance_records(organization_id);
+create index idx_active_sessions_org on active_sessions(organization_id);
