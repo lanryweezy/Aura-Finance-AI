@@ -7,6 +7,7 @@ import { Header } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { AuthView } from './components/AuthView';
 import { LandingView } from './components/LandingView';
+import { DemoMode } from './components/DemoMode';
 import { Spinner } from './components/ui/Spinner';
 import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 import { OnboardingTour } from './components/ui/OnboardingTour';
@@ -81,6 +82,7 @@ export default function App(): React.ReactNode {
   } = useAppStore();
 
   const [showAuth, setShowAuth] = useState(false);
+  const [showDemo, setShowDemo] = useState(false);
   const [legalType, setLegalType] = useState<'privacy' | 'terms' | null>(null);
 
   const payroll = usePayroll();
@@ -292,7 +294,11 @@ export default function App(): React.ReactNode {
         <AuthView onLogin={handleLogin} />
       </div>
     );
-    return <LandingView onGetStarted={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onNavigate={(v) => navigate(`/${v}`)} />;
+    return <LandingView onGetStarted={() => setShowAuth(true)} onLogin={() => setShowAuth(true)} onNavigate={(v) => navigate(`/${v}`)} onDemo={() => setShowDemo(true)} />;
+  }
+
+  if (showDemo) {
+    return <DemoMode />;
   }
 
   return (

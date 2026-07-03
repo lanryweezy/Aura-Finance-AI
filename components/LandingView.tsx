@@ -25,9 +25,10 @@ interface LandingViewProps {
   onGetStarted: () => void;
   onLogin: () => void;
   onNavigate: (view: View) => void;
+  onDemo?: () => void;
 }
 
-export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin, onNavigate }) => {
+export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin, onNavigate, onDemo }) => {
   return (
     <div className="min-h-screen bg-dark-primary text-white font-sans selection:bg-brand-cyan selection:text-black">
       {/* Navigation */}
@@ -95,8 +96,11 @@ export const LandingView: React.FC<LandingViewProps> = ({ onGetStarted, onLogin,
               Start Your Free Trial
               <ArrowRight className="group-hover:translate-x-1 transition-transform" />
             </button>
-            <button className="w-full sm:w-auto px-10 py-5 bg-white/5 border border-white/10 text-white font-black text-lg rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-3">
-              Watch Demo
+            <button
+              onClick={onDemo}
+              className="w-full sm:w-auto px-10 py-5 bg-white/5 border border-white/10 text-white font-black text-lg rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+            >
+              Try Demo — No Signup
             </button>
           </div>
 
