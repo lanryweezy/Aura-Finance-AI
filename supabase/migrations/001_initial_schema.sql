@@ -776,3 +776,42 @@ create table spend_policies (
 create index idx_payments_org on payments(organization_id);
 create index idx_payments_reference on payments(reference);
 create index idx_spend_policies_org on spend_policies(organization_id);
+
+-- ============== REMINDER CONFIGS ==============
+create table reminder_configs (
+  id text primary key default ('rc_' || replace(uuid_generate_v4()::text, '-', '')),
+  enabled boolean default true,
+  days_after_due integer[] default '{1,7,14,30}',
+  template text default 'followup' check (template in ('formal', 'casual', 'followup', 'overdue')),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== WEBHOOKS ==============
+create table webhooks (
+  id text primary key default ('wh_' || replace(uuid_generate_v4()::text, '-', '')),
+  url text not null,
+  events text[] not null,
+  secret text not null,
+  is_active boolean default true,
+  last_triggered timestamptz,
+  failure_count integer default 0,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table webhook_events (
+  id text primary key default ('whe_' || replace(uuid_generate_v4()::text, '-', '')),
+  webhook_id text not null references webhooks(id) on delete cascade,
+  event text not null,
+  payload jsonb,
+  status text not null default 'pending' check (status in ('pending', 'success', 'failed')),
+  response_code integer,
+  error text,
+  triggered_at timestamptz default now(),
+  organization_id text not null references organizations(id) on delete cascade
+);
+
+create index idx_webhooks_org on webhooks(organization_id);
+create index idx_webhook_events_org on webhook_events(organization_id);
+create index idx_reminder_configs_org on reminder_configs(organization_id);
