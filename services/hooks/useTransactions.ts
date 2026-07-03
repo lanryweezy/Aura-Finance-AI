@@ -4,6 +4,7 @@ import { auditLogService } from '../auditLogService';
 import { usageService } from '../usageService';
 import { fetchTransactions } from '../monoService';
 import { categorizeTransactions } from '../geminiService';
+import { categorizeWithTabFM } from '../mlApiService';
 import type { CategorizedTransaction } from '../../types';
 
 export function useTransactions() {
@@ -37,9 +38,38 @@ export function useTransactions() {
 
   const loadTransactions = useCallback(async () => {
     const raw = await fetchTransactions();
-    const categorized = await categorizeTransactions(raw, chartOfAccounts.map(c => c.name));
+
+    // Try TabFM ML categorization first
+    let categorized: CategorizedTransaction[];
+    try {
+      const mlResults = await categorizeWithTabFM(
+        raw.map(t => ({ id: t.id, amount: t.amount, narration: t.narration, type: t.type })),
+        transactions.length > 0 ? {
+          transactions: transactions.slice(0, 50).map(t => ({ amount: t.amount, narration: t.narration, type: t.type })),
+          categories: transactions.slice(0, 50).map(t => t.category),
+        } : undefined
+      );
+
+      if (mlResults.length > 0) {
+        // TabFM succeeded — use ML predictions
+        categorized = raw.map(t => {
+          const mlResult = mlResults.find(r => r.id === t.id);
+          return {
+            ...t,
+            category: mlResult?.category || 'Uncategorized',
+          } as CategorizedTransaction;
+        });
+      } else {
+        // TabFM unavailable — fall back to Gemini
+        categorized = await categorizeTransactions(raw, chartOfAccounts.map(c => c.name));
+      }
+    } catch (e) {
+      // TabFM failed — fall back to Gemini
+      categorized = await categorizeTransactions(raw, chartOfAccounts.map(c => c.name));
+    }
+
     setTransactions(categorized);
-  }, [chartOfAccounts, setTransactions]);
+  }, [chartOfAccounts, setTransactions, transactions]);
 
   return { transactions, handleUpdateTransaction, handleAddTransaction, loadTransactions };
 }
