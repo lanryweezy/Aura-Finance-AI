@@ -864,3 +864,90 @@ create table stock_movements (
 
 create index idx_stock_movements_org on stock_movements(organization_id);
 create index idx_stock_movements_item on stock_movements(item_id);
+
+-- ============== PARTIAL PAYMENTS ==============
+create table partial_payments (
+  id text primary key default ('pp_' || replace(uuid_generate_v4()::text, '-', '')),
+  invoice_id text not null,
+  amount numeric(15,2) not null,
+  method text,
+  reference text,
+  paid_at timestamptz default now(),
+  recorded_by text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== CREDIT NOTES ==============
+create table credit_notes (
+  id text primary key default ('cn_' || replace(uuid_generate_v4()::text, '-', '')),
+  invoice_id text not null,
+  amount numeric(15,2) not null,
+  reason text,
+  issued_by text,
+  issued_at timestamptz default now(),
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== INVOICE SEQUENCES ==============
+create table invoice_sequences (
+  id text primary key default ('is_' || replace(uuid_generate_v4()::text, '-', '')),
+  prefix text not null,
+  next_number integer default 1,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now(),
+  unique(prefix, organization_id)
+);
+
+-- ============== OVERTIME RECORDS ==============
+create table overtime_records (
+  id text primary key default ('ot_' || replace(uuid_generate_v4()::text, '-', '')),
+  employee_id text not null,
+  date timestamptz not null,
+  hours numeric(5,2) not null,
+  rate numeric(3,1) default 1.5,
+  amount numeric(15,2) not null,
+  approved boolean default false,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== LEAVE REQUESTS ==============
+create table leave_requests (
+  id text primary key default ('lr_' || replace(uuid_generate_v4()::text, '-', '')),
+  employee_id text not null,
+  employee_name text,
+  type text not null check (type in ('annual', 'sick', 'maternity', 'paternity', 'compassionate', 'unpaid')),
+  start_date timestamptz not null,
+  end_date timestamptz not null,
+  days integer not null,
+  reason text,
+  status text not null default 'pending' check (status in ('pending', 'approved', 'rejected')),
+  approved_by text,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+-- ============== LEAVE BALANCES ==============
+create table leave_balances (
+  id text primary key default ('lb_' || replace(uuid_generate_v4()::text, '-', '')),
+  employee_id text unique not null,
+  employee_name text,
+  annual integer default 21,
+  sick integer default 12,
+  maternity integer default 90,
+  paternity integer default 5,
+  compassionate integer default 5,
+  used integer default 0,
+  remaining integer default 21,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create index idx_partial_payments_org on partial_payments(organization_id);
+create index idx_partial_payments_invoice on partial_payments(invoice_id);
+create index idx_credit_notes_org on credit_notes(organization_id);
+create index idx_overtime_org on overtime_records(organization_id);
+create index idx_leave_requests_org on leave_requests(organization_id);
+create index idx_leave_balances_org on leave_balances(organization_id);
