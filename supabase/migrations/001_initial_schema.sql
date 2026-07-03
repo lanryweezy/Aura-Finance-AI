@@ -815,3 +815,31 @@ create table webhook_events (
 create index idx_webhooks_org on webhooks(organization_id);
 create index idx_webhook_events_org on webhook_events(organization_id);
 create index idx_reminder_configs_org on reminder_configs(organization_id);
+
+-- ============== INTEGRATIONS ==============
+create table integrations (
+  id text primary key default ('int_' || replace(uuid_generate_v4()::text, '-', '')),
+  provider text not null,
+  access_token text,
+  refresh_token text,
+  realm_id text,
+  expires_at timestamptz,
+  last_synced timestamptz,
+  organization_id text not null references organizations(id) on delete cascade,
+  created_at timestamptz default now()
+);
+
+create table sync_logs (
+  id text primary key default ('sl_' || replace(uuid_generate_v4()::text, '-', '')),
+  integration_id text not null references integrations(id) on delete cascade,
+  entity_type text not null,
+  synced_count integer default 0,
+  error_count integer default 0,
+  status text not null default 'completed' check (status in ('completed', 'failed')),
+  started_at timestamptz default now(),
+  completed_at timestamptz,
+  organization_id text not null references organizations(id) on delete cascade
+);
+
+create index idx_integrations_org on integrations(organization_id);
+create index idx_sync_logs_org on sync_logs(organization_id);
