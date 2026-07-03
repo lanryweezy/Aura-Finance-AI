@@ -19,6 +19,7 @@ import { ForecastingDashboard } from './ForecastingDashboard';
 import { AnomalyDetectionWidget } from './AnomalyDetectionWidget';
 import { SeasonalPatternsWidget } from './SeasonalPatternsWidget';
 import { MLStatusWidget } from './MLStatusWidget';
+import { AutonomousDashboard } from './AutonomousDashboard';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
@@ -436,6 +437,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
       </div>
 
       <MLStatusWidget />
+      <AutonomousDashboard />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <ForecastingDashboard />
