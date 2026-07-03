@@ -140,12 +140,6 @@ function buildDailyBalanceSeries(transactions: CategorizedTransaction[]): number
   const sorted = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   return sorted.map(t => t.balance || 0).filter(b => b > 0);
 }
-  transactions: CategorizedTransaction[],
-  invoices: Invoice[],
-  bills: Bill[],
-  payroll: PayrollRun[],
-  months: number = 6
-): ForecastResult {
   const now = new Date();
   const forecasts: CashFlowForecast[] = [];
 

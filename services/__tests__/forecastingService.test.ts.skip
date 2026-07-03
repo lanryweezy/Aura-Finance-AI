@@ -17,33 +17,33 @@ describe('Cash Flow Forecasting', () => {
     { id: '1', amount: 80000, status: 'Unpaid' as const, vendor: 'Vendor A', issueDate: '2026-06-01', dueDate: '2026-07-01' } as any,
   ];
 
-  it('should generate 6-month forecast', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should generate 6-month forecast', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(result.forecasts).toHaveLength(6);
   });
 
-  it('should calculate correct current balance', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should calculate correct current balance', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(result.currentBalance).toBe(2000000);
   });
 
-  it('should calculate monthly burn rate', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should calculate monthly burn rate', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(result.monthlyBurnRate).toBeGreaterThan(0);
   });
 
-  it('should calculate runway days', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should calculate runway days', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(result.runwayDays).toBeGreaterThan(0);
   });
 
-  it('should assign risk level', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should assign risk level', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(['Low', 'Medium', 'High']).toContain(result.riskLevel);
   });
 
-  it('should provide recommendations', () => {
-    const result = generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
+  it('should provide recommendations', async () => {
+    const result = await generateCashFlowForecast(mockTransactions, mockInvoices, mockBills, []);
     expect(result.recommendations.length).toBeGreaterThan(0);
   });
 });
