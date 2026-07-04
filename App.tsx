@@ -111,6 +111,11 @@ export default function App(): React.ReactNode {
 
   const loadInitialData = useCallback(async () => {
     if (!user) { setIsLoading(false); return; }
+    // Skip Supabase calls in demo mode
+    if (user.organizationId === 'org_demo') {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {

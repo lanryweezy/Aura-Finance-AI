@@ -6,7 +6,7 @@ function getOrgId(): string {
 }
 
 async function query<T>(table: string, orgFilter = true): Promise<T[]> {
-  if (!supabase) throw new Error('Supabase not configured');
+  if (!supabase) return [];  // Graceful fallback for demo mode
   let q = supabase.from(table).select('*');
   if (orgFilter) q = q.eq('organization_id', getOrgId());
   const { data, error } = await q;
@@ -15,7 +15,7 @@ async function query<T>(table: string, orgFilter = true): Promise<T[]> {
 }
 
 async function insert<T>(table: string, row: Record<string, any>): Promise<T> {
-  if (!supabase) throw new Error('Supabase not configured');
+  if (!supabase) return row as T;  // Graceful fallback for demo mode
   const { data, error } = await supabase
     .from(table)
     .insert({ ...row, organization_id: getOrgId() })

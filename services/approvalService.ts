@@ -18,7 +18,7 @@ export const approvalService = {
   },
 
   createPolicy: async (policy: Omit<ApprovalPolicy, 'id' | 'organizationId'>): Promise<ApprovalPolicy> => {
-    if (!supabase) throw new Error('Supabase not configured');
+    if (!supabase) return { ...policy, id: `pol_${Date.now()}`, organizationId: '' } as ApprovalPolicy;
     const { data, error } = await supabase
       .from('approval_policies')
       .insert({

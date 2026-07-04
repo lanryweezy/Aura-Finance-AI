@@ -9,7 +9,7 @@ export const fetchBudgets = async (): Promise<Budget[]> => {
 };
 
 export const saveBudgets = async (budgets: Budget[]): Promise<void> => {
-  if (!supabase) throw new Error('Supabase not configured');
+  if (!supabase) return;  // Graceful fallback for demo mode
   const orgId = db.getOrgId();
 
   await supabase.from(TABLE).delete().eq('organization_id', orgId);
