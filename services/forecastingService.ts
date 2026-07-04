@@ -17,6 +17,7 @@ export interface ForecastResult {
   riskLevel: 'Low' | 'Medium' | 'High';
   recommendations: string[];
   mlPowered: boolean;
+  confidenceInterval?: { lower: number[]; upper: number[] };
 }
 
 export async function generateCashFlowForecast(

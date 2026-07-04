@@ -64,7 +64,7 @@ export const mfaService = {
   // Verify TOTP
   verifyTOTP: async (factorId: string, code: string): Promise<boolean> => {
     if (!supabase) return true;
-    const { error } = await supabase.auth.mfa.verify({
+    const { error } = await (supabase.auth.mfa as any).verify({
       factorId,
       code,
     });
@@ -74,7 +74,7 @@ export const mfaService = {
   // Check if MFA is enabled
   isMFAEnabled: async (): Promise<boolean> => {
     if (!supabase) return false;
-    const { data } = await supabase.auth.mfa.list();
+    const { data } = await (supabase.auth.mfa as any).list();
     return (data?.totp || []).length > 0;
   },
 };

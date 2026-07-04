@@ -52,12 +52,12 @@ describe('Corporate Tax', () => {
 
 describe('VAT Calculation', () => {
   it('should calculate 7.5% VAT', () => {
-    const result = calculateVat(100000);
+    const result = calculateVat(100000, 0);
     expect(result.outputVat).toBe(7500);
   });
 
   it('should calculate net VAT payable', () => {
-    const result = calculateVat(200000);
+    const result = calculateVat(200000, 50000);
     expect(result.netVatPayable).toBeDefined();
   });
 });

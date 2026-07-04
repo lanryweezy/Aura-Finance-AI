@@ -8,6 +8,7 @@ import { db } from './db';
 import { monitoringService } from './monitoringService';
 import { notificationService } from './notificationService';
 import { aiAnomalyService } from './aiAnomalyService';
+import type { CategorizedTransaction, Invoice, Bill, Budget } from '../types';
 
 export interface AutonomousAction {
   id: string;

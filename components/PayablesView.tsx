@@ -5,7 +5,6 @@ import { Spinner } from './ui/Spinner';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { EmailModal } from './EmailModal';
 import { exportToCSV } from '../services/exportService';
-import { exportToCSV } from '../services/exportService';
 import type { Bill, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';

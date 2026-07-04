@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { useAppStore } from '../../store/useAppStore';
-import { SavingsInsightsWidget } from '../SavingsInsightsWidget';
-import { CloseCheckWidget } from '../CloseCheckWidget';
-import { SpendPolicyWidget } from '../SpendPolicyWidget';
-import { ForecastingDashboard } from '../ForecastingDashboard';
-import { AnomalyDetectionWidget } from '../AnomalyDetectionWidget';
-import { SeasonalPatternsWidget } from '../SeasonalPatternsWidget';
+import { useAppStore } from '../store/useAppStore';
+import { SavingsInsightsWidget } from './SavingsInsightsWidget';
+import { CloseCheckWidget } from './CloseCheckWidget';
+import { SpendPolicyWidget } from './SpendPolicyWidget';
+import { ForecastingDashboard } from './ForecastingDashboard';
+import { AnomalyDetectionWidget } from './AnomalyDetectionWidget';
+import { SeasonalPatternsWidget } from './SeasonalPatternsWidget';
 
 interface WidgetConfig {
   id: string;

@@ -22,7 +22,7 @@ export const SolutionsSection: React.FC = () => (
             </div>
             <h3 className="font-black text-lg mb-4">{item.title}</h3>
             <ul className="space-y-2">
-              {item.features?.map((f, j) => (
+              {item.items?.map((f: string, j: number) => (
                 <li key={j} className="flex items-center gap-2 text-sm text-gray-400">
                   <span className="w-1.5 h-1.5 bg-brand-cyan rounded-full"></span>
                   {f}

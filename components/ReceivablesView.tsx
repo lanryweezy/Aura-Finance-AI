@@ -12,7 +12,6 @@ import type { InvoiceUploadData } from '../services/invoiceUploadService';
 import { exportToCSV, exportToExcel } from '../services/exportService';
 import { DocumentPreviewModal } from './ui/DocumentPreviewModal';
 import { AdvancedFilter } from './ui/AdvancedFilter';
-import { exportToCSV } from '../services/exportService';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
