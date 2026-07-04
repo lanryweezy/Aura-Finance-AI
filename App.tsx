@@ -303,7 +303,7 @@ export default function App(): React.ReactNode {
   }
 
   if (showDemo) {
-    return <DemoMode />;
+    return <DemoMode onDismiss={() => setShowDemo(false)} />;
   }
 
   return (

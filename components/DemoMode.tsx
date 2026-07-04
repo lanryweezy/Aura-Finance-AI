@@ -1,16 +1,18 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { loadDemoData } from '../services/demoDataService';
 import { useAppStore } from '../store/useAppStore';
 
-export const DemoMode: React.FC = () => {
-  const navigate = useNavigate();
+interface DemoModeProps {
+  onDismiss: () => void;
+}
+
+export const DemoMode: React.FC<DemoModeProps> = ({ onDismiss }) => {
   const { setUser } = useAppStore();
 
   const handleStartDemo = () => {
     const { transactions, invoices, bills, employees, contacts, projects, budgets } = loadDemoData();
 
-    // Set user
+    // Set user in store
     setUser({
       id: 'u_demo',
       name: 'Demo User',
@@ -30,7 +32,8 @@ export const DemoMode: React.FC = () => {
     store.setBudgets(budgets);
     store.setIsLoading(false);
 
-    navigate('/dashboard');
+    // Close the demo modal — the app will re-render and show dashboard
+    onDismiss();
   };
 
   return (
