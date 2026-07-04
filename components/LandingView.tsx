@@ -7,6 +7,7 @@ import { SolutionsSection } from './landing/SolutionsSection';
 import { AISection } from './landing/AISection';
 import { PricingSection } from './landing/PricingSection';
 import { TestimonialsSection } from './landing/TestimonialsSection';
+import { TrustBadges, PressLogos, ComparisonTable } from './landing/TrustSection';
 import { FooterSection } from './landing/FooterSection';
 import { Plus, Minus } from 'lucide-react';
 
