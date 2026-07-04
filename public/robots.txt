@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /portal/
+Disallow: /vendor-portal/
+
+Sitemap: https://aura-finance-ai.vercel.app/sitemap.xml
