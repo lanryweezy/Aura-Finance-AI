@@ -12,14 +12,9 @@ import { getFinancialInsights } from '../services/geminiService';
 import { ReceiptScannerModal } from './ui/ReceiptScannerModal';
 import { AIAlerts } from './AIAlerts';
 import { NLSearch } from './NLSearch';
-import { SavingsInsightsWidget } from './SavingsInsightsWidget';
-import { CloseCheckWidget } from './CloseCheckWidget';
-import { SpendPolicyWidget } from './SpendPolicyWidget';
-import { ForecastingDashboard } from './ForecastingDashboard';
-import { AnomalyDetectionWidget } from './AnomalyDetectionWidget';
-import { SeasonalPatternsWidget } from './SeasonalPatternsWidget';
-import { MLStatusWidget } from './MLStatusWidget';
-import { AutonomousDashboard } from './AutonomousDashboard';
+import { StatsBar } from './dashboard/StatsBar';
+import { WidgetsGrid } from './dashboard/WidgetsGrid';
+import { QuickActions } from './dashboard/QuickActions';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import type { CategorizedTransaction, FinancialInsight, Invoice, Bill, BankConnection, View } from '../types';
@@ -430,23 +425,7 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
       <NLSearch />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <SavingsInsightsWidget />
-        <CloseCheckWidget />
-        <SpendPolicyWidget />
-      </div>
-
-      <MLStatusWidget />
-      <AutonomousDashboard />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <ForecastingDashboard />
-        <AnomalyDetectionWidget />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <SeasonalPatternsWidget />
-      </div>
+      <WidgetsGrid />
 
       {/* Quick Actions Bar */}
       <div id="quick-actions-bar" className="grid grid-cols-2 md:grid-cols-4 gap-4">
