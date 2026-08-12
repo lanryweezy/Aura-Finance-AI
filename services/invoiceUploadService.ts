@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 
@@ -118,7 +118,7 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
 
     await usageService.trackUsage('ocr_scan');
 
-    const result = JSON.parse(response.text.trim());
+    const result = safeParseJSON<any>(response.text.trim());
     return {
       ...result,
       confidence: 0.9,

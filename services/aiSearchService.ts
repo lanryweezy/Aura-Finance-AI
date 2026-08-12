@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { CategorizedTransaction, Invoice, Bill, Contact } from '../types';
@@ -84,6 +84,7 @@ Available data: ${JSON.stringify(context)}`
     }
 
     return result as SearchResult[];
+    return safeParseJSON(response.text.trim()) as SearchResult[];
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return simulateSearch(query, transactions, invoices, bills, contacts);

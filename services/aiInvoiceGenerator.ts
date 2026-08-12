@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { Invoice, LineItem } from '../types';
@@ -59,7 +59,7 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
     }), 15000);
 
     await usageService.trackUsage('ai_chat');
-    const result = JSON.parse(response.text.trim());
+    const result = safeParseJSON(response.text.trim());
     return result as AIGeneratedInvoice;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);

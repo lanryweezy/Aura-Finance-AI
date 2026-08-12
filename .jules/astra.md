@@ -13,3 +13,6 @@
 ## 2026-06-25 - Validate `JSON.parse` Arrays
 **Learning:** `JSON.parse()` output should be explicitly checked to be an array (e.g. `Array.isArray(result)`) before casting it as an array of objects. Otherwise, subsequent mapping or filtering on it will cause runtime errors if the AI returns an object.
 **Action:** Always wrap `JSON.parse()` array responses with `if (!Array.isArray(result)) throw new Error('AI output is not an array');`
+## 2026-06-16 - Safe AI JSON Parsing
+**Learning:** `JSON.parse` will throw an exception if the AI model outputs extraneous text or markdown blocks (e.g. ` ```json `) alongside the JSON.
+**Action:** Use a `safeParseJSON` utility to wrap `JSON.parse`. It should extract valid JSON substrings by looking for '{' and '}' (or '[' and ']') to handle slightly malformed responses.

@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import type { Bill, PurchaseOrder } from '../types';
 
@@ -42,7 +42,7 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
     }), 15000);
 
     await usageService.trackUsage('ai_insight');
-    return JSON.parse(response.text.trim());
+    return safeParseJSON(response.text.trim());
   } catch (error) {
     return simulateMatching(bills, pos);
   }

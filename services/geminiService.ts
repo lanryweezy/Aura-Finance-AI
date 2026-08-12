@@ -1,6 +1,6 @@
 
 import { Type } from "@google/genai";
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { simulateDelay } from './simulateDelay';
@@ -96,7 +96,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     }), 10000);
 
     const jsonText = response.text.trim();
-    const batchResult = JSON.parse(jsonText) as CategorizedTransaction[];
+    const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
     if (!Array.isArray(batchResult)) throw new Error("AI output is not an array");
 
     batchResult.forEach(t => {
@@ -181,7 +181,7 @@ export const getFinancialInsights = async (
     await usageService.trackUsage('ai_insight');
 
     const jsonText = response.text.trim();
-    const insights = JSON.parse(jsonText) as FinancialInsight[];
+    const insights = safeParseJSON(jsonText) as FinancialInsight[];
     if (!Array.isArray(insights)) throw new Error("AI output is not an array");
     return insights;
 

@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { ReceiptScan } from '../types';
@@ -46,7 +46,7 @@ export const receiptOcrService = {
       }), 15000);
 
       await usageService.trackUsage('ocr_scan');
-      const result = JSON.parse(response.text.trim());
+      const result = safeParseJSON<any>(response.text.trim());
       return { ...result, id: `scan_${Date.now()}`, imageUrl, status: 'scanned', createdAt: new Date().toISOString() } as ReceiptScan;
     } catch (error) {
       monitoringService.trackError('OCR_ENGINE', error as Error);

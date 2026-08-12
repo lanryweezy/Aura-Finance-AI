@@ -40,15 +40,19 @@
     "react-virtualized-auto-sizer": "2.0.3",
     "react-window": "2.2.7",
     "recharts": "^3.0.2",
+    "workbox-window": "^7.4.1",
     "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22.14.0",
     "@types/react": "^19.2.14",
     "@types/react-window": "^1.8.8",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.27",
+    "jsdom": "^29.0.1",
     "playwright": "^1.59.1",
     "postcss": "^8.5.9",
     "tailwindcss": "^3.4.19",
@@ -56,9 +60,6 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.0",
     "vite-plugin-pwa": "^1.2.0",
-    "vitest": "^3.2.4",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.2",
-    "jsdom": "^29.0.1"
+    "vitest": "^3.2.4"
   }
 }
