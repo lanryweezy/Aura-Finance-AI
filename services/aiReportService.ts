@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { CategorizedTransaction, Invoice, Bill, PayrollRun } from '../types';
@@ -94,7 +94,7 @@ Data: ${JSON.stringify(context)}`
     }), 15000);
 
     await usageService.trackUsage('ai_insight');
-    const result = JSON.parse(response.text.trim());
+    const result = safeParseJSON<any>(response.text.trim());
     return { period, ...result, kpis };
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);

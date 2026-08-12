@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { CategorizedTransaction } from '../types';
@@ -98,7 +98,7 @@ ${JSON.stringify(uncategorized.map(t => ({ id: t.id, narration: t.narration, amo
       }), 15000);
 
       await usageService.trackUsage('ai_insight');
-      const results = JSON.parse(response.text.trim());
+      const results = safeParseJSON<any>(response.text.trim());
 
       return results.map((r: any) => ({
         ...r,

@@ -3,7 +3,7 @@
  * Trains AI on YOUR business data for personalized predictions.
  */
 
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { supabase } from './supabaseClient';
@@ -76,7 +76,7 @@ export const customAITrainingService = {
       }), 10000);
 
       await usageService.trackUsage('ai_insight');
-      const result = JSON.parse(response.text.trim());
+      const result = safeParseJSON<any>(response.text.trim());
       return { type: 'amount', prediction: result.prediction, confidence: 0.85, reasoning: result.reasoning };
     } catch {
       return { type: 'amount', prediction: Math.round(avgMonthly), confidence: 0.6, reasoning: 'AI unavailable, using trend analysis' };

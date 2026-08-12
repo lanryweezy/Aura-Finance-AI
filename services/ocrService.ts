@@ -1,6 +1,6 @@
 
 import { Type } from "@google/genai";
-import { aiClient, API_KEY, withTimeout } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { simulateDelay } from './simulateDelay';
@@ -95,7 +95,7 @@ export const ocrService = {
             }), 10000);
 
             const jsonText = response.text.trim();
-            const data = JSON.parse(jsonText) as ReceiptData;
+            const data = safeParseJSON(jsonText) as ReceiptData;
             if (!data || typeof data !== "object" || !data.merchantName || typeof data.totalAmount !== "number" || !data.date) throw new Error("AI output is missing required fields");
 
             await usageService.trackUsage('ocr_scan');
