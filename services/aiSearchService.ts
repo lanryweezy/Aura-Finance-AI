@@ -76,7 +76,14 @@ Available data: ${JSON.stringify(context)}`
     }), 10000);
 
     await usageService.trackUsage('ai_chat');
-    return JSON.parse(response.text.trim()) as SearchResult[];
+    const result = JSON.parse(response.text.trim());
+
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!Array.isArray(result)) {
+      throw new Error('AI output is not an array');
+    }
+
+    return result as SearchResult[];
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return simulateSearch(query, transactions, invoices, bills, contacts);
