@@ -42,7 +42,13 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
     }), 15000);
 
     await usageService.trackUsage('ai_insight');
-    return safeParseJSON(response.text.trim());
+    const result = safeParseJSON(response.text.trim());
+
+    if (!Array.isArray(result)) {
+      throw new Error('AI output is not an array');
+    }
+
+    return result as BillMatch[];
   } catch (error) {
     return simulateMatching(bills, pos);
   }

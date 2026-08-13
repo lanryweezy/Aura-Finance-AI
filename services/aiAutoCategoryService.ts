@@ -100,6 +100,10 @@ ${JSON.stringify(uncategorized.map(t => ({ id: t.id, narration: t.narration, amo
       await usageService.trackUsage('ai_insight');
       const results = safeParseJSON<any>(response.text.trim());
 
+      if (!Array.isArray(results)) {
+        throw new Error('AI output is not an array');
+      }
+
       return results.map((r: any) => ({
         ...r,
         originalCategory: 'Uncategorized',
