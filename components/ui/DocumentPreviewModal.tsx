@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import type { Invoice, Estimate, LineItem } from '../../types';
 import { useToast } from './Toast';
 import { useCurrency } from './CurrencyProvider';
+import { sanitizeHTML } from '../../services/securityUtils';
 
 interface DocumentData {
     id: string;
@@ -145,7 +146,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
                         
                         <div class="bill-to">
                             <p><strong>Bill To:</strong></p>
-                            <h2>${doc.recipientName}</h2>
+                            <h2>${sanitizeHTML(doc.recipientName)}</h2>
                         </div>
 
                         <table>
@@ -161,8 +162,8 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
                                 ${doc.items.map(item => `
                                     <tr>
                                         <td>
-                                            <strong>${item.name}</strong><br/>
-                                            <span style="font-size: 12px; color: #6b7280;">${item.description || ''}</span>
+                                            <strong>${sanitizeHTML(item.name)}</strong><br/>
+                                            <span style="font-size: 12px; color: #6b7280;">${sanitizeHTML(item.description || '')}</span>
                                         </td>
                                         <td style="text-align: right;">${item.quantity}</td>
                                         <td style="text-align: right;">${formatMoney(item.unitPrice)}</td>
