@@ -16,3 +16,7 @@
 ## 2026-06-16 - Safe AI JSON Parsing
 **Learning:** `JSON.parse` will throw an exception if the AI model outputs extraneous text or markdown blocks (e.g. ` ```json `) alongside the JSON.
 **Action:** Use a `safeParseJSON` utility to wrap `JSON.parse`. It should extract valid JSON substrings by looking for '{' and '}' (or '[' and ']') to handle slightly malformed responses.
+
+## 2026-06-26 - Validate Structured AI JSON Object Responses
+**Learning:** Even when using `safeParseJSON`, explicitly validate the resulting object and its critical fields (e.g., checking if it's not null, is an object, and that nested arrays exist) to prevent downstream `TypeError` crashes (like "Cannot read properties of null").
+**Action:** Always add structural checks like `if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) throw new Error(...)` immediately after parsing AI JSON objects to "fail loudly and recover gracefully".
