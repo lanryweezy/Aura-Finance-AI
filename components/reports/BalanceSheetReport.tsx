@@ -6,7 +6,7 @@ import { useCurrency } from "../ui/CurrencyProvider";
 
 interface BalanceSheetReportProps {
     data: BalanceSheetData;
-    onDrillDown: (title: string, type: 'credit' | 'debit', categories: string[]) => void;
+    onDrillDown: (title: string, type: 'credit' | 'debit' | 'all', categories: string[]) => void;
 }
 
 const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
@@ -58,8 +58,8 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, on
                         <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                             <ReportRow label="Assets" isHeader formatAmount={formatAmount} />
                             <ReportRow label="Current Assets" isHeader className="text-base font-semibold" formatAmount={formatAmount} />
-                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for cash balance not implemented yet.", "info")} />
-                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for receivables not implemented yet.", "info")} />
+                            <ReportRow label="Cash and Bank" value={data.cashAndBank} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => onDrillDown('Cash and Bank', 'all', ['All'])} />
+                            <ReportRow label="Accounts Receivable" value={data.accountsReceivable} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => onDrillDown('Accounts Receivable', 'all', ['Accounts Receivable'])} />
                             <ReportRow label="Inventory" value={data.inventory} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} />
                             <ReportRow label="Total Current Assets" value={data.totalCurrentAssets} isTotal formatAmount={formatAmount} />
 
@@ -67,7 +67,7 @@ export const BalanceSheetReport: React.FC<BalanceSheetReportProps> = ({ data, on
 
                             <ReportRow label="Liabilities" isHeader formatAmount={formatAmount} />
                             <ReportRow label="Current Liabilities" isHeader className="text-base font-semibold" formatAmount={formatAmount} />
-                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => showToast("Drill-down for payables not implemented yet.", "info")} />
+                            <ReportRow label="Accounts Payable" value={data.accountsPayable} className="text-gray-600 dark:text-gray-300" formatAmount={formatAmount} onDrillDown={() => onDrillDown('Accounts Payable', 'all', ['Accounts Payable'])} />
                             <ReportRow label="Total Current Liabilities" value={data.totalCurrentLiabilities} isTotal formatAmount={formatAmount} />
                             
                             <tr className="h-6"><td colSpan={2}></td></tr>

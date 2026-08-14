@@ -5,7 +5,7 @@ import { useCurrency } from "../ui/CurrencyProvider";
 
 interface CashFlowStatementProps {
     data: CashFlowData;
-    onDrillDown: (title: string, type: 'credit' | 'debit', categories: string[]) => void;
+    onDrillDown: (title: string, type: 'credit' | 'debit' | 'all', categories: string[]) => void;
 }
 
 const ReportRow: React.FC<{label: string, value?: number, isTotal?: boolean, isHeader?: boolean, isSub?: boolean, className?: string, onDrillDown?: () => void, formatAmount: (v: number) => string}> =
