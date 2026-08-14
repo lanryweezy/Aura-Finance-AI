@@ -1,4 +1,5 @@
 import type { CategorizedTransaction, Invoice, Bill, PayrollRun, ReportData } from '../types';
+import DOMPurify from 'dompurify';
 
 export function exportToCSV(filename: string, data: any[], columns?: string[]) {
   if (!data || data.length === 0) return;
@@ -51,7 +52,7 @@ export function printElement(elementId: string) {
         .total { font-weight: bold; border-top: 2px solid #333; }
         @media print { body { padding: 0; } }
       </style>
-    </head><body>${element.innerHTML}</body></html>
+    </head><body>${DOMPurify.sanitize(element.innerHTML)}</body></html>
   `);
   printWindow.document.close();
   printWindow.focus();

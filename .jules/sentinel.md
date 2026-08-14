@@ -1,0 +1,4 @@
+## 2026-07-03 - Cross-Site Scripting (XSS) via window.open and document.write
+**Vulnerability:** Injecting raw HTML containing user-supplied data into `printWindow.document.write(...)` without proper sanitization creates a Cross-Site Scripting (XSS) vulnerability.
+**Learning:** `window.open` and `document.write` are powerful APIs that evaluate and execute HTML. When generating documents dynamically (e.g. print documents or reports), relying on `element.innerHTML` or unescaped template literals creates a pathway for malicious scripts if the source data (such as item names or descriptions) is uncontrolled or tampered with.
+**Prevention:** Use a robust HTML sanitizer like DOMPurify (`DOMPurify.sanitize()`) when passing raw HTML containing user input to `document.write`. In cases where HTML tags are not needed, `sanitizeHTML` (escaping special characters) should be used inside template literals.
