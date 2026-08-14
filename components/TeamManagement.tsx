@@ -196,7 +196,7 @@ export const TeamManagement: React.FC = () => {
                                             </td>
                                             <td className="p-4 text-right">
                                                 {member.role !== 'Owner' && (
-                                                    <button onClick={() => handleRemove(member.id)} className="text-gray-400 hover:text-red-500 transition-all active:scale-90 p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
+                                                    <button onClick={() => handleRemove(member.id)} aria-label="Remove team member" className="text-gray-400 hover:text-red-500 transition-all active:scale-90 p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
                                                     </button>
                                                 )}
@@ -273,7 +273,7 @@ export const TeamManagement: React.FC = () => {
                     <Card className="w-full max-w-lg border-gray-200 dark:border-white/10 shadow-2xl bg-white dark:bg-dark-tertiary">
                         <div className="flex justify-between items-center mb-6">
                             <h4 className="text-xl font-bold text-aura-gray-900 dark:text-white">Create Custom Role</h4>
-                            <button onClick={() => setShowRoleModal(false)} className="text-aura-gray-400 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
+                            <button onClick={() => setShowRoleModal(false)} aria-label="Close custom role modal" className="text-aura-gray-400 dark:text-gray-400 hover:text-aura-gray-900 dark:hover:text-white transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                             </button>
                         </div>
