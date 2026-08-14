@@ -10,6 +10,8 @@ import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import { Icons } from './ui/Icons';
+import { List } from 'react-window';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
 
@@ -66,6 +68,7 @@ const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInt
 });
 
 const TransactionRow = React.memo<{
+    style?: React.CSSProperties;
   transaction: CategorizedTransaction;
   formatAmount: (val: number) => string;
   getProjectName: (id?: string) => string | undefined;
@@ -402,56 +405,35 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
           />
        </div>
 
-      <div className="overflow-x-auto flex-grow relative">
-        <table className="w-full text-left border-collapse min-w-[700px]">
-          <thead className="sticky top-0 z-20 bg-aura-gray-50/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
-            <tr>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-                <Tooltip content="The date the transaction was recorded in your bank or manually.">Date</Tooltip>
-              </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-                <Tooltip content="The description of the transaction.">Narration</Tooltip>
-              </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-                <Tooltip content="The financial value of the transaction in your selected currency.">Amount</Tooltip>
-              </th>
-              <th className="p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
-                <Tooltip content="The accounting category assigned to this transaction.">Category</Tooltip>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 dark:divide-gray-800/50">
-            {filteredTransactions.map((t) => (
-              <tr key={t.id} className="hover:bg-aura-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
-                <td className="p-4 whitespace-nowrap text-gray-500 dark:text-gray-400 text-sm font-mono">{new Date(t.date).toLocaleDateString()}</td>
-                <td className="p-4 max-w-sm text-aura-gray-900 dark:text-gray-200">
-                    <div className="flex flex-col">
-                        <span className="truncate font-medium" title={t.narration}>{t.narration}</span>
-                        {t.projectId && <span className="text-[10px] text-brand-purple uppercase font-bold tracking-wide mt-0.5">{getProjectName(t.projectId)}</span>}
-                    </div>
-                </td>
-                <td className={`p-4 font-mono font-medium ${t.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-aura-gray-900 dark:text-white'}`}>
-                  {t.type === 'credit' ? '+' : ''} {formatAmount(t.amount)}
-                </td>
-                <td className="p-4 relative">
-                    <div className="flex items-center gap-2">
-                        {t.receiptUrl && <a href={t.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg></a>}
-                        <CategoryBadge category={t.category} onClick={() => setEditingId(t.id)} isInteractive={true} />
-                    </div>
-                  {editingId === t.id && (
-                    <CategoryEditor
-                        transaction={t}
-                        allCategories={allAvailableCategories}
-                        projects={projects}
-                        onSave={handleCategorySave}
-                        onClose={() => setEditingId(null)}
-                    />
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-x-auto flex-grow relative flex flex-col">
+        <div className="flex bg-aura-gray-50/90 dark:bg-dark-tertiary/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700 min-w-[700px]">
+          <div className="w-[15%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+            <Tooltip content="The date the transaction was recorded in your bank or manually.">Date</Tooltip>
+          </div>
+          <div className="w-[45%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+            <Tooltip content="The description of the transaction.">Narration</Tooltip>
+          </div>
+          <div className="w-[20%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+            <Tooltip content="The financial value of the transaction in your selected currency.">Amount</Tooltip>
+          </div>
+          <div className="w-[20%] p-4 text-xs uppercase tracking-wider font-semibold text-gray-500 dark:text-gray-400">
+            <Tooltip content="The accounting category assigned to this transaction.">Category</Tooltip>
+          </div>
+        </div>
+        <div className="flex-grow relative min-w-[700px]">
+          <AutoSizer>
+            {({ height, width }) => (
+              <List
+                height={height}
+                itemCount={filteredTransactions.length}
+                itemSize={65}
+                width={width}
+              >
+                {Row}
+              </List>
+            )}
+          </AutoSizer>
+        </div>
          {filteredTransactions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">
               <div className="bg-aura-gray-50 dark:bg-dark-secondary p-4 rounded-full mb-3 shadow-inner">
