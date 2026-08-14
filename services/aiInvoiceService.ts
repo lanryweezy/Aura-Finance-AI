@@ -71,8 +71,14 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
     }), 15000);
 
     await usageService.trackUsage('ai_chat');
-    const result = safeParseJSON(response.text.trim());
-    return result as AIInvoiceData;
+    const result = safeParseJSON(response.text.trim()) as AIInvoiceData | null;
+
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) {
+      throw new Error('AI output is missing required fields or is malformed');
+    }
+
+    return result;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     throw new Error('Failed to generate invoice from prompt.');
