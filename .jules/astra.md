@@ -20,3 +20,7 @@
 ## 2026-06-26 - Validate Structured AI JSON Object Responses
 **Learning:** Even when using `safeParseJSON`, explicitly validate the resulting object and its critical fields (e.g., checking if it's not null, is an object, and that nested arrays exist) to prevent downstream `TypeError` crashes (like "Cannot read properties of null").
 **Action:** Always add structural checks like `if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) throw new Error(...)` immediately after parsing AI JSON objects to "fail loudly and recover gracefully".
+
+## 2026-06-27 - Safely Validate AI JSON Field Types
+**Learning:** Checking the presence of fields using destructuring or simple truthiness on `JSON.parse` output can silently crash or return `undefined` down the line if the parsed output is not a dictionary.
+**Action:** Always validate `typeof result === 'object'` immediately before checking nested fields (`result.customer`) to prevent downstream UI errors or silent crashes. Ensure complex nested arrays inside the AI output are checked with `Array.isArray`.
