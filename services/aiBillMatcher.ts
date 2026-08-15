@@ -44,8 +44,9 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
     await usageService.trackUsage('ai_insight');
     const result = safeParseJSON(response.text.trim());
 
-    if (!Array.isArray(result)) {
-      throw new Error('AI output is not an array');
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!result || !Array.isArray(result)) {
+      throw new Error('AI output is not an array or is malformed');
     }
 
     return result as BillMatch[];

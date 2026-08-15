@@ -60,6 +60,12 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
 
     await usageService.trackUsage('ai_chat');
     const result = safeParseJSON(response.text.trim());
+
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!result || typeof result !== 'object' || !(result as any).customer || !Array.isArray((result as any).lineItems)) {
+      throw new Error('AI output is missing required fields or is malformed');
+    }
+
     return result as AIGeneratedInvoice;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
