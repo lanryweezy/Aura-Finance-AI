@@ -85,7 +85,7 @@ const NewJournalEntryModal: React.FC<{
                                     <option value="debit">Debit</option>
                                     <option value="credit">Credit</option>
                                 </select>
-                                <button type="button" onClick={() => removeLine(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
+                                <button aria-label="Remove line item" type="button" onClick={() => removeLine(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
                             </div>
                         ))}
                     </div>
