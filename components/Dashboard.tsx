@@ -117,7 +117,23 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
     const { formatAmount } = useCurrency();
 
     const combinedActivity = useMemo(() => {
-        const transactionActivity = transactions.map(t => ({
+        // ⚡ Bolt Optimization: Only take the top 6 most recent from each array before mapping
+        // This prevents mapping (O(N) object allocations) over potentially tens of thousands of items
+        const topTransactions = [...transactions]
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 6);
+
+        const topBills = bills
+            .filter(b => b.status === 'Unpaid' || b.status === 'Overdue')
+            .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+            .slice(0, 6);
+
+        const topInvoices = invoices
+            .filter(i => i.status !== 'Paid')
+            .sort((a, b) => new Date(b.issueDate).getTime() - new Date(a.issueDate).getTime())
+            .slice(0, 6);
+
+        const transactionActivity = topTransactions.map(t => ({
             id: t.id,
             type: 'transaction',
             date: new Date(t.date),
@@ -125,7 +141,8 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
             amount: t.amount,
             isCredit: t.type === 'credit'
         }));
-        const billActivity = bills.filter(b => b.status === 'Unpaid' || b.status === 'Overdue').map(b => ({
+
+        const billActivity = topBills.map(b => ({
             id: b.id,
             type: 'bill',
             date: new Date(b.issueDate),
@@ -133,7 +150,8 @@ const RecentActivity = React.memo<{ transactions: CategorizedTransaction[], bill
             amount: b.amount,
             isCredit: false
         }));
-        const invoiceActivity = invoices.filter(i => i.status !== 'Paid').map(i => ({
+
+        const invoiceActivity = topInvoices.map(i => ({
             id: i.id,
             type: 'invoice',
             date: new Date(i.issueDate),
