@@ -25,7 +25,7 @@ export const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
     <div className={`fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-4 py-3 rounded-xl border ${config.bg} shadow-lg max-w-md animate-slide-up`}>
       <span className={`text-lg ${config.text}`}>{config.icon}</span>
       <p className="text-sm font-medium text-white flex-1">{message}</p>
-      <button onClick={onClose} className="text-gray-400 hover:text-white ml-2">✕</button>
+      <button onClick={onClose} aria-label="Close toast" className="text-gray-400 hover:text-white ml-2">✕</button>
     </div>
   );
 };
