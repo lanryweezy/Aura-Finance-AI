@@ -1,0 +1,3 @@
+## 2024-05-30 - Missing Check Constraints on Financial Amounts
+**Learning:** The database schema has numeric amount columns in multiple tables (e.g. `budgets.amount`, `expenses.amount`, `salary_advances.amount`, `fixed_assets.purchase_cost`, `employees.gross_salary`) without any database-level CHECK constraints to ensure they are not negative. Because there's no check constraint, invalid state could be introduced (e.g. negative salaries or budgets) which would corrupt financial aggregation queries.
+**Action:** Added new schema migration (003) to introduce CHECK constraints to ensure these critical numeric columns are always >= 0.
