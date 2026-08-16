@@ -35,7 +35,7 @@ export const EmailModal: React.FC<EmailModalProps> = ({ isOpen, onClose, recipie
       <div className="bg-dark-secondary border border-white/10 rounded-2xl w-full max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-6 border-b border-white/10">
           <h3 className="text-lg font-bold">Generate Email</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+          <button onClick={onClose} aria-label="Close modal" className="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1 space-y-4">

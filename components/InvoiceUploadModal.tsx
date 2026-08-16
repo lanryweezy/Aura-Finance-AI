@@ -85,7 +85,7 @@ export const InvoiceUploadModal: React.FC<InvoiceUploadProps> = ({ isOpen, onClo
             <h3 className="text-lg font-bold">Upload Invoice</h3>
             <p className="text-xs text-gray-500 mt-1">Upload a PDF or image to extract invoice data</p>
           </div>
-          <button onClick={handleClose} className="text-gray-400 hover:text-white text-xl">✕</button>
+          <button onClick={handleClose} aria-label="Close modal" className="text-gray-400 hover:text-white text-xl">✕</button>
         </div>
 
         <div className="p-6 overflow-y-auto flex-1 space-y-4">
@@ -113,7 +113,7 @@ export const InvoiceUploadModal: React.FC<InvoiceUploadProps> = ({ isOpen, onClo
                   <p className="text-sm font-bold truncate">{file.name}</p>
                   <p className="text-xs text-gray-500">{(file.size / 1024).toFixed(1)} KB</p>
                 </div>
-                <button onClick={() => { setFile(null); setPreview(null); }} className="text-gray-400 hover:text-white text-sm">
+                <button onClick={() => { setFile(null); setPreview(null); }} aria-label="Remove file" className="text-gray-400 hover:text-white text-sm">
                   ✕
                 </button>
               </div>

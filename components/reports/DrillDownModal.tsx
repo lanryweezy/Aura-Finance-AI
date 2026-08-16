@@ -18,7 +18,7 @@ export const DrillDownModal: React.FC<DrillDownModalProps> = ({ isOpen, onClose,
             <div className="bg-white dark:bg-dark-tertiary rounded-2xl p-6 w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] border border-gray-100 dark:border-white/10" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white">{data.title}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-aura-gray-900 dark:hover:text-white text-2xl">&times;</button>
+                    <button onClick={onClose} aria-label="Close modal" className="text-gray-400 hover:text-aura-gray-900 dark:hover:text-white text-2xl">&times;</button>
                 </div>
                 <div className="overflow-y-auto flex-grow pr-2">
                     <table className="w-full text-left">
