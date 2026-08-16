@@ -370,8 +370,8 @@ export const Dashboard = React.memo<DashboardProps>(({ user, transactions, conne
 
     const sortedTrend = Object.entries(months)
         .sort(([, a], [, b]) => a.sortKey - b.sortKey)
-        .map(([name, data]) => ({ name: name.split(' ')[0], income: data.income, expenses: data.expenses }))
-        .slice(-6); // Only show last 6 months for dashboard clarity
+        .slice(-6) // ⚡ Bolt Optimization: slice before map to prevent unnecessary allocations
+        .map(([name, data]) => ({ name: name.split(' ')[0], income: data.income, expenses: data.expenses })); // Only show last 6 months for dashboard clarity
 
     return { summary: summaryResult, trendData: sortedTrend };
   }, [transactions]);
