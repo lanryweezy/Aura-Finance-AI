@@ -4,6 +4,7 @@ import type { Invoice, Estimate, LineItem } from '../../types';
 import { useToast } from './Toast';
 import { useCurrency } from './CurrencyProvider';
 import { sanitizeHTML } from '../../services/securityUtils';
+import DOMPurify from 'dompurify';
 
 interface DocumentData {
     id: string;
@@ -126,6 +127,75 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
             }
         };
 
+        const bodyContent = `
+            <div class="container">
+                <div class="header">
+                    <div class="logo">Aura Finance</div>
+                    <div class="meta">
+                        <h1>${doc.type}</h1>
+                        <p>#${doc.id.toUpperCase()}</p>
+                        <p>Date: ${formatDate(doc.issueDate)}</p>
+                        ${doc.dueDate ? `<p>${doc.type === 'Invoice' ? 'Due' : 'Expires'}: ${formatDate(doc.dueDate)}</p>` : ''}
+                    </div>
+                </div>
+
+                <div class="bill-to">
+                    <p><strong>Bill To:</strong></p>
+                    <h2>${sanitizeHTML(doc.recipientName)}</h2>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th style="text-align: right;">Qty</th>
+                            <th style="text-align: right;">Price</th>
+                            <th style="text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${doc.items.map(item => `
+                            <tr>
+                                <td>
+                                    <strong>${sanitizeHTML(item.name)}</strong><br/>
+                                    <span style="font-size: 12px; color: #6b7280;">${sanitizeHTML(item.description || '')}</span>
+                                </td>
+                                <td style="text-align: right;">${item.quantity}</td>
+                                <td style="text-align: right;">${formatMoney(item.unitPrice)}</td>
+                                <td style="text-align: right;">${formatMoney(item.total)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div class="totals">
+                    <div class="row">
+                        <span>Subtotal:</span>
+                        <span>${formatMoney(doc.subtotal)}</span>
+                    </div>
+                    ${doc.vat ? `
+                    <div class="row">
+                        <span>VAT (7.5%):</span>
+                        <span>${formatMoney(doc.vat)}</span>
+                    </div>` : ''}
+                     ${doc.wht ? `
+                    <div class="row" style="color: #6b7280; font-size: 12px;">
+                        <span>(WHT 5%):</span>
+                        <span>(${formatMoney(doc.wht)})</span>
+                    </div>` : ''}
+                    <div class="row total-row">
+                        <span>Total:</span>
+                        <span>${formatMoney(doc.total)}</span>
+                    </div>
+                </div>
+
+                <div class="footer">
+                    <p>Thank you for your business.</p>
+                    <p>Powered by Aura Finance AI</p>
+                </div>
+            </div>
+        `;
+
         const html = `
             <html>
                 <head>
@@ -133,72 +203,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
                     <style>${getStyles()}</style>
                 </head>
                 <body>
-                    <div class="container">
-                        <div class="header">
-                            <div class="logo">Aura Finance</div>
-                            <div class="meta">
-                                <h1>${doc.type}</h1>
-                                <p>#${doc.id.toUpperCase()}</p>
-                                <p>Date: ${formatDate(doc.issueDate)}</p>
-                                ${doc.dueDate ? `<p>${doc.type === 'Invoice' ? 'Due' : 'Expires'}: ${formatDate(doc.dueDate)}</p>` : ''}
-                            </div>
-                        </div>
-                        
-                        <div class="bill-to">
-                            <p><strong>Bill To:</strong></p>
-                            <h2>${sanitizeHTML(doc.recipientName)}</h2>
-                        </div>
-
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Item</th>
-                                    <th style="text-align: right;">Qty</th>
-                                    <th style="text-align: right;">Price</th>
-                                    <th style="text-align: right;">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${doc.items.map(item => `
-                                    <tr>
-                                        <td>
-                                            <strong>${sanitizeHTML(item.name)}</strong><br/>
-                                            <span style="font-size: 12px; color: #6b7280;">${sanitizeHTML(item.description || '')}</span>
-                                        </td>
-                                        <td style="text-align: right;">${item.quantity}</td>
-                                        <td style="text-align: right;">${formatMoney(item.unitPrice)}</td>
-                                        <td style="text-align: right;">${formatMoney(item.total)}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-
-                        <div class="totals">
-                            <div class="row">
-                                <span>Subtotal:</span>
-                                <span>${formatMoney(doc.subtotal)}</span>
-                            </div>
-                            ${doc.vat ? `
-                            <div class="row">
-                                <span>VAT (7.5%):</span>
-                                <span>${formatMoney(doc.vat)}</span>
-                            </div>` : ''}
-                             ${doc.wht ? `
-                            <div class="row" style="color: #6b7280; font-size: 12px;">
-                                <span>(WHT 5%):</span>
-                                <span>(${formatMoney(doc.wht)})</span>
-                            </div>` : ''}
-                            <div class="row total-row">
-                                <span>Total:</span>
-                                <span>${formatMoney(doc.total)}</span>
-                            </div>
-                        </div>
-
-                        <div class="footer">
-                            <p>Thank you for your business.</p>
-                            <p>Powered by Aura Finance AI</p>
-                        </div>
-                    </div>
+                    ${DOMPurify.sanitize(bodyContent)}
                 </body>
             </html>
         `;

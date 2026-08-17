@@ -4,6 +4,7 @@ import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { reportService, FinancialSummary } from '../services/reportService';
 import { reportSharingService } from '../services/reportSharingService';
+import DOMPurify from 'dompurify';
 import { useToast } from './ui/Toast';
 import { Spinner } from './ui/Spinner';
 import { getFinancialReportAnalysis } from '../services/geminiService';
@@ -168,7 +169,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                 </style>
             `);
             printWindow?.document.write('</head><body>');
-            printWindow?.document.write(printContent.innerText);
+            printWindow?.document.write(DOMPurify.sanitize(printContent.innerHTML));
             printWindow?.document.write('</body></html>');
             printWindow?.document.close();
             printWindow?.focus();

@@ -8,6 +8,7 @@ import { calculateDeductions, calculateCorporateTax, calculateVat, calculateWht 
 import { exportFirsVatSchedule, exportFirsWhtSchedule } from '../services/exportService';
 import type { CategorizedTransaction, Invoice, Employee } from '../types';
 import { useCurrency } from './ui/CurrencyProvider';
+import DOMPurify from 'dompurify';
 
 export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }> = ({ transactions }) => {
     const { formatAmount } = useCurrency();
@@ -61,7 +62,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                 </style>
             `);
             printWindow?.document.write('</head><body>');
-            printWindow?.document.write(printContent.innerText);
+            printWindow?.document.write(DOMPurify.sanitize(printContent.innerHTML));
             printWindow?.document.write('</body></html>');
             printWindow?.document.close();
             printWindow?.focus();
