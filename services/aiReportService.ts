@@ -95,6 +95,12 @@ Data: ${JSON.stringify(context)}`
 
     await usageService.trackUsage('ai_insight');
     const result = safeParseJSON<any>(response.text.trim());
+
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!result || typeof result !== 'object' || !result.executiveSummary || !Array.isArray(result.highlights) || !Array.isArray(result.risks) || !Array.isArray(result.recommendations)) {
+      throw new Error('AI output is missing required fields or is malformed');
+    }
+
     return { period, ...result, kpis };
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
