@@ -295,7 +295,8 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   }, [chartOfAccounts]);
 
   const filteredTransactions = useMemo(() => {
-    return [...transactions]
+    // ⚡ Bolt Optimization: Removed [...transactions] to avoid unnecessary O(N) array allocation before filter
+    return transactions
       .filter(t => {
         // Basic filters
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
