@@ -104,7 +104,7 @@ export const BankReconciliationView: React.FC<BankReconciliationViewProps> = ({ 
                                     <input
                                         type="checkbox"
                                         checked={clearedIds.has(t.id)}
-                                        onChange={() => {}}
+                                        onChange={() => toggleCleared(t.id)}
                                         className="rounded border-gray-300 text-brand-cyan focus:ring-brand-cyan"
                                     />
                                 </td>
