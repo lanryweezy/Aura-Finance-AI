@@ -14,6 +14,7 @@ export default defineConfig({
       VITE_GEMINI_API_KEY: '',
       VITE_SUPABASE_URL: '',
       VITE_SUPABASE_ANON_KEY: '',
+      VITE_ENCRYPTION_KEY: 'aura-test-encryption-key-32-chars',
     },
     coverage: {
       provider: 'v8',
