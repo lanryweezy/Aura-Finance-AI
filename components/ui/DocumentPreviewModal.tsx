@@ -199,7 +199,7 @@ export const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ isOp
         const html = `
             <html>
                 <head>
-                    <title>${doc.type} - ${doc.id}</title>
+                    <title>${sanitizeHTML(doc.type)} - ${sanitizeHTML(doc.id)}</title>
                     <style>${getStyles()}</style>
                 </head>
                 <body>
