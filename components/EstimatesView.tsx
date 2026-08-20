@@ -94,7 +94,7 @@ const NewEstimateModal: React.FC<{
                                 </select>
                                 <input type="number" placeholder="Qty" value={line.quantity} onChange={e => handleLineChange(index, 'quantity', e.target.value)} className="w-20 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-bold" />
                                 <input type="number" placeholder="Price" value={line.unitPrice} onChange={e => handleLineChange(index, 'unitPrice', e.target.value)} className="w-28 bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-600 rounded-lg p-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none font-mono font-bold" />
-                                <button type="button" onClick={() => removeLine(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
+                                <button type="button" aria-label="Remove line item" onClick={() => removeLine(index)} className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 p-2 rounded-lg transition-all active:scale-90">&times;</button>
                             </div>
                         ))}
                     </div>
