@@ -77,6 +77,12 @@ export const customAITrainingService = {
 
       await usageService.trackUsage('ai_insight');
       const result = safeParseJSON<any>(response.text.trim());
+
+      // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+      if (!result || typeof result !== 'object' || typeof result.prediction !== 'number' || typeof result.reasoning !== 'string') {
+        throw new Error('AI output is missing required fields or is malformed');
+      }
+
       return { type: 'amount', prediction: result.prediction, confidence: 0.85, reasoning: result.reasoning };
     } catch {
       return { type: 'amount', prediction: Math.round(avgMonthly), confidence: 0.6, reasoning: 'AI unavailable, using trend analysis' };
