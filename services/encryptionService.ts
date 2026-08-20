@@ -6,9 +6,14 @@ export interface EncryptionResult {
 const ALGORITHM = 'AES-GCM';
 
 async function getKey(): Promise<CryptoKey> {
+  const encryptionKey = import.meta.env.VITE_ENCRYPTION_KEY;
+  if (!encryptionKey) {
+    throw new Error('VITE_ENCRYPTION_KEY environment variable is required');
+  }
+
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(import.meta.env.VITE_ENCRYPTION_KEY || 'aura-default-key-32-chars!!'),
+    new TextEncoder().encode(encryptionKey),
     { name: 'PBKDF2' },
     false,
     ['deriveKey']
