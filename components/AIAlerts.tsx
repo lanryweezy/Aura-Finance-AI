@@ -59,6 +59,7 @@ export const AIAlerts: React.FC = () => {
           <button
             onClick={() => handleDismiss(alert.id)}
             className="text-gray-400 hover:text-white text-xs flex-shrink-0"
+            aria-label="Dismiss alert"
           >
             ✕
           </button>
