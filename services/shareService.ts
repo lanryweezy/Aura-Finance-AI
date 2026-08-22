@@ -17,7 +17,7 @@ export function shareInvoiceViaWhatsApp(invoice: Invoice) {
   ].join('\n');
 
   const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export function shareBillViaWhatsApp(bill: Bill) {
@@ -33,12 +33,12 @@ export function shareBillViaWhatsApp(bill: Bill) {
   ].join('\n');
 
   const url = `https://wa.me/?text=${encodeURIComponent(msg)}`;
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export function shareTextViaWhatsApp(text: string) {
   const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url, '_blank');
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 export async function shareViaNative(title: string, text: string) {
