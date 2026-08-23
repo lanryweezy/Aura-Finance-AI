@@ -17,7 +17,7 @@ export const whatsappService = {
     if (!WHATSAPP_TOKEN || !WHATSAPP_PHONE_ID) {
       // Fallback to WhatsApp Web
       const msg = `📄 Invoice ${invoiceNumber}\n\nAmount: ₦${amount.toLocaleString()}\nPay: ${paymentLink}`;
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
       return true;
     }
 
@@ -65,7 +65,7 @@ export const whatsappService = {
     const msg = `Hi ${customerName}, this is a friendly reminder that your invoice for ₦${amount.toLocaleString()} is ${daysOverdue} days overdue. Please make payment at your earliest convenience.`;
 
     if (!WHATSAPP_TOKEN) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
       return true;
     }
 
@@ -95,7 +95,7 @@ export const whatsappService = {
     const msg = `✅ Payment Confirmed!\n\nHi ${customerName}, we've received your payment of ₦${amount.toLocaleString()} for Invoice ${invoiceNumber}.\n\nThank you for your business!`;
 
     if (!WHATSAPP_TOKEN) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener,noreferrer');
       return true;
     }
 
