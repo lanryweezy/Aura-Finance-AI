@@ -6,14 +6,14 @@ export interface EncryptionResult {
 const ALGORITHM = 'AES-GCM';
 
 async function getKey(): Promise<CryptoKey> {
-  const encryptionKey = import.meta.env.VITE_ENCRYPTION_KEY;
-  if (!encryptionKey) {
-    throw new Error('VITE_ENCRYPTION_KEY environment variable is required');
+  const envKey = import.meta.env.VITE_ENCRYPTION_KEY;
+  if (!envKey) {
+    throw new Error('Encryption key not configured. Set VITE_ENCRYPTION_KEY in environment variables.');
   }
 
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(encryptionKey),
+    new TextEncoder().encode(envKey),
     { name: 'PBKDF2' },
     false,
     ['deriveKey']
