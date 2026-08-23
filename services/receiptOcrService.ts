@@ -47,6 +47,12 @@ export const receiptOcrService = {
 
       await usageService.trackUsage('ocr_scan');
       const result = safeParseJSON<any>(response.text.trim());
+
+      // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+      if (!result || typeof result !== 'object' || !result.merchantName || typeof result.totalAmount !== 'number' || !result.date) {
+        throw new Error('AI output is missing required fields or is malformed');
+      }
+
       return { ...result, id: `scan_${Date.now()}`, imageUrl, status: 'scanned', createdAt: new Date().toISOString() } as ReceiptScan;
     } catch (error) {
       monitoringService.trackError('OCR_ENGINE', error as Error);

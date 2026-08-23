@@ -26,5 +26,5 @@
 **Action:** Always validate `typeof result === 'object'` immediately before checking nested fields (`result.customer`) to prevent downstream UI errors or silent crashes. Ensure complex nested arrays inside the AI output are checked with `Array.isArray`.
 
 ## 2026-06-28 - Explicitly Validate All Required Fields from safeParseJSON Output
-**Learning:** Relying purely on `safeParseJSON` only guarantees that the output is syntactically valid JSON. It does not guarantee the structure matches the schema (e.g., missing arrays like `highlights` or `risks` in `aiReportService.ts`). This leads to silent UI crashes when the UI attempts to map or render these undefined fields.
-**Action:** Always follow `safeParseJSON` with explicit structural validation (e.g., `!result.executiveSummary || !Array.isArray(result.highlights)`) and throw an error to trigger the simulated fallback when the schema contract is violated.
+**Learning:** Relying purely on `safeParseJSON` only guarantees that the output is syntactically valid JSON. It does not guarantee the structure matches the schema (e.g., missing arrays or required nested properties). This leads to silent UI crashes when the UI attempts to map or render these undefined fields.
+**Action:** Always follow `safeParseJSON` with explicit structural validation (e.g., `!result || typeof result !== 'object' || typeof result.totalAmount !== 'number'`) and throw an error to trigger the simulated fallback when the schema contract is violated.

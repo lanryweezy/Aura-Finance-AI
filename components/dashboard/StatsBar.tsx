@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useCurrency } from '../ui/CurrencyProvider';
 import type { CategorizedTransaction, Bill, Invoice } from '../../types';
 
@@ -8,13 +8,45 @@ interface StatsBarProps {
   invoices: Invoice[];
 }
 
-export const StatsBar: React.FC<StatsBarProps> = ({ transactions, bills, invoices }) => {
+export const StatsBar: React.FC<StatsBarProps> = React.memo(({ transactions, bills, invoices }) => {
   const { formatAmount } = useCurrency();
 
-  const totalIncome = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
-  const outstandingReceivables = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
-  const outstandingPayables = bills.filter(b => b.status !== 'Paid').reduce((s, b) => s + b.amount, 0);
+  const { totalIncome, totalExpenses, outstandingReceivables, outstandingPayables } = useMemo(() => {
+    let income = 0;
+    let expenses = 0;
+    let receivables = 0;
+    let payables = 0;
+
+    // ⚡ Bolt Optimization: Single pass for transactions, avoiding O(N) array allocation from .filter()
+    for (let i = 0; i < transactions.length; i++) {
+      if (transactions[i].type === 'credit') {
+        income += transactions[i].amount;
+      } else if (transactions[i].type === 'debit') {
+        expenses += transactions[i].amount;
+      }
+    }
+
+    // ⚡ Bolt Optimization: Single pass for invoices
+    for (let i = 0; i < invoices.length; i++) {
+      if (invoices[i].status !== 'Paid') {
+        receivables += invoices[i].total;
+      }
+    }
+
+    // ⚡ Bolt Optimization: Single pass for bills
+    for (let i = 0; i < bills.length; i++) {
+      if (bills[i].status !== 'Paid') {
+        payables += bills[i].amount;
+      }
+    }
+
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      outstandingReceivables: receivables,
+      outstandingPayables: payables,
+    };
+  }, [transactions, invoices, bills]);
 
   const stats = [
     { label: 'Total Income', value: formatAmount(totalIncome), color: 'text-green-400' },
@@ -33,4 +65,6 @@ export const StatsBar: React.FC<StatsBarProps> = ({ transactions, bills, invoice
       ))}
     </div>
   );
-};
+});
+
+StatsBar.displayName = 'StatsBar';

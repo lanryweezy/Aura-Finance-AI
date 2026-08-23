@@ -119,10 +119,16 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
     await usageService.trackUsage('ocr_scan');
 
     const result = safeParseJSON<any>(response.text.trim());
+
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!result || typeof result !== 'object') {
+      throw new Error('AI output is missing required fields or is malformed');
+    }
+
     return {
       ...result,
       confidence: 0.9,
-      lineItems: result.lineItems || [],
+      lineItems: Array.isArray(result.lineItems) ? result.lineItems : [],
     };
   } catch (error) {
     monitoringService.trackError('INVOICE_UPLOAD', error as Error);
