@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { entityService } from '../services/entityService';
 import type { Entity } from '../types';
@@ -12,22 +12,57 @@ export const MultiEntityDashboard: React.FC = () => {
     entityService.fetchEntities().then(e => { setEntities(e); setLoading(false); });
   }, []);
 
-  const filteredTransactions = selectedEntityId === 'all'
-    ? transactions
-    : transactions.filter(t => t.entityId === selectedEntityId || !t.entityId);
+  const { filteredTransactions, filteredInvoices, filteredBills } = useMemo(() => {
+    return {
+      filteredTransactions: selectedEntityId === 'all'
+        ? transactions
+        : transactions.filter(t => t.entityId === selectedEntityId || !t.entityId),
+      filteredInvoices: selectedEntityId === 'all'
+        ? invoices
+        : invoices.filter(i => i.entityId === selectedEntityId || !i.entityId),
+      filteredBills: selectedEntityId === 'all'
+        ? bills
+        : bills.filter(b => b.entityId === selectedEntityId || !b.entityId),
+    };
+  }, [transactions, invoices, bills, selectedEntityId]);
 
-  const filteredInvoices = selectedEntityId === 'all'
-    ? invoices
-    : invoices.filter(i => i.entityId === selectedEntityId || !i.entityId);
+  const { totalRevenue, totalExpenses, outstandingReceivables, outstandingPayables } = useMemo(() => {
+    let revenue = 0;
+    let expenses = 0;
+    let receivables = 0;
+    let payables = 0;
 
-  const filteredBills = selectedEntityId === 'all'
-    ? bills
-    : bills.filter(b => b.entityId === selectedEntityId || !b.entityId);
+    // ⚡ Bolt Optimization: Single pass for transactions to calculate both revenue and expenses,
+    // avoiding multiple filter allocations and array iterations.
+    for (let i = 0; i < filteredTransactions.length; i++) {
+      if (filteredTransactions[i].type === 'credit') {
+        revenue += filteredTransactions[i].amount;
+      } else if (filteredTransactions[i].type === 'debit') {
+        expenses += filteredTransactions[i].amount;
+      }
+    }
 
-  const totalRevenue = filteredTransactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = filteredTransactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
-  const outstandingReceivables = filteredInvoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
-  const outstandingPayables = filteredBills.filter(b => b.status !== 'Paid').reduce((s, b) => s + b.amount, 0);
+    // ⚡ Bolt Optimization: Single pass for invoices to calculate receivables without O(N) allocation
+    for (let i = 0; i < filteredInvoices.length; i++) {
+      if (filteredInvoices[i].status !== 'Paid') {
+        receivables += filteredInvoices[i].total;
+      }
+    }
+
+    // ⚡ Bolt Optimization: Single pass for bills to calculate payables without O(N) allocation
+    for (let i = 0; i < filteredBills.length; i++) {
+      if (filteredBills[i].status !== 'Paid') {
+        payables += filteredBills[i].amount;
+      }
+    }
+
+    return {
+      totalRevenue: revenue,
+      totalExpenses: expenses,
+      outstandingReceivables: receivables,
+      outstandingPayables: payables,
+    };
+  }, [filteredTransactions, filteredInvoices, filteredBills]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading entities...</div>;
 
