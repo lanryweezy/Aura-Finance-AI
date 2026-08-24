@@ -112,23 +112,38 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
              return txDate >= startDate && txDate <= endDate;
         });
 
-        result.revenue = periodTransactions.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
-        result.expenses = periodTransactions.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0);
         result.totalSales = result.invoices.reduce((sum, inv) => sum + inv.amount, 0);
 
+        // ⚡ Bolt Optimization: Replace O(4N) chained filter().reduce() passes over periodTransactions with O(N) single-pass loop.
+        // Reduces memory allocations (no intermediate arrays) and computes revenue, expenses, and tax-subject amounts simultaneously.
+        let taxableExpenses = 0;
+        let expensesSubjectToWht = 0;
+
+        result.revenue = 0;
+        result.expenses = 0;
+
+        for (let i = 0; i < periodTransactions.length; i++) {
+            const t = periodTransactions[i];
+            if (t.type === 'credit') {
+                result.revenue += t.amount;
+            } else {
+                result.expenses += t.amount;
+                if (t.category === 'Utilities' || t.category === 'Supplies' || t.category === 'Professional Services') {
+                    taxableExpenses += t.amount;
+                }
+                if (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors') {
+                    expensesSubjectToWht += t.amount;
+                }
+            }
+        }
+
         // VAT
-        const taxableExpenses = periodTransactions
-            .filter(t => t.type === 'debit' && (t.category === 'Utilities' || t.category === 'Supplies' || t.category === 'Professional Services'))
-            .reduce((sum, t) => sum + t.amount, 0);
         result.vat = calculateVat(result.totalSales, taxableExpenses);
 
         // WHT
         const incomeSubjectToWht = result.invoices
             .filter(inv => inv.whtApplied)
             .reduce((sum, inv) => sum + inv.amount, 0);
-        const expensesSubjectToWht = periodTransactions
-            .filter(t => t.type === 'debit' && (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors'))
-            .reduce((sum, t) => sum + t.amount, 0);
         result.wht = calculateWht(incomeSubjectToWht, expensesSubjectToWht);
 
         // PAYE
