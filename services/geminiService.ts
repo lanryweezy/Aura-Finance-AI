@@ -199,7 +199,13 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
+    const response = await withTimeout(aiClient.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+      config: {
+        systemInstruction: "You are a Nigerian Payroll Expert. Analyze the provided payroll history and return a concise, actionable summary of trends, tax efficiency (e.g. PAYE), and potential optimizations. Do not use markdown."
+      }
+    }), 10000);
     await usageService.trackUsage('ai_insight');
     return response.text.trim();
   } catch (error) {
@@ -220,7 +226,13 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
     try {
         monitoringService.trackAIUsage('report_analysis', prompt);
-        const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
+        const response = await withTimeout(aiClient.models.generateContent({
+            model: "gemini-2.0-flash",
+            contents: prompt,
+            config: {
+                systemInstruction: "You are an AI CFO for a Nigerian SME. Provide a short, professional executive summary of the financial data provided. Focus on revenue, expenses, and actionable cost-reduction advice. Do not use markdown."
+            }
+        }), 10000);
         await usageService.trackUsage('ai_insight');
         return response.text.trim();
     } catch (error) {
@@ -237,7 +249,13 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
 
   try {
     monitoringService.trackAIUsage('invoice_reminder', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash", contents: prompt }), 10000);
+    const response = await withTimeout(aiClient.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+      config: {
+        systemInstruction: "You are a polite but firm debt collection assistant. Generate a short, professional reminder email body for the provided invoice. Do not include a subject line or markdown."
+      }
+    }), 10000);
     await usageService.trackUsage('ai_chat');
     return response.text.trim();
   } catch (error) {
