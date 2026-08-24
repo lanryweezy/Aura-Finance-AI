@@ -1,5 +1,6 @@
 import type { CategorizedTransaction, Invoice, Bill, PayrollRun, ReportData } from '../types';
 import DOMPurify from 'dompurify';
+import { sanitizeHTML } from './securityUtils';
 
 export function exportToCSV(filename: string, data: any[], columns?: string[]) {
   if (!data || data.length === 0) return;
@@ -19,9 +20,9 @@ export function exportToCSV(filename: string, data: any[], columns?: string[]) {
 export function exportToExcel(filename: string, data: any[], columns?: string[]) {
   // Simple HTML table export that Excel can open
   const headers = columns || Object.keys(data[0]);
-  const headerRow = `<tr>${headers.map(h => `<th style="font-weight:bold;background:#f0f0f0;padding:8px;border:1px solid #ddd">${h}</th>`).join('')}</tr>`;
+  const headerRow = `<tr>${headers.map(h => `<th style="font-weight:bold;background:#f0f0f0;padding:8px;border:1px solid #ddd">${sanitizeHTML(String(h))}</th>`).join('')}</tr>`;
   const dataRows = data.map(row =>
-    `<tr>${headers.map(h => `<td style="padding:8px;border:1px solid #ddd">${row[h] ?? ''}</td>`).join('')}</tr>`
+    `<tr>${headers.map(h => `<td style="padding:8px;border:1px solid #ddd">${sanitizeHTML(String(row[h] ?? ''))}</td>`).join('')}</tr>`
   ).join('');
 
   const html = `<html><head><meta charset="utf-8"></head><body><table>${headerRow}${dataRows}</table></body></html>`;
