@@ -61,8 +61,18 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
     const projectFinancials = useMemo(() => {
         return projects.map(project => {
             const projectTxns = transactions.filter(t => t.projectId === project.id);
-            const income = projectTxns.filter(t => t.type === 'credit').reduce((sum, t) => sum + t.amount, 0);
-            const expenses = projectTxns.filter(t => t.type === 'debit').reduce((sum, t) => sum + t.amount, 0);
+
+            // ⚡ Bolt Optimization: Single pass for project income/expenses, avoiding O(N) array allocations from .filter().reduce()
+            let income = 0;
+            let expenses = 0;
+            for (let i = 0; i < projectTxns.length; i++) {
+                if (projectTxns[i].type === 'credit') {
+                    income += projectTxns[i].amount;
+                } else if (projectTxns[i].type === 'debit') {
+                    expenses += projectTxns[i].amount;
+                }
+            }
+
             const net = income - expenses;
             const margin = income > 0 ? (net / income) * 100 : 0;
             const progress = project.budget ? (expenses / project.budget) * 100 : 0;
