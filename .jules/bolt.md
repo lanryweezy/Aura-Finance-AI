@@ -5,3 +5,6 @@
 ## 2023-11-09 - [Avoid chained `.filter().reduce()` for multiple aggregates]
 **Learning:** Chaining `.filter()` followed by `.reduce()` creates intermediate array allocations (O(N) memory) and requires multiple passes over the dataset. In `StatsBar.tsx`, this caused O(4N) iterations over transactions, bills, and invoices on every render.
 **Action:** Use a single-pass `for` loop (or a single `.reduce()`) to aggregate multiple values simultaneously. Always wrap expensive derivations in `useMemo` to prevent recalculation on every render.
+## 2025-08-25 - Single Pass Loops over Array methods
+**Learning:** In calculation-heavy services (like `forecastingService.ts` and `validationService.ts`), chaining `.filter()` and `.reduce()` over large datasets creates unnecessary O(N) intermediate array allocations and blocks CPU cycles. Mathematical logic can be safely preserved by combining these operations.
+**Action:** Replaced chained array methods with single-pass `for` loops when computing multiple aggregates from the same dataset. This drastically reduces execution time and memory footprint on large datasets.
