@@ -9,7 +9,12 @@ export function exportToCSV(filename: string, data: any[], columns?: string[]) {
   const rows = data.map(row => headers.map(h => {
     const val = row[h];
     if (val === null || val === undefined) return '';
-    if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
+    if (typeof val === 'string') {
+      // Security: Escape double quotes to prevent CSV injection / format breaking
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+    }
     return String(val);
   }).join(','));
 
@@ -37,6 +42,7 @@ export function printElement(elementId: string) {
   const element = document.getElementById(elementId);
   if (!element) return;
 
+  // Note: not using 'noopener' here because we need WindowProxy to call document.write
   const printWindow = window.open('', '_blank');
   if (!printWindow) return;
 
