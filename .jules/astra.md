@@ -32,3 +32,7 @@
 ## 2026-06-29 - Enforce Personas and Structural Output Constraints using `systemInstruction`
 **Learning:** Using single-turn string prompts (e.g. `contents: prompt`) without system instructions often leads to LLMs adopting a chatty, non-deterministic persona, resulting in verbose outputs that break UI layouts or sound unprofessional.
 **Action:** When expecting raw text output from an LLM that will be presented directly in the UI (like an executive summary or an email body), always use `systemInstruction` in the `config` to enforce a strict persona and explicitly state output constraints (e.g., "Do not use markdown", "Provide a short, professional executive summary").
+
+## 2026-06-30 - Extract Inline Personas and Formatting Instructions to `systemInstruction`
+**Learning:** Embedding personas and structural output constraints directly into the user prompt (e.g., in the `text` field of `contents`) when using the Google GenAI SDK can cause the model to blend context with instructions, reducing prompt adherence and leading to chatty or non-deterministic outputs.
+**Action:** Always extract and enforce strict personas, roles, and output constraints (like "Return JSON array of matches" or "Limit to 10 results") into the `config: { systemInstruction: "..." }` field. The user prompt should only contain the specific task data, context, or query.

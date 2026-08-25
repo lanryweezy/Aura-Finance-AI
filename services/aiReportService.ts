@@ -70,16 +70,16 @@ export async function generateMonthlyReport(
       contents: [{
         role: 'user',
         parts: [{
-          text: `You are a CFO generating a monthly financial report for a Nigerian SME. Analyze this data and provide:
-1. Executive Summary (2-3 sentences)
-2. Key Highlights (3-5 bullet points)
-3. Risk Areas (2-3 items)
-4. Recommendations (3-5 actionable items)
-
-Data: ${JSON.stringify(context)}`
+          text: `Data: ${JSON.stringify(context)}`
         }],
       }],
       config: {
+        // AI Quality: Extract persona and constraints to systemInstruction to prevent model from acting chatty or non-deterministic
+        systemInstruction: `You are a CFO generating a monthly financial report for a Nigerian SME. Analyze this data and provide:
+1. Executive Summary (2-3 sentences)
+2. Key Highlights (3-5 bullet points)
+3. Risk Areas (2-3 items)
+4. Recommendations (3-5 actionable items)`,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'object',

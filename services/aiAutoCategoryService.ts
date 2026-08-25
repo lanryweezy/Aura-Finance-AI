@@ -72,15 +72,15 @@ export const aiAutoCategoryService = {
     if (uncategorized.length === 0) return [];
 
     try {
-      const prompt = `You are an expert accountant for a Nigerian business. Categorize these transactions into one of these categories: ${categories.join(', ')}. For each transaction, provide the suggested category, confidence (0-1), and brief reasoning.
-
-Transactions to categorize:
+      const prompt = `Transactions to categorize:
 ${JSON.stringify(uncategorized.map(t => ({ id: t.id, narration: t.narration, amount: t.amount, type: t.type })))}`;
 
       const response = await withTimeout(aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
+          // AI Quality: Extract persona and category constraints to systemInstruction to improve consistency and reduce prompt token overlap
+          systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions into one of these categories: ${categories.join(', ')}. For each transaction, provide the suggested category, confidence (0-1), and brief reasoning.`,
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'array',

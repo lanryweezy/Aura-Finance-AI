@@ -46,16 +46,16 @@ export async function naturalLanguageSearch(
       contents: [{
         role: 'user',
         parts: [{
-          text: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
-Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
-Limit to 10 results. Only return actual matches.
-
-User query: "${query}"
+          text: `User query: "${query}"
 
 Available data: ${JSON.stringify(context)}`
         }],
       }],
       config: {
+        // AI Quality: Extract persona and output structure constraints to systemInstruction to improve prompt adherence
+        systemInstruction: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
+Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
+Limit to 10 results. Only return actual matches.`,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'array',
