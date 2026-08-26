@@ -89,17 +89,42 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
         );
     }, [contacts, activeTab, searchTerm]);
 
+    // ⚡ Bolt Optimization: Pre-calculate customer and vendor balances to avoid O(N*M) calculation in render loop
+    // Also eliminates O(N) array allocations from chained .filter().reduce()
+    const balances = useMemo(() => {
+        const customerMap = new Map<string, number>();
+        const vendorMap = new Map<string, number>();
+
+        for (let i = 0; i < invoices.length; i++) {
+            const invoice = invoices[i];
+            if (invoice.status === 'Unpaid' || invoice.status === 'Overdue') {
+                const current = customerMap.get(invoice.customer) || 0;
+                customerMap.set(invoice.customer, current + invoice.total);
+            }
+        }
+
+        for (let i = 0; i < bills.length; i++) {
+            const bill = bills[i];
+            if (bill.status === 'Unpaid' || bill.status === 'Overdue') {
+                const current = vendorMap.get(bill.vendor) || 0;
+                vendorMap.set(bill.vendor, current + bill.amount);
+            }
+        }
+
+        return { customerMap, vendorMap };
+    }, [invoices, bills]);
+
     const getBalance = (contact: Contact) => {
         if (contact.type === 'Customer') {
-            // Sum of unpaid invoices where customer name matches (approximate matching for demo)
-            return invoices
-                .filter(i => (i.status === 'Unpaid' || i.status === 'Overdue') && (i.customer === contact.name || i.customer === contact.companyName))
-                .reduce((sum, i) => sum + i.total, 0);
+            const nameBalance = balances.customerMap.get(contact.name) || 0;
+            const companyBalance = (contact.companyName && contact.companyName !== contact.name)
+                ? (balances.customerMap.get(contact.companyName) || 0) : 0;
+            return nameBalance + companyBalance;
         } else {
-            // Sum of unpaid bills
-            return bills
-                .filter(b => (b.status === 'Unpaid' || b.status === 'Overdue') && (b.vendor === contact.name || b.vendor === contact.companyName))
-                .reduce((sum, b) => sum + b.amount, 0);
+            const nameBalance = balances.vendorMap.get(contact.name) || 0;
+            const companyBalance = (contact.companyName && contact.companyName !== contact.name)
+                ? (balances.vendorMap.get(contact.companyName) || 0) : 0;
+            return nameBalance + companyBalance;
         }
     };
 
