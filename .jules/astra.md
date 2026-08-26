@@ -32,3 +32,6 @@
 ## 2026-06-29 - Enforce Personas and Structural Output Constraints using `systemInstruction`
 **Learning:** Using single-turn string prompts (e.g. `contents: prompt`) without system instructions often leads to LLMs adopting a chatty, non-deterministic persona, resulting in verbose outputs that break UI layouts or sound unprofessional.
 **Action:** When expecting raw text output from an LLM that will be presented directly in the UI (like an executive summary or an email body), always use `systemInstruction` in the `config` to enforce a strict persona and explicitly state output constraints (e.g., "Do not use markdown", "Provide a short, professional executive summary").
+## 2024-05-18 - [Separating System Instructions from User Prompt in Gemini SDK]
+**Learning:** When using the `@google/genai` SDK, embedding the system persona, constraints, and instructions inside the user message string (e.g., `text: \`${systemPrompt}\n\nUser request: ${prompt}\``) makes the model more susceptible to prompt injection, reduces output adherence, and can lead to chatty outputs.
+**Action:** Always extract system instructions, personas, and formatting constraints (like "Do not use markdown.") into the `config: { systemInstruction: ... }` parameter. Keep the `contents` array strictly for raw user data and inputs. This improves determinism and resilience.

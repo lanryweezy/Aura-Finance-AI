@@ -32,14 +32,15 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
   const systemPrompt = `You are an AI assistant for a Nigerian accounting app. Parse the user's invoice request and generate structured invoice data.
   VAT rate is 7.5%. All amounts in NGN (₦).
   Return JSON with: customer, description, lineItems (array of {name, description, quantity, unitPrice, total}), amount (subtotal), vat, total, notes, dueDate (YYYY-MM-DD), currency.
-  If the user doesn't specify quantities, default to 1. If they don't specify a customer, use "Customer". If no due date, default to 30 days from now.`;
+  If the user doesn't specify quantities, default to 1. If they don't specify a customer, use "Customer". If no due date, default to 30 days from now. Do not use markdown.`;
 
   try {
     monitoringService.trackAIUsage('invoice_generation', prompt);
     const response = await withTimeout(aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nUser request: ${prompt}` }] }],
+      contents: [{ role: 'user', parts: [{ text: `User request: ${prompt}` }] }],
       config: {
+        systemInstruction: systemPrompt,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'object',

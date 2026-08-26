@@ -41,21 +41,20 @@ export async function naturalLanguageSearch(
 
   try {
     monitoringService.trackAIUsage('nl_search', query);
+    const systemPrompt = `You are a search engine for a financial app. Given this user query, find matching items from the data below.
+Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
+Limit to 10 results. Only return actual matches. Do not use markdown.`;
+
     const response = await withTimeout(aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{
         role: 'user',
         parts: [{
-          text: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
-Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
-Limit to 10 results. Only return actual matches.
-
-User query: "${query}"
-
-Available data: ${JSON.stringify(context)}`
+          text: `User query: "${query}"\n\nAvailable data: ${JSON.stringify(context)}`
         }],
       }],
       config: {
+        systemInstruction: systemPrompt,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'array',
