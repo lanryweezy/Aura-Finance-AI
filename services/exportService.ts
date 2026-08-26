@@ -9,8 +9,20 @@ export function exportToCSV(filename: string, data: any[], columns?: string[]) {
   const rows = data.map(row => headers.map(h => {
     const val = row[h];
     if (val === null || val === undefined) return '';
-    if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
-    return String(val);
+
+    let strVal = String(val);
+
+    // Mitigate CSV Formula Injection
+    if (/^[=+\-@\t\r]/.test(strVal)) {
+      strVal = "'" + strVal;
+    }
+
+    // Mitigate CSV structure breaking (escape double quotes, wrap if contains delimiter/newline/quote)
+    if (strVal.includes(',') || strVal.includes('\n') || strVal.includes('\r') || strVal.includes('"')) {
+      return `"${strVal.replace(/"/g, '""')}"`;
+    }
+
+    return strVal;
   }).join(','));
 
   const csv = [headers.join(','), ...rows].join('\n');
