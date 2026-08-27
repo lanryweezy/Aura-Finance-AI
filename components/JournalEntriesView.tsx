@@ -30,8 +30,14 @@ const NewJournalEntryModal: React.FC<{
         (newLines[index] as any)[field] = value;
 
         // Auto-balance
-        const debits = newLines.filter(l => l.type === 'debit').reduce((sum, l) => sum + Number(l.amount || 0), 0);
-        const credits = newLines.filter(l => l.type === 'credit').reduce((sum, l) => sum + Number(l.amount || 0), 0);
+        // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .filter().reduce()
+        // Avoids O(N) intermediate array allocations and O(2N) extra iterations on every keystroke
+        const { debits, credits } = newLines.reduce((acc, l) => {
+            if (l.type === 'debit') acc.debits += Number(l.amount || 0);
+            if (l.type === 'credit') acc.credits += Number(l.amount || 0);
+            return acc;
+        }, { debits: 0, credits: 0 });
+
         if (newLines.length === 2 && field === 'amount') {
             if (index === 0 && newLines[0].type === 'debit') newLines[1].amount = newLines[0].amount;
             if (index === 1 && newLines[1].type === 'debit') newLines[0].amount = newLines[1].amount;

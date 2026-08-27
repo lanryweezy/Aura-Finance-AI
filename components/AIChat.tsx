@@ -209,8 +209,16 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                       const d = new Date(t.date);
                       return d >= start && d <= end;
                   });
-                  const revenue = periodTxs.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-                  const expenses = periodTxs.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+                  // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .filter().reduce()
+                  // Prevents O(N) intermediate array allocations and O(2N) extra passes over the periodTxs array.
+                  const { revenue, expenses } = periodTxs.reduce(
+                      (acc, t) => {
+                          if (t.type === 'credit') acc.revenue += t.amount;
+                          else if (t.type === 'debit') acc.expenses += t.amount;
+                          return acc;
+                      },
+                      { revenue: 0, expenses: 0 }
+                  );
 
                   toolResult = {
                       period: `${args.startDate} to ${args.endDate}`,
