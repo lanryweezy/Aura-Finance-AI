@@ -73,3 +73,21 @@ export function safeInterpolate(template: string, vars: Record<string, string | 
     template
   );
 }
+
+// Mitigate CSV Formula Injection and handle structure breaking
+export function escapeCSV(value: any): string {
+  if (value === null || value === undefined) return '';
+  let strValue = String(value);
+
+  // Prevent formula injection (OWASP CSV Injection)
+  if (/^[-+=@\t\r]/.test(strValue)) {
+    strValue = "'" + strValue;
+  }
+
+  // Handle quotes and newlines (escape quotes by doubling them)
+  if (strValue.includes(',') || strValue.includes('"') || strValue.includes('\n')) {
+    strValue = `"${strValue.replace(/"/g, '""')}"`;
+  }
+
+  return strValue;
+}

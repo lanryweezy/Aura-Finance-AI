@@ -3,6 +3,7 @@ import React from 'react';
 import type { PayrollRun } from '../../types';
 import { useCurrency } from '../ui/CurrencyProvider';
 import { generatePayrollSummaryPDF, generateAllPayslipsPDF, generatePayslipPDF } from '../../services/payrollPdfService';
+import { escapeCSV } from '../../services/securityUtils';
 
 interface PayrollRunDetailModalProps {
     isOpen: boolean;
@@ -12,7 +13,7 @@ interface PayrollRunDetailModalProps {
 
 const downloadCSV = (filename: string, headers: string[], data: (string|number)[][]) => {
      let csvContent = "data:text/csv;charset=utf-8," 
-            + [headers.join(','), ...data.map(e => e.join(','))].join('\n');
+            + [headers.map(h => escapeCSV(h)).join(','), ...data.map(e => e.map(val => escapeCSV(val)).join(','))].join('\n');
         
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");

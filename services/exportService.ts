@@ -1,19 +1,14 @@
 import type { CategorizedTransaction, Invoice, Bill, PayrollRun, ReportData } from '../types';
 import DOMPurify from 'dompurify';
-import { sanitizeHTML } from './securityUtils';
+import { sanitizeHTML, escapeCSV } from './securityUtils';
 
 export function exportToCSV(filename: string, data: any[], columns?: string[]) {
   if (!data || data.length === 0) return;
 
   const headers = columns || Object.keys(data[0]);
-  const rows = data.map(row => headers.map(h => {
-    const val = row[h];
-    if (val === null || val === undefined) return '';
-    if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
-    return String(val);
-  }).join(','));
+  const rows = data.map(row => headers.map(h => escapeCSV(row[h])).join(','));
 
-  const csv = [headers.join(','), ...rows].join('\n');
+  const csv = [headers.map(h => escapeCSV(h)).join(','), ...rows].join('\n');
   downloadFile(`${filename}.csv`, csv, 'text/csv');
 }
 

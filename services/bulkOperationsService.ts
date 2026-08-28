@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
+import { escapeCSV } from './securityUtils';
 
 export interface BulkAction {
   id: string;
@@ -45,13 +46,8 @@ export const bulkOperationsService = {
   bulkExport: (data: any[], filename: string): void => {
     if (!data || data.length === 0) return;
     const headers = Object.keys(data[0]);
-    const rows = data.map(row => headers.map(h => {
-      const val = row[h];
-      if (val === null || val === undefined) return '';
-      if (typeof val === 'string' && val.includes(',')) return `"${val}"`;
-      return String(val);
-    }).join(','));
-    const csv = [headers.join(','), ...rows].join('\n');
+    const rows = data.map(row => headers.map(h => escapeCSV(row[h])).join(','));
+    const csv = [headers.map(h => escapeCSV(h)).join(','), ...rows].join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

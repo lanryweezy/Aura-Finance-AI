@@ -18,3 +18,8 @@
 **Vulnerability:** Direct string interpolation of object values into an HTML template string when exporting data to Excel format (which is internally an HTML file with a `.xls` extension) without sanitization creates a Cross-Site Scripting (XSS) vulnerability.
 **Learning:** Even if the resulting file is intended for Excel, it is built with HTML tags and is interpreted as an HTML document. When generating HTML strings manually using map/join operations over uncontrolled data, standard React DOM protections do not apply, leaving a pathway for malicious scripts if the data contains HTML tags or script blocks.
 **Prevention:** Always sanitize data values by escaping special HTML characters (e.g., using a utility like `sanitizeHTML`) before inserting them into an HTML template string, particularly in data export functions like `exportToExcel`.
+
+## 2026-11-20 - CSV Formula Injection
+**Vulnerability:** Generating CSV files natively by mapping user-supplied or database data to a comma-separated string without proper escaping created a CSV formula injection vulnerability. Values starting with `=`, `+`, `-`, `@`, `\t`, or `\r` can execute malicious commands in spreadsheet software (like Excel). Unescaped commas, newlines, and quotes also break the CSV structure.
+**Learning:** Naively concatenating strings into a CSV payload is insecure when cell data originates from end users.
+**Prevention:** Always use an `escapeCSV` utility that prefixes potentially dangerous characters with a single quote (`'`), doubles any existing quotes to escape them, and wraps the entire field in double quotes if it contains commas, newlines, or quotes. Apply this uniformly to both headers and rows prior to `.join(',')`.
