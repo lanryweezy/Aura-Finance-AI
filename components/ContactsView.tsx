@@ -89,18 +89,35 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
         );
     }, [contacts, activeTab, searchTerm]);
 
-    const getBalance = (contact: Contact) => {
-        if (contact.type === 'Customer') {
-            // Sum of unpaid invoices where customer name matches (approximate matching for demo)
-            return invoices
-                .filter(i => (i.status === 'Unpaid' || i.status === 'Overdue') && (i.customer === contact.name || i.customer === contact.companyName))
-                .reduce((sum, i) => sum + i.total, 0);
-        } else {
-            // Sum of unpaid bills
-            return bills
-                .filter(b => (b.status === 'Unpaid' || b.status === 'Overdue') && (b.vendor === contact.name || b.vendor === contact.companyName))
-                .reduce((sum, b) => sum + b.amount, 0);
+    // ⚡ Bolt Optimization: Replace O(N*M) nested iterations with O(M) single-pass lookup table computation.
+    // This avoids chaining .filter().reduce() inside the contacts .map() which creates excessive array allocations.
+    const { customerBalances, vendorBalances } = useMemo(() => {
+        const cBalances = new Map<string, number>();
+        const vBalances = new Map<string, number>();
+
+        for (const i of invoices) {
+            if ((i.status === 'Unpaid' || i.status === 'Overdue') && i.customer) {
+                cBalances.set(i.customer, (cBalances.get(i.customer) || 0) + i.total);
+            }
         }
+
+        for (const b of bills) {
+            if ((b.status === 'Unpaid' || b.status === 'Overdue') && b.vendor) {
+                vBalances.set(b.vendor, (vBalances.get(b.vendor) || 0) + b.amount);
+            }
+        }
+
+        return { customerBalances: cBalances, vendorBalances: vBalances };
+    }, [invoices, bills]);
+
+    const getBalance = (contact: Contact) => {
+        const balances = contact.type === 'Customer' ? customerBalances : vendorBalances;
+        const nameBalance = balances.get(contact.name) || 0;
+
+        if (contact.companyName && contact.companyName !== contact.name) {
+            return nameBalance + (balances.get(contact.companyName) || 0);
+        }
+        return nameBalance;
     };
 
     const handleEdit = (contact: Contact) => {
