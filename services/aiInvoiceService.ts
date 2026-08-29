@@ -38,8 +38,9 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
     monitoringService.trackAIUsage('invoice_generation', prompt);
     const response = await withTimeout(aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: [{ role: 'user', parts: [{ text: `${systemPrompt}\n\nUser request: ${prompt}` }] }],
+      contents: [{ role: 'user', parts: [{ text: `User request: ${prompt}` }] }],
       config: {
+        systemInstruction: systemPrompt,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'object',
