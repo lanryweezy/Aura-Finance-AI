@@ -65,8 +65,9 @@ export const customAITrainingService = {
 
       const response = await withTimeout(aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
-        contents: [{ role: 'user', parts: [{ text: `Predict next month's spending for "${category}" based on these transactions: ${JSON.stringify(categoryTransactions.slice(-10).map(t => ({ amount: t.amount, date: t.date })))}. Return JSON with prediction (number) and reasoning (string).` }] }],
+        contents: [{ role: 'user', parts: [{ text: `Predict next month's spending for "${category}" based on these transactions: ${JSON.stringify(categoryTransactions.slice(-10).map(t => ({ amount: t.amount, date: t.date })))}.` }] }],
         config: {
+          systemInstruction: 'You are an AI financial analyst. Predict next month\'s spending based on the provided transactions. Return JSON with prediction (number) and reasoning (string).',
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'object',

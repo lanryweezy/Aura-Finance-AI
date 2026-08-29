@@ -86,13 +86,12 @@ export async function extractInvoiceFromFile(file: File): Promise<InvoiceUploadD
     const isImage = file.type.startsWith('image/');
     const isPDF = file.type === 'application/pdf';
 
+    const systemInstruction = `Analyze this invoice document and extract ALL data. Return structured JSON matching the provided schema.
+Be precise with numbers. If a field is not found, use reasonable defaults (empty string for text, 0 for numbers, today's date for dates). For Nigerian invoices, VAT is typically 7.5%.`;
+
     if (isImage) {
       const imagePart = await fileToGenerativePart(file);
-      parts = [imagePart, {
-        text: `Analyze this invoice document and extract ALL data. Return structured JSON with: customer, description, amount (subtotal), vat, total, issueDate (YYYY-MM-DD), dueDate (YYYY-MM-DD), currency, reference (invoice number), notes, lineItems (array of {name, description, quantity, unitPrice, total}).
-
-Be precise with numbers. If a field is not found, use reasonable defaults (empty string for text, 0 for numbers, today's date for dates). For Nigerian invoices, VAT is typically 7.5%.`,
-      }];
+      parts = [imagePart, { text: "Extract invoice data from this image." }];
     } else if (isPDF) {
       // For PDFs, try reading as text first (digital PDFs)
       const text = await fileToText(file);
@@ -111,6 +110,7 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
       model: 'gemini-2.0-flash',
       contents: [{ role: 'user', parts }],
       config: {
+        systemInstruction,
         responseMimeType: 'application/json',
         responseSchema: invoiceSchema as any,
       },

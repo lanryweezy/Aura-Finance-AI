@@ -23,8 +23,9 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
   try {
     const response = await withTimeout(aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
-      contents: [{ role: 'user', parts: [{ text: `Match these bills to purchase orders. Return JSON array of matches with billId, poId, confidence (0-1), and reason.\n\nBills: ${JSON.stringify(bills.map(b => ({ id: b.id, vendor: b.vendor, amount: b.amount, description: b.description })))}\n\nPOs: ${JSON.stringify(pos.map(p => ({ id: p.id, vendor: p.vendor, total: p.total, lineItems: p.lineItems?.map((l: any) => l.name) })))}` }] }],
+      contents: [{ role: 'user', parts: [{ text: `Bills: ${JSON.stringify(bills.map(b => ({ id: b.id, vendor: b.vendor, amount: b.amount, description: b.description })))}\n\nPOs: ${JSON.stringify(pos.map(p => ({ id: p.id, vendor: p.vendor, total: p.total, lineItems: p.lineItems?.map((l: any) => l.name) })))}` }] }],
       config: {
+        systemInstruction: 'You are an AI assistant. Match these bills to purchase orders based on the provided JSON data. Return a JSON array of matches with billId, poId, confidence (0-1), and reason.',
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'array',
