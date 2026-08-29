@@ -73,3 +73,25 @@ export function safeInterpolate(template: string, vars: Record<string, string | 
     template
   );
 }
+
+// CSV formula injection and structure breaking mitigation
+export function escapeCSV(value: string | number | boolean | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  let strValue = String(value);
+
+  // Prevent CSV Formula Injection
+  // If the value starts with =, +, -, @, \t, or \r, prepend a single quote
+  if (/^[=+\-@\t\r]/.test(strValue)) {
+    strValue = `'${strValue}`;
+  }
+
+  // Prevent structure breaking (escape double quotes, wrap in double quotes if needed)
+  if (strValue.includes('"') || strValue.includes(',') || strValue.includes('\n') || strValue.includes('\r')) {
+    strValue = `"${strValue.replace(/"/g, '""')}"`;
+  }
+
+  return strValue;
+}
