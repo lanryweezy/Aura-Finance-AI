@@ -35,3 +35,7 @@
 ## 2026-08-28 - Enforce Personas and Structural Output Constraints using systemInstruction
 **Learning:** Embedding personas and formatting rules directly in the user prompt payload for AI text generation can lead to lower adherence, chatty/non-deterministic outputs, and increased risk of prompt injection.
 **Action:** Always extract the persona and output constraints into the `config.systemInstruction` property of the Gemini API call, keeping only the dynamic user input in the `contents` array. This applies specifically to text-generating or analysis functions, such as AI Invoice generation, to ensure strict adherence.
+
+## 2026-06-30 - Refactor User Prompts to Use systemInstruction
+**Learning:** Mixing personas and formatting instructions directly within the `user` role prompt (e.g., `parts: [{ text: "Analyze this... Return JSON with..." }]`) reduces model adherence, specifically for strictly-structured, non-chat outputs (like OCR, predictions, matching). The model might attempt to fulfill the prompt while adopting a chatty persona, ignoring some formatting constraints.
+**Action:** When expecting specific structured output from an LLM that requires a persona or explicit constraints (even with structured schema enabled), always extract the instruction (e.g., "You are an AI assistant. Analyze this invoice and return JSON.") out of the `user` prompt and place it strictly within `config: { systemInstruction: ... }`. Keep the `user` prompt reserved solely for the raw data to be analyzed (e.g., the image or stringified JSON).
