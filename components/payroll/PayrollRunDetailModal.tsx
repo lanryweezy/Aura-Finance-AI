@@ -81,7 +81,13 @@ export const PayrollRunDetailModal: React.FC<PayrollRunDetailModalProps> = ({ is
                                       <td className="p-3 font-mono text-red-600 dark:text-red-400 text-right">({formatAmount(p.totalDeductions)})</td>
                                       <td className="p-3 font-mono font-black text-brand-cyan text-right">{formatAmount(p.netSalary)}</td>
                                       <td className="p-3 text-right">
-                                        <button onClick={() => generatePayslipPDF(p, run.period)} className="text-xs text-brand-cyan hover:underline">📄</button>
+                                        <button
+                                            onClick={() => generatePayslipPDF(p, run.period)}
+                                            className="text-xs text-brand-cyan hover:underline"
+                                            aria-label={`Download payslip for ${p.employeeName}`}
+                                        >
+                                            📄
+                                        </button>
                                       </td>
                                   </tr>
                               ))}
