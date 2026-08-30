@@ -164,6 +164,10 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
   }, [bills, filters]);
 
   const summary = useMemo(() => {
+    // ⚡ Bolt Optimization: Pre-compute dates once to avoid creating Date objects inside the loop on every render
+    const now = new Date();
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
     return filteredBills.reduce(
       (acc, bill) => {
         if (bill.status === 'Unpaid' || bill.status === 'Overdue') {
@@ -172,9 +176,17 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
         if (bill.status === 'Overdue') {
           acc.totalOverdue += bill.amount;
         }
+
+        // ⚡ Bolt Optimization: Calculate upcoming bills in the single pass instead of chained filter().length in render
+        if (bill.status === 'Unpaid') {
+            const dueDate = new Date(bill.dueDate);
+            if (dueDate > now && dueDate < thirtyDaysFromNow) {
+                acc.upcomingBills++;
+            }
+        }
         return acc;
       },
-      { totalOutstanding: 0, totalOverdue: 0 }
+      { totalOutstanding: 0, totalOverdue: 0, upcomingBills: 0 }
     );
   }, [filteredBills]);
 
@@ -226,7 +238,7 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
         <Card>
           <h3 className="text-gray-400 text-sm font-medium">Upcoming Bills (30 days)</h3>
           <p className="text-3xl font-bold text-blue-400 mt-2">
-            {filteredBills.filter(b => b.status === 'Unpaid' && new Date(b.dueDate) > new Date() && new Date(b.dueDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)).length}
+            {summary.upcomingBills}
           </p>
         </Card>
       </div>
