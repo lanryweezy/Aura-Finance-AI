@@ -17,6 +17,9 @@ const Toggle: React.FC<{ label: string; checked: boolean; onChange: (checked: bo
             {description && <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{description}</div>}
         </div>
         <button 
+            role="switch"
+            aria-checked={checked}
+            aria-label={label}
             onClick={() => onChange(!checked)} 
             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-brand-cyan focus:ring-offset-2 dark:focus:ring-offset-dark-primary ${checked ? 'bg-brand-cyan' : 'bg-gray-200 dark:bg-gray-700'}`}
         >
