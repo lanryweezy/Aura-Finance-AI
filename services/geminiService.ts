@@ -83,13 +83,16 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     },
   };
 
-  const prompt = `Categorize these transactions for an accountant: ${JSON.stringify(toCategorize)}`;
+  const prompt = `Transactions: ${JSON.stringify(toCategorize)}`;
 
   try {
     monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
     const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
       contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
+        // AI Quality: Extracted persona and formatting constraints to systemInstruction
+        // to prevent prompt injection and ensure structural adherence
+        systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions based on the provided schema.`,
         responseMimeType: "application/json",
         responseSchema: transactionSchema as any,
       },
@@ -97,7 +100,8 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
     const jsonText = response.text.trim();
     const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
-    if (!Array.isArray(batchResult)) throw new Error("AI output is not an array");
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
 
     batchResult.forEach(t => {
         const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
@@ -164,15 +168,16 @@ export const getFinancialInsights = async (
     recentPayroll: payroll.slice(0, 3)
   };
 
-  const prompt = `You are a world-class AI CFO for a Nigerian SME. Analyze this financial data and provide 3 deep, actionable insights.
-  Consider cash flow, burn rate, tax implications (VAT, WHT), and operational efficiency.
-  Data: ${JSON.stringify(context)}`;
+  const prompt = `Data: ${JSON.stringify(context)}`;
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
     const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
+            // AI Quality: Extracted persona and formatting constraints to systemInstruction
+            // to prevent prompt injection and ensure structural adherence
+            systemInstruction: `You are a world-class AI CFO for a Nigerian SME. Analyze this financial data and provide 3 deep, actionable insights. Consider cash flow, burn rate, tax implications (VAT, WHT), and operational efficiency.`,
             responseMimeType: "application/json",
             responseSchema: insightsSchema as any,
         },
@@ -182,7 +187,8 @@ export const getFinancialInsights = async (
 
     const jsonText = response.text.trim();
     const insights = safeParseJSON(jsonText) as FinancialInsight[];
-    if (!Array.isArray(insights)) throw new Error("AI output is not an array");
+    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+    if (!Array.isArray(insights) || (insights.length > 0 && (!insights[0] || typeof insights[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
     return insights;
 
   } catch (error) {

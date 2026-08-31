@@ -46,8 +46,8 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
     const result = safeParseJSON(response.text.trim());
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!result || !Array.isArray(result)) {
-      throw new Error('AI output is not an array or is malformed');
+    if (!Array.isArray(result) || (result.length > 0 && (!result[0] || typeof result[0] !== 'object'))) {
+      throw new Error('AI output is not an array or contains invalid objects');
     }
 
     return result as BillMatch[];
