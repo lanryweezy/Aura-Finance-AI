@@ -46,16 +46,15 @@ export async function naturalLanguageSearch(
       contents: [{
         role: 'user',
         parts: [{
-          text: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
-Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
-Limit to 10 results. Only return actual matches.
-
-User query: "${query}"
-
-Available data: ${JSON.stringify(context)}`
+          text: `User query: "${query}"\n\nAvailable data: ${JSON.stringify(context)}`
         }],
       }],
       config: {
+        // AI Quality: Extracted persona and formatting constraints to systemInstruction
+        // to prevent prompt injection and ensure structural adherence
+        systemInstruction: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
+Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
+Limit to 10 results. Only return actual matches.`,
         responseMimeType: 'application/json',
         responseSchema: {
           type: 'array',
@@ -79,8 +78,8 @@ Available data: ${JSON.stringify(context)}`
     const result = safeParseJSON(response.text.trim());
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!Array.isArray(result)) {
-      throw new Error('AI output is not an array');
+    if (!Array.isArray(result) || (result.length > 0 && (!result[0] || typeof result[0] !== 'object'))) {
+      throw new Error('AI output is not an array or contains invalid objects');
     }
 
     return result as SearchResult[];
