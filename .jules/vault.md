@@ -12,3 +12,6 @@
 ## 2023-10-25 - Supabase CLI Migration Down File Handling
 **Learning:** The Supabase CLI executes all `.sql` files in a migration directory sequentially based on filename. Creating a separate `_down.sql` file in the same directory causes it to be executed immediately after the `up` migration, instantly reverting the changes.
 **Action:** When creating reversible database schema migrations in Supabase, DO NOT create separate `_down.sql` files. Instead, embed the `DOWN` migration logic as a commented block at the bottom of the main `.sql` migration file so it serves as documentation and manual rollback reference without breaking the automated migration run.
+## 2025-03-02 - Chronological Date Constraints
+**Learning:** Many financial records like invoices and bills have temporal dependencies (e.g. `due_date >= issue_date`), but the schema lacked check constraints. Enforcing these constraints requires using `NOT VALID` initially for safety, avoiding table lock on large data sets and dealing gracefully with existing non-compliant rows until subsequent validation runs.
+**Action:** Always add chronological check constraints on related timestamps (e.g., start/end, issue/due) at the database layer during schema design, and when doing it post-creation, explicitly use `NOT VALID`.
