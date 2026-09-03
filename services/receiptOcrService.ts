@@ -22,12 +22,15 @@ export const receiptOcrService = {
         imagePart = { fileData: { mimeType: 'image/jpeg', fileUri: imageUrl } };
       }
 
-      const prompt = `Analyze this receipt and extract: merchant name, date (YYYY-MM-DD), total amount, VAT amount, category, description, and line items (description + amount). Return as JSON.`;
+      // AI Quality: Extract persona and formatting rules into systemInstruction
+      // to ensure strict adherence and reduce risk of prompt injection.
+      const systemInstruction = `You are an expert AI data extractor. Analyze the provided receipt and extract: merchant name, date (YYYY-MM-DD), total amount, VAT amount, category, description, and line items (description + amount). Return as JSON.`;
 
       const response = await withTimeout(aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
-        contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
+        contents: [{ role: 'user', parts: [imagePart] }],
         config: {
+          systemInstruction,
           responseMimeType: 'application/json',
           responseSchema: {
             type: 'object',
