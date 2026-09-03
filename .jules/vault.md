@@ -12,3 +12,6 @@
 ## 2023-10-25 - Supabase CLI Migration Down File Handling
 **Learning:** The Supabase CLI executes all `.sql` files in a migration directory sequentially based on filename. Creating a separate `_down.sql` file in the same directory causes it to be executed immediately after the `up` migration, instantly reverting the changes.
 **Action:** When creating reversible database schema migrations in Supabase, DO NOT create separate `_down.sql` files. Instead, embed the `DOWN` migration logic as a commented block at the bottom of the main `.sql` migration file so it serves as documentation and manual rollback reference without breaking the automated migration run.
+## 2024-05-30 - Missing Check Constraints on Dates
+**Learning:** The database schema has tables with both `start_date` and `end_date` columns (`projects` and `leave_requests`) without any database-level CHECK constraints to ensure that `end_date` is on or after `start_date`. Without this constraint, invalid states can be introduced where a project or leave request has an end date before its start date, which breaks timeline logic and duration calculations.
+**Action:** Added new schema migration (010) to introduce CHECK constraints to ensure that `end_date >= start_date` for these tables.
