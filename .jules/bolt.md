@@ -9,3 +9,7 @@
 ## 2023-11-10 - [Avoid O(N*M) nested `.filter().reduce()` in render loops]
 **Learning:** In `ContactsView.tsx`, computing balances dynamically via nested `.filter().reduce()` on large collections (e.g. `invoices` and `bills`) for each rendered contact element scales at O(C * (I + B)), resulting in performance bottlenecks.
 **Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(I + B) pass to construct a `Map` of aggregated balances, allowing O(1) map lookups during render. This turns O(C * (I + B)) complexity into O(C + I + B).
+
+## 2026-09-03 - [Avoid O(E*(T+I)) nested `.filter()` array allocations inside render map loops]
+**Learning:** In `MultiEntityDashboard.tsx`, computing counts dynamically via nested `.filter()` on large collections (`transactions` and `invoices`) inside the `entities.map()` loop creates O(E * T) and O(E * I) iterations and significant memory allocations during render.
+**Action:** Lift array filtering into a memoized pre-pass. Use `useMemo` with a single pass over `transactions` and `invoices` to populate a `Map` of counts per entity, enabling O(1) map lookups inside the render loop and reducing complexity to O(E + T + I).
