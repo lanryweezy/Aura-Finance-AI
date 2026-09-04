@@ -87,8 +87,9 @@ export const ocrService = {
             };
 
             const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
-                contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
+                contents: [{ role: 'user', parts: [imagePart, { text: "Extract receipt data." }] }],
                 config: {
+                    systemInstruction: prompt,
                     responseMimeType: "application/json",
                     responseSchema: receiptSchema as any,
                 }
