@@ -42,17 +42,32 @@ export async function generateCashFlowForecast(
   }
 
   // Calculate historical averages (fallback)
-  const last3Months = transactions.filter(t => {
-    const d = new Date(t.date);
-    const threeMonthsAgo = new Date(now.getTime() - 90 * 86400000);
-    return d >= threeMonthsAgo;
-  });
+  // ⚡ Bolt Optimization: Single-pass loops for transactions, invoices, and bills
+  // This avoids O(N) intermediate array allocations from .filter() and redundant iterations
+  const threeMonthsAgo = new Date(now.getTime() - 90 * 86400000);
+  let totalIncome = 0;
+  let totalExpenses = 0;
 
-  const avgMonthlyIncome = last3Months.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0) / 3;
-  const avgMonthlyExpenses = last3Months.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0) / 3;
+  for (let i = 0; i < transactions.length; i++) {
+    const t = transactions[i];
+    if (new Date(t.date) >= threeMonthsAgo) {
+      if (t.type === 'credit') totalIncome += t.amount;
+      else if (t.type === 'debit') totalExpenses += t.amount;
+    }
+  }
 
-  const pendingReceivables = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
-  const pendingPayables = bills.filter(b => b.status !== 'Paid').reduce((s, b) => s + b.amount, 0);
+  const avgMonthlyIncome = totalIncome / 3;
+  const avgMonthlyExpenses = totalExpenses / 3;
+
+  let pendingReceivables = 0;
+  for (let i = 0; i < invoices.length; i++) {
+    if (invoices[i].status !== 'Paid') pendingReceivables += invoices[i].total;
+  }
+
+  let pendingPayables = 0;
+  for (let i = 0; i < bills.length; i++) {
+    if (bills[i].status !== 'Paid') pendingPayables += bills[i].amount;
+  }
   const latestPayroll = payroll.length > 0 ? payroll[0] : null;
   const monthlyPayroll = latestPayroll ? latestPayroll.summary.totalNet : 0;
 
