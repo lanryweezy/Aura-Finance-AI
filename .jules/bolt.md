@@ -9,3 +9,7 @@
 ## 2023-11-10 - [Avoid O(N*M) nested `.filter().reduce()` in render loops]
 **Learning:** In `ContactsView.tsx`, computing balances dynamically via nested `.filter().reduce()` on large collections (e.g. `invoices` and `bills`) for each rendered contact element scales at O(C * (I + B)), resulting in performance bottlenecks.
 **Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(I + B) pass to construct a `Map` of aggregated balances, allowing O(1) map lookups during render. This turns O(C * (I + B)) complexity into O(C + I + B).
+
+## 2023-11-12 - [Avoid chained array methods like `.filter().reduce()` or `.map().reduce()`]
+**Learning:** Chaining array methods creates intermediate array allocations taking O(N) memory and requires multiple passes over the dataset. For instance, in `TaxFilingView.tsx` and `RunPayrollWizard.tsx`, `.filter().reduce()` and `.map().reduce()` created unnecessary memory overhead.
+**Action:** Use a single-pass `for` loop or a single `.reduce()` instead to calculate multiple aggregates or process filtered/mapped data simultaneously without intermediate allocations.

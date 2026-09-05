@@ -141,9 +141,13 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         result.vat = calculateVat(result.totalSales, taxableExpenses);
 
         // WHT
-        const incomeSubjectToWht = result.invoices
-            .filter(inv => inv.whtApplied)
-            .reduce((sum, inv) => sum + inv.amount, 0);
+        // ⚡ Bolt Optimization: Single-pass loop replaces chained .filter().reduce() to prevent O(N) array allocation
+        let incomeSubjectToWht = 0;
+        for (let i = 0; i < result.invoices.length; i++) {
+            if (result.invoices[i].whtApplied) {
+                incomeSubjectToWht += result.invoices[i].amount;
+            }
+        }
         result.wht = calculateWht(incomeSubjectToWht, expensesSubjectToWht);
 
         // PAYE
