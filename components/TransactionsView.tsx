@@ -94,7 +94,7 @@ const TransactionRow = React.memo<{
       </div>
       <div className="w-[20%] p-4 relative flex items-center">
           <div className="flex items-center gap-2">
-              {transaction.receiptUrl && <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" className="text-gray-500 hover:text-white transition-colors"><Icons.Receipt /></a>}
+              {transaction.receiptUrl && <a href={transaction.receiptUrl} target="_blank" rel="noopener noreferrer" title="View Receipt" aria-label="View Receipt" className="text-gray-500 hover:text-white transition-colors"><Icons.Receipt /></a>}
               <CategoryBadge category={transaction.category} onClick={() => onEdit(transaction.id)} isInteractive={true} />
           </div>
         {isEditing && (
