@@ -50,20 +50,14 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
         onClose();
     };
     
-    const summary = employees.map(emp => {
+    // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .map().reduce() to prevent O(N) array allocation on every render
+    const summary = employees.reduce((acc, emp) => {
         const adj = adjustments[emp.id] || { bonus: 0, deduction: 0 };
         const calcs = calculateDeductions(emp.grossSalary, adj.bonus, adj.deduction);
-        return {
-            ...calcs,
-            name: emp.name,
-            bonus: adj.bonus,
-            oneTimeDeduction: adj.deduction
-        }
-    }).reduce((acc, item) => {
-        acc.totalGross += item.grossSalary;
-        acc.totalBonuses += item.bonus;
-        acc.totalOneTimeDeductions += item.oneTimeDeduction;
-        acc.totalNet += item.netSalary;
+        acc.totalGross += calcs.grossSalary;
+        acc.totalBonuses += adj.bonus;
+        acc.totalOneTimeDeductions += adj.deduction;
+        acc.totalNet += calcs.netSalary;
         return acc;
     }, { totalGross: 0, totalBonuses: 0, totalOneTimeDeductions: 0, totalNet: 0});
 
