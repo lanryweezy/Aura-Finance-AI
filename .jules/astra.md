@@ -44,3 +44,6 @@
 ## 2024-05-24 - [Iterative JSON Parsing]
 **Learning:** Hardcoded text slicing for `JSON.parse` by looking at the very first and last bracket/brace is brittle when models return conversational text before or after the JSON block that happens to include a `{` or `[`. This resulted in the JSON parse crashing and causing the UI to fail.
 **Action:** Implemented an iterative parsing mechanism inside `safeParseJSON` that advances the start index of the bracket/brace search whenever `JSON.parse` fails. This ensures we actually find the valid JSON object inside conversational fluff even if it's peppered with brackets.
+## 2026-09-02 - Ensure System Instructions for OCR Data
+**Learning:** Mixing explicit prompt instructions inside the generic prompt instead of `systemInstruction` can confuse LLMs, resulting in worse JSON adherence for specific text extractions, especially on vision tasks like OCR.
+**Action:** Always move formatting instructions and persona data out of the generic prompt and strictly into `systemInstruction` to increase AI quality adherence and prevent injection.

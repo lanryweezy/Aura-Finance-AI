@@ -72,7 +72,12 @@ export const ocrService = {
             const imagePart = await fileToGenerativePart(file);
             const categories = DEFAULT_CATEGORIES.map(c => c.name).join(', ');
 
-            const prompt = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}].`;
+            // AI Quality: Extracted persona and formatting constraints to systemInstruction
+            // to prevent prompt injection and ensure structural adherence. The user prompt
+            // is reserved solely for the raw data to be analyzed.
+            const systemInstruction = `You are an AI assistant. Analyze the provided receipt image and extract the following: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category. The Category MUST be exactly one of the following: [${categories}]. Return as JSON.`;
+
+            const prompt = `Please analyze this receipt image.`;
 
             const receiptSchema = {
                 type: Type.OBJECT,
@@ -89,6 +94,7 @@ export const ocrService = {
             const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
                 contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
                 config: {
+                    systemInstruction,
                     responseMimeType: "application/json",
                     responseSchema: receiptSchema as any,
                 }
