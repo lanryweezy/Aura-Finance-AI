@@ -83,37 +83,46 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     },
   };
 
-  const prompt = `Transactions: ${JSON.stringify(toCategorize)}`;
+  monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
+  const CHUNK_SIZE = 50;
+  let allBatchResults: CategorizedTransaction[] = [];
 
-  try {
-    monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
-    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        // AI Quality: Extracted persona and formatting constraints to systemInstruction
-        // to prevent prompt injection and ensure structural adherence
-        systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions based on the provided schema.`,
-        responseMimeType: "application/json",
-        responseSchema: transactionSchema as any,
-      },
-    }), 10000);
+  for (let i = 0; i < toCategorize.length; i += CHUNK_SIZE) {
+    const chunk = toCategorize.slice(i, i + CHUNK_SIZE);
+    const prompt = `Transactions: ${JSON.stringify(chunk)}`;
 
-    const jsonText = response.text.trim();
-    const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
-    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
+    try {
+      const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          // AI Quality: Extracted persona and formatting constraints to systemInstruction
+          // to prevent prompt injection and ensure structural adherence
+          systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions based on the provided schema.`,
+          responseMimeType: "application/json",
+          responseSchema: transactionSchema as any,
+        },
+      }), 10000);
 
-    batchResult.forEach(t => {
-        const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
-        categorizationCache.set(cacheKey, t.category);
-    });
+      const jsonText = response.text.trim();
+      const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
+      // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+      if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
 
-    return [...results, ...batchResult].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      batchResult.forEach(t => {
+          const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
+          categorizationCache.set(cacheKey, t.category);
+      });
 
-  } catch (error) {
-    monitoringService.trackError('AI_ENGINE', error as Error);
-    return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
+      allBatchResults.push(...batchResult);
+
+    } catch (error) {
+      monitoringService.trackError('AI_ENGINE', error as Error);
+      const failedChunk = chunk.map(t => ({ ...t, category: 'Uncategorized' } as CategorizedTransaction));
+      allBatchResults.push(...failedChunk);
+    }
   }
+
+  return [...results, ...allBatchResults].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 
@@ -163,8 +172,9 @@ export const getFinancialInsights = async (
 
   const context = {
     transactions: transactions.slice(0, 50),
-    pendingBills: bills.filter(b => b.status !== 'Paid'),
-    pendingInvoices: invoices.filter(i => i.status !== 'Paid'),
+    // AI Quality: Limit context growth to prevent token exhaustion
+    pendingBills: bills.filter(b => b.status !== 'Paid').slice(0, 20),
+    pendingInvoices: invoices.filter(i => i.status !== 'Paid').slice(0, 20),
     recentPayroll: payroll.slice(0, 3)
   };
 
@@ -201,7 +211,8 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
   if (!aiClient || !API_KEY) return "AI payroll analysis suggests restructuring bonuses to optimize for tax efficiency.";
   if (await checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
 
-  const prompt = `Analyze payroll history: ${JSON.stringify(payrollHistory)}`;
+  // AI Quality: Limit context growth to prevent token exhaustion
+  const prompt = `Analyze payroll history: ${JSON.stringify(payrollHistory.slice(0, 10))}`;
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
