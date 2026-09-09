@@ -72,7 +72,7 @@ export const ocrService = {
             const imagePart = await fileToGenerativePart(file);
             const categories = DEFAULT_CATEGORIES.map(c => c.name).join(', ');
 
-            const prompt = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}].`;
+            const systemInstruction = `Analyze this receipt and extract: Merchant, Date (YYYY-MM-DD), Total Amount, Description, and Category from [${categories}].`;
 
             const receiptSchema = {
                 type: Type.OBJECT,
@@ -87,8 +87,11 @@ export const ocrService = {
             };
 
             const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
-                contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
+                contents: [{ role: 'user', parts: [imagePart, { text: "Extract data from this receipt." }] }],
                 config: {
+                    // AI Quality: Extracted persona and formatting constraints to systemInstruction
+                    // to improve model adherence and prevent chatty responses.
+                    systemInstruction,
                     responseMimeType: "application/json",
                     responseSchema: receiptSchema as any,
                 }
