@@ -9,3 +9,7 @@
 ## 2023-11-10 - [Avoid O(N*M) nested `.filter().reduce()` in render loops]
 **Learning:** In `ContactsView.tsx`, computing balances dynamically via nested `.filter().reduce()` on large collections (e.g. `invoices` and `bills`) for each rendered contact element scales at O(C * (I + B)), resulting in performance bottlenecks.
 **Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(I + B) pass to construct a `Map` of aggregated balances, allowing O(1) map lookups during render. This turns O(C * (I + B)) complexity into O(C + I + B).
+
+## 2024-03-24 - [Consolidate redundant array iterations]
+**Learning:** Computing multiple derived values (e.g. filtered arrays and totals) via separate array `.filter()` and `.reduce()` calls causes O(4N) iterations over the same dataset on every render, which is inefficient for large datasets like inventory items.
+**Action:** Always compute derived array metrics in a single pass using a `for` loop inside a `useMemo` hook, ensuring it's only recalculated when dependencies change, and optimizing performance to O(N).
