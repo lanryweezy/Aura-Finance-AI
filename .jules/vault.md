@@ -12,3 +12,6 @@
 ## 2023-10-25 - Supabase CLI Migration Down File Handling
 **Learning:** The Supabase CLI executes all `.sql` files in a migration directory sequentially based on filename. Creating a separate `_down.sql` file in the same directory causes it to be executed immediately after the `up` migration, instantly reverting the changes.
 **Action:** When creating reversible database schema migrations in Supabase, DO NOT create separate `_down.sql` files. Instead, embed the `DOWN` migration logic as a commented block at the bottom of the main `.sql` migration file so it serves as documentation and manual rollback reference without breaking the automated migration run.
+## 2024-06-25 - Missing Check Constraints for Temporal Ordering
+**Learning:** Tables with date ranges (e.g. `start_date` and `end_date`, or `issue_date` and `due_date`) lacked CHECK constraints enforcing logical temporal order (e.g. `end_date >= start_date`). This allowed invalid timelines (like projects ending before they started) which could corrupt UI sorting and financial projections.
+**Action:** Added migration (010) enforcing logical date range checks using `CHECK (...) NOT VALID` to avoid table locks, preventing invalid timeline states from persisting in the database.
