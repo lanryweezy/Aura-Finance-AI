@@ -9,3 +9,7 @@
 ## 2023-11-10 - [Avoid O(N*M) nested `.filter().reduce()` in render loops]
 **Learning:** In `ContactsView.tsx`, computing balances dynamically via nested `.filter().reduce()` on large collections (e.g. `invoices` and `bills`) for each rendered contact element scales at O(C * (I + B)), resulting in performance bottlenecks.
 **Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(I + B) pass to construct a `Map` of aggregated balances, allowing O(1) map lookups during render. This turns O(C * (I + B)) complexity into O(C + I + B).
+
+## 2024-05-18 - [Avoid eager allocations inside loop bodies]
+**Learning:** When hoisting invariant calculations outside an O(N) loop (e.g. `useMemo` in `TransactionsView.tsx`), do not eagerly allocate row-specific derivations (like `new Date(t.date)` or `t.text.toLowerCase()`) at the top of the loop body. This executes the expensive operations on every iteration, even when filters are inactive, causing severe default-state performance regressions.
+**Action:** Keep row-specific derivations lazily evaluated inside the specific `if` blocks that require them, ensuring they only run when the relevant filter is actually active.

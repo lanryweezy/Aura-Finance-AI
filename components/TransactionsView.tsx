@@ -295,6 +295,34 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
   }, [chartOfAccounts]);
 
   const filteredTransactions = useMemo(() => {
+    // ⚡ Bolt Optimization: Hoist invariant calculations outside of the O(N) filter loop
+    const normalizedSearchTerm = searchTerm ? searchTerm.toLowerCase() : '';
+    const normalizedAdvNarration = advancedFilters.narration ? advancedFilters.narration.toLowerCase() : '';
+    const minAmount = advancedFilters.amount_min ? parseFloat(advancedFilters.amount_min) : undefined;
+    const maxAmount = advancedFilters.amount_max ? parseFloat(advancedFilters.amount_max) : undefined;
+
+    let startDateLimit: number | undefined;
+    let advStartDateLimit: number | undefined;
+    if (dateFilter.start) {
+        const sd = new Date(dateFilter.start);
+        sd.setHours(0, 0, 0, 0);
+        startDateLimit = sd.getTime();
+    }
+    if (advancedFilters.startDate) {
+        advStartDateLimit = new Date(advancedFilters.startDate).getTime();
+    }
+
+    let endDateLimit: number | undefined;
+    let advEndDateLimit: number | undefined;
+    if (dateFilter.end) {
+        const ed = new Date(dateFilter.end);
+        ed.setHours(23, 59, 59, 999);
+        endDateLimit = ed.getTime();
+    }
+    if (advancedFilters.endDate) {
+        advEndDateLimit = new Date(advancedFilters.endDate).getTime();
+    }
+
     // ⚡ Bolt Optimization: Removed [...transactions] to avoid unnecessary O(N) array allocation before filter
     return transactions
       .filter(t => {
@@ -302,27 +330,27 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
         if (projectFilter !== 'all' && t.projectId !== projectFilter) return false;
-        if (searchTerm && !t.narration.toLowerCase().includes(searchTerm.toLowerCase())) return false;
         
-        if (dateFilter.start) {
-            const startDate = new Date(dateFilter.start);
-            startDate.setHours(0, 0, 0, 0);
-            if (new Date(t.date) < startDate) return false;
-        }
-        if (dateFilter.end) {
-            const endDate = new Date(dateFilter.end);
-            endDate.setHours(23, 59, 59, 999);
-            if (new Date(t.date) > endDate) return false;
-        }
-
         // Advanced filters
-        if (advancedFilters.narration && !t.narration.toLowerCase().includes(advancedFilters.narration.toLowerCase())) return false;
         if (advancedFilters.category && t.category !== advancedFilters.category) return false;
         if (advancedFilters.projectId && t.projectId !== advancedFilters.projectId) return false;
-        if (advancedFilters.startDate && new Date(t.date) < new Date(advancedFilters.startDate)) return false;
-        if (advancedFilters.endDate && new Date(t.date) > new Date(advancedFilters.endDate)) return false;
-        if (advancedFilters.amount_min && t.amount < parseFloat(advancedFilters.amount_min)) return false;
-        if (advancedFilters.amount_max && t.amount > parseFloat(advancedFilters.amount_max)) return false;
+        if (minAmount !== undefined && t.amount < minAmount) return false;
+        if (maxAmount !== undefined && t.amount > maxAmount) return false;
+
+        // Perform expensive allocations lazily, only if required by an active filter
+        if (normalizedSearchTerm || normalizedAdvNarration) {
+            const tNarration = t.narration.toLowerCase();
+            if (normalizedSearchTerm && !tNarration.includes(normalizedSearchTerm)) return false;
+            if (normalizedAdvNarration && !tNarration.includes(normalizedAdvNarration)) return false;
+        }
+
+        if (startDateLimit !== undefined || endDateLimit !== undefined || advStartDateLimit !== undefined || advEndDateLimit !== undefined) {
+            const tTime = new Date(t.date).getTime();
+            if (startDateLimit !== undefined && tTime < startDateLimit) return false;
+            if (endDateLimit !== undefined && tTime > endDateLimit) return false;
+            if (advStartDateLimit !== undefined && tTime < advStartDateLimit) return false;
+            if (advEndDateLimit !== undefined && tTime > advEndDateLimit) return false;
+        }
 
         return true;
       })
