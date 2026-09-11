@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import type { InventoryItem } from '../types';
 import { useCurrency } from './ui/CurrencyProvider';
@@ -24,15 +24,42 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, 
   const [showTransferModal, setShowTransferModal] = useState(false);
   const [transferForm, setTransferForm] = useState({ itemId: '', from: '', to: '', quantity: 1 });
 
-  const filtered = items.filter(i =>
-    i.name.toLowerCase().includes(search.toLowerCase()) ||
-    i.sku.toLowerCase().includes(search.toLowerCase()) ||
-    i.category.toLowerCase().includes(search.toLowerCase())
-  );
+  // ⚡ Bolt Optimization: Single pass for inventory metrics to avoid O(4N) array iterations on every render
+  const { filtered, totalValue, totalRetail, lowStock } = useMemo(() => {
+    let tValue = 0;
+    let tRetail = 0;
+    const filteredItems: InventoryItem[] = [];
+    const lowStockItems: InventoryItem[] = [];
 
-  const totalValue = items.reduce((s, i) => s + (i.quantity * i.costPrice), 0);
-  const totalRetail = items.reduce((s, i) => s + (i.quantity * i.salePrice), 0);
-  const lowStock = items.filter(i => i.lowStockThreshold && i.quantity <= i.lowStockThreshold);
+    const lowerSearch = search.toLowerCase();
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      // Calculate totals
+      tValue += item.quantity * item.costPrice;
+      tRetail += item.quantity * item.salePrice;
+
+      // Filter for search
+      if (item.name.toLowerCase().includes(lowerSearch) ||
+          item.sku.toLowerCase().includes(lowerSearch) ||
+          item.category.toLowerCase().includes(lowerSearch)) {
+        filteredItems.push(item);
+      }
+
+      // Check low stock
+      if (item.lowStockThreshold && item.quantity <= item.lowStockThreshold) {
+        lowStockItems.push(item);
+      }
+    }
+
+    return {
+      filtered: filteredItems,
+      totalValue: tValue,
+      totalRetail: tRetail,
+      lowStock: lowStockItems
+    };
+  }, [items, search]);
 
   useEffect(() => {
     stockTrackingService.getAllMovements(50).then(setMovements);
