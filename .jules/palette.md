@@ -9,3 +9,7 @@
 ## 2025-06-13 - Missing ARIA Labels on Emoji-Only Buttons in Data Tables
 **Learning:** Found that an emoji-only action button ("📄") used for downloading a PDF inside the `PayrollRunDetailModal` table completely lacked an `aria-label`. This made the action invisible/inaccessible to screen reader users navigating the table rows.
 **Action:** Always verify that buttons containing only emojis (like "📄", "✏️", "🗑️") have a descriptive `aria-label` added, especially when dynamically rendered inside table rows or lists.
+
+## 2025-06-13 - Missing ARIA Labels on Emoji-Only Buttons in Data Tables (Receivables)
+**Learning:** Found that an emoji-only action button ("🖨️") used for printing an invoice inside the `ReceivablesView` table lacked an `aria-label`. This is consistent with the previously identified pattern of emoji-only buttons missing labels.
+**Action:** Always verify that buttons containing only emojis have a descriptive `aria-label` added, especially when dynamically rendered inside table rows or lists.
