@@ -44,3 +44,7 @@
 ## 2024-05-24 - [Iterative JSON Parsing]
 **Learning:** Hardcoded text slicing for `JSON.parse` by looking at the very first and last bracket/brace is brittle when models return conversational text before or after the JSON block that happens to include a `{` or `[`. This resulted in the JSON parse crashing and causing the UI to fail.
 **Action:** Implemented an iterative parsing mechanism inside `safeParseJSON` that advances the start index of the bracket/brace search whenever `JSON.parse` fails. This ensures we actually find the valid JSON object inside conversational fluff even if it's peppered with brackets.
+
+## 2026-09-11 - Implement Sequential Chunking for Batch AI Operations
+**Learning:** Sending unbounded arrays of raw data (like full transaction lists) directly into AI prompts leads to context window token exhaustion and causes the entire batch to fail if the API returns an error or is rate-limited.
+**Action:** Always slice or chunk large datasets into manageable batches (e.g., arrays of 50) before sending them to the AI model. Process these chunks sequentially, merge the results, and ensure that if a specific chunk fails, only that chunk gracefully falls back (e.g., to 'Uncategorized'), preventing a single error from bringing down the entire batch.
