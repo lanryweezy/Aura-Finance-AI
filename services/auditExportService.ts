@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
+import { escapeCSV } from './securityUtils';
 
 export async function exportAuditTrail(format: 'csv' | 'json' = 'csv'): Promise<void> {
   if (!supabase) return;
@@ -18,7 +19,7 @@ export async function exportAuditTrail(format: 'csv' | 'json' = 'csv'): Promise<
     const rows = logs.map((l: any) => [
       l.timestamp, l.user_name, l.action, l.module, l.entity_type, l.entity_id, l.entity_name,
     ]);
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const csv = [headers.map(h => escapeCSV(h)).join(','), ...rows.map(r => r.map(c => escapeCSV(c)).join(','))].join('\n');
     downloadFile('audit-trail.csv', csv, 'text/csv');
   } else {
     downloadFile('audit-trail.json', JSON.stringify(logs, null, 2), 'application/json');
