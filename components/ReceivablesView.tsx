@@ -497,6 +497,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                             <button 
                                 onClick={() => { const { printElement } = require('../services/exportService'); }}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all active:scale-95"
+                                aria-label="Print invoice"
                             >
                                 🖨️
                             </button>
