@@ -83,37 +83,42 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
     },
   };
 
-  const prompt = `Transactions: ${JSON.stringify(toCategorize)}`;
+  const CHUNK_SIZE = 50;
+  for (let i = 0; i < toCategorize.length; i += CHUNK_SIZE) {
+    const chunk = toCategorize.slice(i, i + CHUNK_SIZE);
+    const prompt = `Transactions: ${JSON.stringify(chunk)}`;
 
-  try {
-    monitoringService.log('info', 'AI_ENGINE', 'Categorizing transactions');
-    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        // AI Quality: Extracted persona and formatting constraints to systemInstruction
-        // to prevent prompt injection and ensure structural adherence
-        systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions based on the provided schema.`,
-        responseMimeType: "application/json",
-        responseSchema: transactionSchema as any,
-      },
-    }), 10000);
+    try {
+      monitoringService.log('info', 'AI_ENGINE', `Categorizing chunk ${i / CHUNK_SIZE + 1}`);
+      const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        config: {
+          // AI Quality: Extracted persona and formatting constraints to systemInstruction
+          // to prevent prompt injection and ensure structural adherence
+          systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions based on the provided schema.`,
+          responseMimeType: "application/json",
+          responseSchema: transactionSchema as any,
+        },
+      }), 10000);
 
-    const jsonText = response.text.trim();
-    const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
-    // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
+      const jsonText = response.text.trim();
+      const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
+      // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+      if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
 
-    batchResult.forEach(t => {
-        const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
-        categorizationCache.set(cacheKey, t.category);
-    });
-
-    return [...results, ...batchResult].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-  } catch (error) {
-    monitoringService.trackError('AI_ENGINE', error as Error);
-    return transactions.map(t => ({ ...t, category: 'Uncategorized' }));
+      batchResult.forEach(t => {
+          const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
+          categorizationCache.set(cacheKey, t.category);
+          results.push(t);
+      });
+    } catch (error) {
+      monitoringService.trackError('AI_ENGINE', error as Error);
+      // AI Quality: If a chunk fails, fallback to 'Uncategorized' for that chunk only, preventing the entire batch from failing.
+      chunk.forEach(t => results.push({ ...t, category: 'Uncategorized' }));
+    }
   }
+
+  return results.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
 
