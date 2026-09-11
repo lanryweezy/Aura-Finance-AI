@@ -136,7 +136,8 @@ const CategoryEditor = React.memo<{
     }, [onClose]);
 
     const filteredCategories = useMemo(() => {
-        return allCategories.filter(cat => cat.toLowerCase().includes(searchTerm.toLowerCase()));
+        const searchLower = searchTerm.toLowerCase();
+        return allCategories.filter(cat => cat.toLowerCase().includes(searchLower));
     }, [allCategories, searchTerm]);
 
     const handleSave = () => {
@@ -296,33 +297,53 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
 
   const filteredTransactions = useMemo(() => {
     // ⚡ Bolt Optimization: Removed [...transactions] to avoid unnecessary O(N) array allocation before filter
+    // ⚡ Bolt Optimization: Hoist invariant calculations outside of the O(N) filter loop
+    const searchLower = searchTerm ? searchTerm.toLowerCase() : '';
+
+    let filterStartDate: Date | null = null;
+    if (dateFilter.start) {
+        filterStartDate = new Date(dateFilter.start);
+        filterStartDate.setHours(0, 0, 0, 0);
+    }
+
+    let filterEndDate: Date | null = null;
+    if (dateFilter.end) {
+        filterEndDate = new Date(dateFilter.end);
+        filterEndDate.setHours(23, 59, 59, 999);
+    }
+
+    const advancedSearchLower = advancedFilters.narration ? advancedFilters.narration.toLowerCase() : '';
+    const advancedStartDate = advancedFilters.startDate ? new Date(advancedFilters.startDate) : null;
+    const advancedEndDate = advancedFilters.endDate ? new Date(advancedFilters.endDate) : null;
+    const amountMin = advancedFilters.amount_min ? parseFloat(advancedFilters.amount_min) : null;
+    const amountMax = advancedFilters.amount_max ? parseFloat(advancedFilters.amount_max) : null;
+
+
     return transactions
       .filter(t => {
         // Basic filters
         if (typeFilter !== 'all' && t.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && t.category !== categoryFilter) return false;
         if (projectFilter !== 'all' && t.projectId !== projectFilter) return false;
-        if (searchTerm && !t.narration.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        if (searchLower && !t.narration.toLowerCase().includes(searchLower)) return false;
         
-        if (dateFilter.start) {
-            const startDate = new Date(dateFilter.start);
-            startDate.setHours(0, 0, 0, 0);
-            if (new Date(t.date) < startDate) return false;
-        }
-        if (dateFilter.end) {
-            const endDate = new Date(dateFilter.end);
-            endDate.setHours(23, 59, 59, 999);
-            if (new Date(t.date) > endDate) return false;
+        // Date evaluation is lazy - we only parse t.date if we have a date filter to check against
+        if (filterStartDate || filterEndDate || advancedStartDate || advancedEndDate) {
+            const txDate = new Date(t.date);
+
+            if (filterStartDate && txDate < filterStartDate) return false;
+            if (filterEndDate && txDate > filterEndDate) return false;
+            if (advancedStartDate && txDate < advancedStartDate) return false;
+            if (advancedEndDate && txDate > advancedEndDate) return false;
         }
 
         // Advanced filters
-        if (advancedFilters.narration && !t.narration.toLowerCase().includes(advancedFilters.narration.toLowerCase())) return false;
+        if (advancedSearchLower && !t.narration.toLowerCase().includes(advancedSearchLower)) return false;
         if (advancedFilters.category && t.category !== advancedFilters.category) return false;
         if (advancedFilters.projectId && t.projectId !== advancedFilters.projectId) return false;
-        if (advancedFilters.startDate && new Date(t.date) < new Date(advancedFilters.startDate)) return false;
-        if (advancedFilters.endDate && new Date(t.date) > new Date(advancedFilters.endDate)) return false;
-        if (advancedFilters.amount_min && t.amount < parseFloat(advancedFilters.amount_min)) return false;
-        if (advancedFilters.amount_max && t.amount > parseFloat(advancedFilters.amount_max)) return false;
+
+        if (amountMin !== null && t.amount < amountMin) return false;
+        if (amountMax !== null && t.amount > amountMax) return false;
 
         return true;
       })
