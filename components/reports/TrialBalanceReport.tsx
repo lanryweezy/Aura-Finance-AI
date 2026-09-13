@@ -18,21 +18,33 @@ export const TrialBalanceReport: React.FC<TrialBalanceReportProps> = ({ accounts
             return txDate >= period.start && txDate <= period.end;
         });
 
-        const accountBalances = accounts.map(account => {
-            const balance = periodTransactions.reduce((acc, t) => {
-                if (t.category === account.name) {
-                    if (['Asset', 'Expense'].includes(account.type)) {
-                        return t.type === 'debit' ? acc + t.amount : acc - t.amount;
-                    } else { // Liability, Equity, Revenue
-                        return t.type === 'credit' ? acc + t.amount : acc - t.amount;
-                    }
-                }
-                return acc;
-            }, 0);
-            return { name: account.name, type: account.type, balance };
-        }).filter(b => b.balance !== 0);
+        // ⚡ Bolt Optimization: Replace O(A*T) nested map().reduce() with O(A+T) Map-based single pass.
+        // We first map accounts to their types for O(1) lookup, then compute balances in one loop.
+        const accountTypes = new Map(accounts.map(a => [a.name, a.type]));
+        const accountBalancesMap = new Map<string, number>();
 
-        return accountBalances;
+        for (let i = 0; i < periodTransactions.length; i++) {
+            const t = periodTransactions[i];
+            const accType = accountTypes.get(t.category);
+
+            if (accType) {
+                let balanceChange = 0;
+                if (['Asset', 'Expense'].includes(accType)) {
+                    balanceChange = t.type === 'debit' ? t.amount : -t.amount;
+                } else {
+                    balanceChange = t.type === 'credit' ? t.amount : -t.amount;
+                }
+
+                const currentBalance = accountBalancesMap.get(t.category) || 0;
+                accountBalancesMap.set(t.category, currentBalance + balanceChange);
+            }
+        }
+
+        return accounts.map(account => ({
+            name: account.name,
+            type: account.type,
+            balance: accountBalancesMap.get(account.name) || 0
+        })).filter(b => b.balance !== 0);
 
     }, [accounts, transactions, period]);
 
