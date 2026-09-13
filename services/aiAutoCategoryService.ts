@@ -75,7 +75,7 @@ export const aiAutoCategoryService = {
       const prompt = `Transactions to categorize:
 ${JSON.stringify(uncategorized.map(t => ({ id: t.id, narration: t.narration, amount: t.amount, type: t.type })))}`;
 
-      const response = await withTimeout(aiClient.models.generateContent({
+      const response = await withTimeout(() => aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {

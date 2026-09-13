@@ -90,7 +90,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
     try {
       monitoringService.log('info', 'AI_ENGINE', `Categorizing chunk ${i / CHUNK_SIZE + 1}`);
-      const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
+      const response = await withTimeout(() => aiClient.models.generateContent({ model: "gemini-2.0-flash",
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           // AI Quality: Extracted persona and formatting constraints to systemInstruction
@@ -177,7 +177,7 @@ export const getFinancialInsights = async (
 
   try {
     monitoringService.trackAIUsage('insight', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
+    const response = await withTimeout(() => aiClient.models.generateContent({ model: "gemini-2.0-flash",
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
             // AI Quality: Extracted persona and formatting constraints to systemInstruction
@@ -210,7 +210,7 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({
+    const response = await withTimeout(() => aiClient.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
       config: {
@@ -237,7 +237,7 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
 
     try {
         monitoringService.trackAIUsage('report_analysis', prompt);
-        const response = await withTimeout(aiClient.models.generateContent({
+        const response = await withTimeout(() => aiClient.models.generateContent({
             model: "gemini-2.0-flash",
             contents: prompt,
             config: {
@@ -260,7 +260,7 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
 
   try {
     monitoringService.trackAIUsage('invoice_reminder', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({
+    const response = await withTimeout(() => aiClient.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
       config: {

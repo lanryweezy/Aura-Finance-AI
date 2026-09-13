@@ -12,13 +12,25 @@ export const aiClient = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
  * Wraps a promise with a timeout, throwing an error if it takes too long.
  * Essential for AI model calls to prevent unbounded execution and trigger graceful fallbacks.
  */
-export const withTimeout = <T>(promise: Promise<T>, ms: number = 10000): Promise<T> => {
-    return Promise.race([
-        promise,
-        new Promise<T>((_, reject) =>
-            setTimeout(() => reject(new Error(`AI Request timed out after ${ms}ms`)), ms)
-        )
-    ]);
+export const withTimeout = async <T>(promiseCreator: () => Promise<T>, ms: number = 10000, maxRetries: number = 2): Promise<T> => {
+    let attempt = 0;
+    while (true) {
+        try {
+            return await Promise.race([
+                promiseCreator(),
+                new Promise<T>((_, reject) =>
+                    setTimeout(() => reject(new Error(`AI Request timed out after ${ms}ms`)), ms)
+                )
+            ]);
+        } catch (error: any) {
+            attempt++;
+            const errorMessage = error?.message?.toLowerCase() || String(error).toLowerCase();
+            const isTransient = errorMessage.includes('429') || errorMessage.includes('500') || errorMessage.includes('503') || errorMessage.includes('timeout') || errorMessage.includes('fetch failed');
+            if (attempt > maxRetries || !isTransient) throw error;
+            // AI Quality: Add retry with exponential backoff for transient 429/500 errors to improve resilience
+            await new Promise(res => setTimeout(res, 1000 * Math.pow(2, attempt - 1)));
+        }
+    }
 };
 
 /**

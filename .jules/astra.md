@@ -48,3 +48,7 @@
 ## 2026-09-11 - Implement Sequential Chunking for Batch AI Operations
 **Learning:** Sending unbounded arrays of raw data (like full transaction lists) directly into AI prompts leads to context window token exhaustion and causes the entire batch to fail if the API returns an error or is rate-limited.
 **Action:** Always slice or chunk large datasets into manageable batches (e.g., arrays of 50) before sending them to the AI model. Process these chunks sequentially, merge the results, and ensure that if a specific chunk fails, only that chunk gracefully falls back (e.g., to 'Uncategorized'), preventing a single error from bringing down the entire batch.
+
+## 2026-10-27 - Implement Exponential Backoff for Transient API Errors
+**Learning:** Raw timeouts `withTimeout(promise, ms)` solve the problem of unbounded execution, but they fail the entire operation immediately when the timeout is reached or when transient errors (like 429 Too Many Requests or 500/503 Service Unavailable) occur. This leads to brittle AI features that fail under slight network instability.
+**Action:** Replaced `withTimeout(promise, ms)` with `withTimeout(() => promise, ms, maxRetries)`. The new implementation wraps the timeout logic with a `while` loop that catches transient errors (including timeouts and 429/500/503 status codes) and retries the operation using exponential backoff (e.g., waiting `Math.pow(2, attempt-1)` seconds before retrying). This significantly improves the resilience of AI features without sacrificing bounded execution time.

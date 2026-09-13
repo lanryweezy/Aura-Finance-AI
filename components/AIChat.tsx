@@ -176,9 +176,9 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     try {
       // 🤖 Astra: Wrap AI call in a timeout to prevent infinite hanging when the model is slow or unresponsive
       let responseStream = await withTimeout(
-          chatInstance.current.sendMessageStream({ message: textToSend }),
+          () => chatInstance.current!.sendMessageStream({ message: textToSend }),
           10_000
-      );
+      ) as AsyncGenerator<any>;
       let fullResponseText = '';
       let functionCallMade = false;
 
@@ -250,12 +250,12 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
               }
 
               // Send the tool result back to the model
-               responseStream = await withTimeout(chatInstance.current.sendMessageStream([{
+               responseStream = await withTimeout(() => chatInstance.current!.sendMessageStream([{
                   functionResponse: {
                       name: call.name,
                       response: toolResult
                   }
-              }] as any), 10_000);
+              }] as any), 10_000) as AsyncGenerator<any>;
 
               // Process the *new* stream after the function call
               for await (const nextChunk of responseStream) {

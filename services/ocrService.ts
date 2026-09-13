@@ -86,7 +86,7 @@ export const ocrService = {
                 required: ["merchantName", "date", "totalAmount", "description", "category"],
             };
 
-            const response = await withTimeout(aiClient.models.generateContent({ model: "gemini-2.0-flash",
+            const response = await withTimeout(() => aiClient.models.generateContent({ model: "gemini-2.0-flash",
                 contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
                 config: {
                     // AI Quality: Extracted persona and formatting constraints to systemInstruction

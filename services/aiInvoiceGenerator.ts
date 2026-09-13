@@ -28,7 +28,7 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
 
   try {
     monitoringService.trackAIUsage('invoice_generation', prompt);
-    const response = await withTimeout(aiClient.models.generateContent({
+    const response = await withTimeout(() => aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{ role: 'user', parts: [{ text: `User request: ${prompt}` }] }],
       config: {
