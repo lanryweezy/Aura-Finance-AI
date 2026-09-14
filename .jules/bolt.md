@@ -13,3 +13,7 @@
 ## 2024-03-24 - [Consolidate redundant array iterations]
 **Learning:** Computing multiple derived values (e.g. filtered arrays and totals) via separate array `.filter()` and `.reduce()` calls causes O(4N) iterations over the same dataset on every render, which is inefficient for large datasets like inventory items.
 **Action:** Always compute derived array metrics in a single pass using a `for` loop inside a `useMemo` hook, ensuring it's only recalculated when dependencies change, and optimizing performance to O(N).
+
+## 2024-03-24 - [Avoid O(P*T) nested iterations for aggregations in `.map()`]
+**Learning:** In `ProjectsView.tsx`, calculating aggregate totals for every project by calling `transactions.filter(...)` inside the `projects.map()` loop caused an O(P * T) complexity, executing a full array scan for every iteration.
+**Action:** Lift array filtering computations out of `.map()`. Pre-aggregate required totals into a lookup `Map` with a single O(N) pass, then access the pre-computed totals during the list mapping with O(1) lookups.
