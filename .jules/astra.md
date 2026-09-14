@@ -48,3 +48,7 @@
 ## 2026-09-11 - Implement Sequential Chunking for Batch AI Operations
 **Learning:** Sending unbounded arrays of raw data (like full transaction lists) directly into AI prompts leads to context window token exhaustion and causes the entire batch to fail if the API returns an error or is rate-limited.
 **Action:** Always slice or chunk large datasets into manageable batches (e.g., arrays of 50) before sending them to the AI model. Process these chunks sequentially, merge the results, and ensure that if a specific chunk fails, only that chunk gracefully falls back (e.g., to 'Uncategorized'), preventing a single error from bringing down the entire batch.
+
+## 2026-09-12 - Standardize Structured Contents Array for Single Prompts
+**Learning:** Passing a raw string to the `contents` parameter of `generateContent` works for simple prompts but is brittle and bypasses the SDK's structural expectations, increasing the risk of unpredictable parsing by the AI model.
+**Action:** Always format the `contents` payload as a structured array (`[{ role: 'user', parts: [{ text: prompt }] }]`) even for simple, single-turn prompts to enforce structural consistency.

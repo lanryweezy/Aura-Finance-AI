@@ -212,7 +212,9 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
     monitoringService.trackAIUsage('payroll_insight', prompt);
     const response = await withTimeout(aiClient.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: prompt,
+      // AI Quality: Enforce structured contents array over shorthand string to ensure
+      // strict structural alignment with SDK expectations and prevent injection edge cases.
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: "You are a Nigerian Payroll Expert. Analyze the provided payroll history and return a concise, actionable summary of trends, tax efficiency (e.g. PAYE), and potential optimizations. Do not use markdown."
       }
@@ -239,7 +241,9 @@ export const getFinancialReportAnalysis = async (currentPeriodData: ReportData, 
         monitoringService.trackAIUsage('report_analysis', prompt);
         const response = await withTimeout(aiClient.models.generateContent({
             model: "gemini-2.0-flash",
-            contents: prompt,
+            // AI Quality: Enforce structured contents array over shorthand string to ensure
+            // strict structural alignment with SDK expectations and prevent injection edge cases.
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 systemInstruction: "You are an AI CFO for a Nigerian SME. Provide a short, professional executive summary of the financial data provided. Focus on revenue, expenses, and actionable cost-reduction advice. Do not use markdown."
             }
@@ -262,7 +266,9 @@ export const generateInvoiceReminder = async (invoice: Invoice): Promise<string>
     monitoringService.trackAIUsage('invoice_reminder', prompt);
     const response = await withTimeout(aiClient.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: prompt,
+      // AI Quality: Enforce structured contents array over shorthand string to ensure
+      // strict structural alignment with SDK expectations and prevent injection edge cases.
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
       config: {
         systemInstruction: "You are a polite but firm debt collection assistant. Generate a short, professional reminder email body for the provided invoice. Do not include a subject line or markdown."
       }
