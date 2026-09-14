@@ -59,19 +59,31 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ projects, transactio
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const projectFinancials = useMemo(() => {
-        return projects.map(project => {
-            const projectTxns = transactions.filter(t => t.projectId === project.id);
+        // ⚡ Bolt Optimization: Pre-compute project totals in a single pass over transactions
+        // avoiding O(P*T) nested iterations inside the projects.map loop
+        const totalsMap = new Map<string, { income: number; expenses: number }>();
 
-            // ⚡ Bolt Optimization: Single pass for project income/expenses, avoiding O(N) array allocations from .filter().reduce()
-            let income = 0;
-            let expenses = 0;
-            for (let i = 0; i < projectTxns.length; i++) {
-                if (projectTxns[i].type === 'credit') {
-                    income += projectTxns[i].amount;
-                } else if (projectTxns[i].type === 'debit') {
-                    expenses += projectTxns[i].amount;
+        for (let i = 0; i < transactions.length; i++) {
+            const t = transactions[i];
+            if (t.projectId) {
+                let current = totalsMap.get(t.projectId);
+                if (!current) {
+                    current = { income: 0, expenses: 0 };
+                    totalsMap.set(t.projectId, current);
+                }
+
+                if (t.type === 'credit') {
+                    current.income += t.amount;
+                } else if (t.type === 'debit') {
+                    current.expenses += t.amount;
                 }
             }
+        }
+
+        return projects.map(project => {
+            const totals = totalsMap.get(project.id) || { income: 0, expenses: 0 };
+            const income = totals.income;
+            const expenses = totals.expenses;
 
             const net = income - expenses;
             const margin = income > 0 ? (net / income) * 100 : 0;
