@@ -13,3 +13,7 @@
 ## 2025-06-13 - Missing ARIA Labels on Emoji-Only Buttons in Data Tables (Receivables)
 **Learning:** Found that an emoji-only action button ("🖨️") used for printing an invoice inside the `ReceivablesView` table lacked an `aria-label`. This is consistent with the previously identified pattern of emoji-only buttons missing labels.
 **Action:** Always verify that buttons containing only emojis have a descriptive `aria-label` added, especially when dynamically rendered inside table rows or lists.
+
+## 2025-06-14 - Missing explicit htmlFor and id attributes in Auth Forms
+**Learning:** Found an accessibility issue pattern where form `<label>` elements inside the Authentication form (like "Email Address", "Password") were not explicitly linked to their corresponding `<input>` fields using `htmlFor` and `id` attributes. This breaks screen reader associations and prevents users from clicking the label to focus the input.
+**Action:** Always verify that every `<label>` has an `htmlFor` attribute that exactly matches the `id` of its corresponding `<input>` element for proper form accessibility.
