@@ -17,3 +17,7 @@
 ## 2024-03-24 - [Avoid O(P*T) nested iterations for aggregations in `.map()`]
 **Learning:** In `ProjectsView.tsx`, calculating aggregate totals for every project by calling `transactions.filter(...)` inside the `projects.map()` loop caused an O(P * T) complexity, executing a full array scan for every iteration.
 **Action:** Lift array filtering computations out of `.map()`. Pre-aggregate required totals into a lookup `Map` with a single O(N) pass, then access the pre-computed totals during the list mapping with O(1) lookups.
+
+## 2024-05-18 - [Avoid O(E*(T+I)) nested `.filter()` in map during render]
+**Learning:** In `MultiEntityDashboard.tsx`, computing transaction and invoice counts by calling `.filter()` inside the `entities.map()` render loop caused an O(E * (T + I)) complexity, resulting in performance bottlenecks as entities, transactions, and invoices scale.
+**Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(T + I) pass to construct a `Map` of aggregated counts, allowing O(1) map lookups during render. This turns O(E * (T + I)) complexity into O(T + I).
