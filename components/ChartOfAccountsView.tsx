@@ -60,6 +60,24 @@ const NewAccountModal: React.FC<{
 export const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({ accounts, setAccounts }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    // ⚡ Bolt Optimization: Replace O(N*T) filtering inside render loop with single O(N) pass.
+    const accountsByType = React.useMemo(() => {
+        const grouped: Record<string, Account[]> = {
+            'Asset': [],
+            'Liability': [],
+            'Equity': [],
+            'Revenue': [],
+            'Expense': []
+        };
+        for (let i = 0; i < accounts.length; i++) {
+            const acc = accounts[i];
+            if (grouped[acc.type]) {
+                grouped[acc.type].push(acc);
+            }
+        }
+        return grouped;
+    }, [accounts]);
+
     const applyTemplate = (industry: string) => {
         const templates: Record<string, any[]> = {
             'SaaS': [
@@ -118,20 +136,23 @@ export const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({ accoun
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {accountTypes.map(type => (
-                    <Card key={type} className="border-gray-100 dark:border-white/5 shadow-xl">
-                        <h3 className="text-xl font-bold text-brand-cyan mb-6">{type}s</h3>
-                        <ul className="space-y-3">
-                           {accounts.filter(a => a.type === type).map(account => (
-                               <li key={account.name} className="p-4 bg-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-sm transition-all hover:shadow-md">
-                                   <p className="text-gray-900 dark:text-white font-bold">{account.name}</p>
-                                   {account.description && <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 leading-tight">{account.description}</p>}
-                               </li>
-                           ))}
-                           {accounts.filter(a => a.type === type).length === 0 && <p className="text-gray-400 dark:text-gray-500 text-sm font-medium italic text-center py-4">No {type} accounts.</p>}
-                        </ul>
-                    </Card>
-                ))}
+                {accountTypes.map(type => {
+                    const typeAccounts = accountsByType[type] || [];
+                    return (
+                        <Card key={type} className="border-gray-100 dark:border-white/5 shadow-xl">
+                            <h3 className="text-xl font-bold text-brand-cyan mb-6">{type}s</h3>
+                            <ul className="space-y-3">
+                               {typeAccounts.map(account => (
+                                   <li key={account.name} className="p-4 bg-gray-50 dark:bg-dark-secondary rounded-xl border border-gray-100 dark:border-gray-700/50 shadow-sm transition-all hover:shadow-md">
+                                       <p className="text-gray-900 dark:text-white font-bold">{account.name}</p>
+                                       {account.description && <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1 leading-tight">{account.description}</p>}
+                                   </li>
+                               ))}
+                               {typeAccounts.length === 0 && <p className="text-gray-400 dark:text-gray-500 text-sm font-medium italic text-center py-4">No {type} accounts.</p>}
+                            </ul>
+                        </Card>
+                    );
+                })}
             </div>
         </div>
         </>
