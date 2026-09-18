@@ -27,7 +27,7 @@ export const billingService = {
     return authService.getCurrentUser()?.org.plan || 'Free';
   },
 
-  initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
+  initializePaystack: (plan: SubscriptionTier, email: string, callback: (ref: string) => void, onClose?: () => void) => {
     if (typeof PaystackPop === 'undefined') {
       setTimeout(() => callback('MOCK-PAYSTACK-' + Date.now()), 1000);
       return;
@@ -39,12 +39,12 @@ export const billingService = {
       currency: 'NGN',
       ref: 'AURA-' + Math.floor(Math.random() * 1000000000),
       callback: (response: any) => callback(response.reference),
-      onClose: () => {},
+      onClose: onClose || (() => {}),
     });
     handler.openIframe();
   },
 
-  initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void) => {
+  initializeFlutterwave: (plan: SubscriptionTier, email: string, callback: (ref: string) => void, onClose?: () => void) => {
     if (typeof FlutterwaveCheckout === 'undefined') {
       setTimeout(() => callback('MOCK-FLUTTERWAVE-' + Date.now()), 1000);
       return;
@@ -57,7 +57,7 @@ export const billingService = {
       payment_options: 'card, banktransfer, ussd',
       customer: { email, name: 'Aura User' },
       callback: (data: any) => callback(data.transaction_id),
-      onclose: () => {},
+      onclose: onClose || (() => {}),
       customizations: { title: 'Aura Finance AI', description: `Payment for ${plan.name} Plan`, logo: 'https://aura-finance-ai.vercel.app/favicon.svg' },
     });
   },
