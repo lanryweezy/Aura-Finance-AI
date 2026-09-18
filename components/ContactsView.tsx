@@ -82,10 +82,13 @@ export const ContactsView: React.FC<ContactsViewProps> = ({ contacts, invoices, 
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredContacts = useMemo(() => {
+        // ⚡ Bolt Optimization: Hoist invariant toLowerCase() outside the loop
+        const lowerSearchTerm = searchTerm.toLowerCase();
+
         return contacts.filter(c => 
             c.type === activeTab && 
-            (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-             c.companyName?.toLowerCase().includes(searchTerm.toLowerCase()))
+            (c.name.toLowerCase().includes(lowerSearchTerm) ||
+             c.companyName?.toLowerCase().includes(lowerSearchTerm))
         );
     }, [contacts, activeTab, searchTerm]);
 

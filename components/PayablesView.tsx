@@ -152,13 +152,25 @@ export const PayablesView: React.FC<PayablesViewProps> = ({ bills, onAddBill, on
   const [emailRecipient, setEmailRecipient] = useState<Bill | null>(null);
 
   const filteredBills = useMemo(() => {
+    // ⚡ Bolt Optimization: Hoist invariant calculations outside the filter loop
+    const filterVendor = filters.vendor ? filters.vendor.toLowerCase() : null;
+    const filterStatus = filters.status || null;
+    const filterAmountMin = filters.amount_min ? Number(filters.amount_min) : null;
+    const filterAmountMax = filters.amount_max ? Number(filters.amount_max) : null;
+    const filterStartDate = filters.start_date ? new Date(filters.start_date).getTime() : null;
+    const filterEndDate = filters.end_date ? new Date(filters.end_date).getTime() : null;
+
     return bills.filter(bill => {
-      if (filters.vendor && !bill.vendor.toLowerCase().includes(filters.vendor.toLowerCase())) return false;
-      if (filters.status && bill.status !== filters.status) return false;
-      if (filters.amount_min && bill.amount < Number(filters.amount_min)) return false;
-      if (filters.amount_max && bill.amount > Number(filters.amount_max)) return false;
-      if (filters.start_date && new Date(bill.issueDate) < new Date(filters.start_date)) return false;
-      if (filters.end_date && new Date(bill.issueDate) > new Date(filters.end_date)) return false;
+      if (filterVendor && !bill.vendor.toLowerCase().includes(filterVendor)) return false;
+      if (filterStatus && bill.status !== filterStatus) return false;
+      if (filterAmountMin !== null && bill.amount < filterAmountMin) return false;
+      if (filterAmountMax !== null && bill.amount > filterAmountMax) return false;
+
+      if (filterStartDate !== null || filterEndDate !== null) {
+          const billDate = new Date(bill.issueDate).getTime();
+          if (filterStartDate !== null && billDate < filterStartDate) return false;
+          if (filterEndDate !== null && billDate > filterEndDate) return false;
+      }
       return true;
     });
   }, [bills, filters]);
