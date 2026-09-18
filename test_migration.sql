@@ -1,3 +1,11 @@
--- Migration: Add foreign key for vendor_id to contacts
-ALTER TABLE vendor_portal_links
-  ADD CONSTRAINT vendor_portal_links_vendor_id_fkey FOREIGN KEY (vendor_id) REFERENCES contacts(id) ON DELETE CASCADE NOT VALID;
+-- Missing foreign keys for user references
+-- corporate_cards.assigned_to -> users(id)
+-- expenses.submitted_by -> users(id)
+-- expenses.approved_by -> users(id)
+-- approval_requests.requested_by -> users(id)
+-- closing_periods.closed_by -> users(id)
+-- stock_movements.created_by -> users(id)
+-- partial_payments.recorded_by -> users(id)
+-- credit_notes.issued_by -> users(id)
+-- leave_requests.approved_by -> users(id)
+-- projects.manager -> users(id)

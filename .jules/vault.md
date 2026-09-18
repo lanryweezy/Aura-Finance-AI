@@ -15,3 +15,6 @@
 ## 2024-05-30 - Missing Check Constraints on Temporal Data (Date Ranges)
 **Learning:** The database schema has multiple tables containing temporal date ranges or bounds (`projects.start_date`/`end_date`, `invoices.issue_date`/`due_date`, etc.) without database-level CHECK constraints to ensure logical ordering (e.g., end dates appearing before start dates). Without this, the data layer could store paradoxes that break application timelines.
 **Action:** Added migration (010) to introduce CHECK constraints enforcing temporal logic across all date-range tables, utilizing the `NOT VALID` clause to prevent table locking while ensuring new rows respect the bounds.
+## 2024-06-03 - Missing Foreign Key Constraints for User References
+**Learning:** Multiple tables in the schema contained columns storing references to users (e.g., `expenses.submitted_by`, `corporate_cards.assigned_to`, `projects.manager`) but lacked database-level `FOREIGN KEY` constraints linking them to the `users(id)` column. This could result in orphaned workflow or financial records if the referenced user is deleted.
+**Action:** Added migration (011) to safely enforce `FOREIGN KEY` relationships with the `NOT VALID` clause, applying `ON DELETE SET NULL` for optional references and `ON DELETE RESTRICT` for required ones to maintain strict referential integrity.
