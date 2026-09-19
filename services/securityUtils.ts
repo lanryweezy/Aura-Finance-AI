@@ -95,3 +95,10 @@ export function escapeCSV(value: string | number | boolean | null | undefined): 
 
   return strValue;
 }
+
+// Secure random token generator
+export function generateSecureToken(length: number = 32): string {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
