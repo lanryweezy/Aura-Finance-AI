@@ -26,6 +26,29 @@ export const MultiEntityDashboard: React.FC = () => {
     };
   }, [transactions, invoices, bills, selectedEntityId]);
 
+  // ⚡ Bolt Optimization: Pre-aggregate transaction and invoice counts by entityId
+  // This turns O(E * T) and O(E * I) complexity inside the map loop into a single O(T + I) pass.
+  const { entityTxCounts, entityInvCounts } = useMemo(() => {
+    const txCounts: Record<string, number> = {};
+    const invCounts: Record<string, number> = {};
+
+    for (let i = 0; i < transactions.length; i++) {
+      const eid = transactions[i].entityId;
+      if (eid) {
+        txCounts[eid] = (txCounts[eid] || 0) + 1;
+      }
+    }
+
+    for (let i = 0; i < invoices.length; i++) {
+      const eid = invoices[i].entityId;
+      if (eid) {
+        invCounts[eid] = (invCounts[eid] || 0) + 1;
+      }
+    }
+
+    return { entityTxCounts: txCounts, entityInvCounts: invCounts };
+  }, [transactions, invoices]);
+
   const { totalRevenue, totalExpenses, outstandingReceivables, outstandingPayables } = useMemo(() => {
     let revenue = 0;
     let expenses = 0;
@@ -119,8 +142,8 @@ export const MultiEntityDashboard: React.FC = () => {
           </thead>
           <tbody>
             {entities.map(entity => {
-              const entTx = transactions.filter(t => t.entityId === entity.id);
-              const entInv = invoices.filter(i => i.entityId === entity.id);
+              const txCount = entityTxCounts[entity.id] || 0;
+              const invCount = entityInvCounts[entity.id] || 0;
               return (
                 <tr
                   key={entity.id}
@@ -130,8 +153,8 @@ export const MultiEntityDashboard: React.FC = () => {
                   <td className="p-4 font-bold text-sm">{entity.name}</td>
                   <td className="p-4 text-right text-xs text-gray-500">{entity.type}</td>
                   <td className="p-4 text-right text-xs text-gray-500">{entity.currency}</td>
-                  <td className="p-4 text-right text-sm">{entTx.length}</td>
-                  <td className="p-4 text-right text-sm">{entInv.length}</td>
+                  <td className="p-4 text-right text-sm">{txCount}</td>
+                  <td className="p-4 text-right text-sm">{invCount}</td>
                 </tr>
               );
             })}
