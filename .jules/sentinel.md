@@ -23,3 +23,8 @@
 **Vulnerability:** Directly concatenating string values into a CSV file without escaping special characters that are parsed by spreadsheet software as formulas (e.g. `=`, `+`, `-`, `@`) can result in CSV Injection / Formula Injection when the CSV is opened in Excel, LibreOffice Calc, or Google Sheets. This could allow execution of arbitrary commands on the user's machine. Also, not properly escaping double quotes or wrapping fields containing commas or newlines leads to structure breaking.
 **Learning:** Native export implementations that do not properly sanitize input create security risks for end-users when exporting and opening financial reports or schedules.
 **Prevention:** Always implement logic to mitigate CSV formula injection by prefixing cell values starting with `=`, `+`, `-`, `@`, `\t`, or `\r` with a single quote (`'`), AND mitigate structure breaking by escaping double quotes (`""`) and wrapping the field in double quotes if it contains commas, newlines, or quotes. Use the centralized `escapeCSV` utility from `services/securityUtils.ts` for all CSV data exports.
+
+## 2026-09-20 - Insecure Randomness via Math.random()
+**Vulnerability:** Generating security-sensitive tokens (such as team invitations) using `Math.random()` provides predictable, non-cryptographically secure values that can be brute-forced or guessed by attackers.
+**Learning:** `Math.random()` is not meant for security contexts because its underlying algorithm (typically PRNG) lacks sufficient entropy and predictability guarantees.
+**Prevention:** Always use the Web Crypto API (`crypto.getRandomValues`) to generate cryptographically secure random bytes for tokens, secrets, or identifiers used in security contexts.

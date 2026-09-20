@@ -95,3 +95,10 @@ export function escapeCSV(value: string | number | boolean | null | undefined): 
 
   return strValue;
 }
+
+// Generates a cryptographically secure hex token for sensitive operations
+export function generateSecureToken(length: number = 16): string {
+  const array = new Uint8Array(length);
+  crypto.getRandomValues(array);
+  return Array.from(array, b => b.toString(16).padStart(2, '0')).join('');
+}
