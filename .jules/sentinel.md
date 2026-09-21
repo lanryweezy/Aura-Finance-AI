@@ -28,3 +28,7 @@
 **Vulnerability:** Generating security-sensitive tokens (such as team invitations) using `Math.random()` provides predictable, non-cryptographically secure values that can be brute-forced or guessed by attackers.
 **Learning:** `Math.random()` is not meant for security contexts because its underlying algorithm (typically PRNG) lacks sufficient entropy and predictability guarantees.
 **Prevention:** Always use the Web Crypto API (`crypto.getRandomValues`) to generate cryptographically secure random bytes for tokens, secrets, or identifiers used in security contexts.
+## 2026-12-05 - Insecure Randomness in Token Generation
+**Vulnerability:** Using `Math.random()` to generate security-sensitive tokens, such as team invitation tokens (`inv_${Date.now()}_${Math.random().toString(36).slice(2)}`), is insecure. `Math.random()` is not cryptographically secure and can be predictable, potentially allowing an attacker to guess invitation tokens and gain unauthorized access.
+**Learning:** Standard pseudo-random number generators (PRNGs) like `Math.random()` should never be used for security purposes, session IDs, or tokens that grant access.
+**Prevention:** Always use cryptographically secure random number generators (CSPRNGs), such as `crypto.getRandomValues()` in the browser environment, when generating security-sensitive tokens. Created and utilize `generateSecureToken` in `services/securityUtils.ts` for this purpose.

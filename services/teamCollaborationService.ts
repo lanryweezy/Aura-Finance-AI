@@ -41,8 +41,7 @@ export const teamCollaborationService = {
   // Invite a team member
   invite: async (email: string, role: string): Promise<TeamInvitation> => {
     const user = JSON.parse(localStorage.getItem('aura_user') || '{}');
-    // Using cryptographically secure random values for invitation tokens instead of Math.random()
-    const token = `inv_${Date.now()}_${generateSecureToken(8)}`;
+    const token = `inv_${Date.now()}_${generateSecureToken(16)}`;
 
     if (supabase) {
       const { data } = await supabase.from('team_invitations').insert({
