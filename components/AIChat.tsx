@@ -6,7 +6,7 @@ import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { Chat, Type, FunctionDeclaration } from "@google/genai";
 import { Bill, Invoice } from '../types';
-import { withTimeout, aiClient, API_KEY } from '../services/aiConfig';
+import { aiClient, API_KEY, withTimeout } from '../services/aiConfig';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
@@ -60,6 +60,9 @@ const getBillsTool: FunctionDeclaration = {
     name: 'getBills',
     description: 'Fetches the user\'s bills. Call this when the user asks about expenses, vendors, or upcoming payments.',
 };
+
+// 🤖 Astra AI Quality: Use centralized aiClient to ensure consistent configuration, error handling, and API key management
+// Removed: const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || '' });
 
 const suggestedPrompts = [
     "What is my estimated tax liability?",
@@ -125,7 +128,6 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
     Be concise, helpful. Do not invent data; always use the provided tools to get real information.`;
 
-    // AI Quality: Use centralized aiClient to ensure consistent configuration and prevent exposing raw keys
     if(aiClient && API_KEY) {
         chatInstance.current = aiClient.chats.create({
             model: 'gemini-2.0-flash',
