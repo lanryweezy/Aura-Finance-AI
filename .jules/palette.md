@@ -13,7 +13,3 @@
 ## 2025-06-13 - Missing ARIA Labels on Emoji-Only Buttons in Data Tables (Receivables)
 **Learning:** Found that an emoji-only action button ("🖨️") used for printing an invoice inside the `ReceivablesView` table lacked an `aria-label`. This is consistent with the previously identified pattern of emoji-only buttons missing labels.
 **Action:** Always verify that buttons containing only emojis have a descriptive `aria-label` added, especially when dynamically rendered inside table rows or lists.
-
-## $(date +%Y-%m-%d) - Proper association of labels and form inputs
-**Learning:** Found an accessibility issue pattern across this app where `components/ui/FormField.tsx` does not associate its `<label>` elements with `<input>`, `<select>`, and `<textarea>` elements via `htmlFor` and `id` properties. This prevented screen readers from associating the label with the input and broke click-to-focus functionality.
-**Action:** When creating reusable form control components, explicitly link `<label>` elements to their interactive controls using `htmlFor` and unique `id`s (potentially generating an ID based on a `name` prop) to ensure robust form accessibility and standard click behavior.

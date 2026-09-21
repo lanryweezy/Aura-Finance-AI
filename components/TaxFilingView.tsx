@@ -112,19 +112,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
              return txDate >= startDate && txDate <= endDate;
         });
 
-        // ⚡ Bolt Optimization: Single pass for invoices to calculate totalSales and incomeSubjectToWht
-        // avoiding chained .filter().reduce() which creates intermediate arrays.
-        let totalSales = 0;
-        let incomeSubjectToWht = 0;
-
-        for (let i = 0; i < result.invoices.length; i++) {
-            const inv = result.invoices[i];
-            totalSales += inv.amount;
-            if (inv.whtApplied) {
-                incomeSubjectToWht += inv.amount;
-            }
-        }
-        result.totalSales = totalSales;
+        result.totalSales = result.invoices.reduce((sum, inv) => sum + inv.amount, 0);
 
         // ⚡ Bolt Optimization: Replace O(4N) chained filter().reduce() passes over periodTransactions with O(N) single-pass loop.
         // Reduces memory allocations (no intermediate arrays) and computes revenue, expenses, and tax-subject amounts simultaneously.
@@ -153,6 +141,9 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         result.vat = calculateVat(result.totalSales, taxableExpenses);
 
         // WHT
+        const incomeSubjectToWht = result.invoices
+            .filter(inv => inv.whtApplied)
+            .reduce((sum, inv) => sum + inv.amount, 0);
         result.wht = calculateWht(incomeSubjectToWht, expensesSubjectToWht);
 
         // PAYE

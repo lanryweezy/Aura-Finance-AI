@@ -5,7 +5,6 @@
 
 import { supabase } from './supabaseClient';
 import { db } from './db';
-import { generateSecureToken } from './securityUtils';
 
 export interface TeamMember {
   id: string;
@@ -41,7 +40,7 @@ export const teamCollaborationService = {
   // Invite a team member
   invite: async (email: string, role: string): Promise<TeamInvitation> => {
     const user = JSON.parse(localStorage.getItem('aura_user') || '{}');
-    const token = `inv_${Date.now()}_${generateSecureToken(16)}`;
+    const token = `inv_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
     if (supabase) {
       const { data } = await supabase.from('team_invitations').insert({

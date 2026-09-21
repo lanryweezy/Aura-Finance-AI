@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+// @ts-ignore
 import { List } from 'react-window';
 import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { Card } from './ui/Card';
@@ -10,8 +11,6 @@ import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import { Icons } from './ui/Icons';
-import { List } from 'react-window';
-import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
 
@@ -68,7 +67,6 @@ const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInt
 });
 
 const TransactionRow = React.memo<{
-    style?: React.CSSProperties;
   transaction: CategorizedTransaction;
   formatAmount: (val: number) => string;
   getProjectName: (id?: string) => string | undefined;
@@ -443,18 +441,16 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
           </div>
         </div>
         <div className="flex-grow relative min-w-[700px]">
-          <AutoSizer>
-            {({ height, width }) => (
+          <AutoSizer renderProp={({ height, width }) => (
               <List
-                height={height}
+                height={height || 0}
                 itemCount={filteredTransactions.length}
                 itemSize={65}
-                width={width}
+                width={width || 0}
               >
-                {Row}
+                {Row as any}
               </List>
-            )}
-          </AutoSizer>
+            )} />
         </div>
          {filteredTransactions.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20 text-center">

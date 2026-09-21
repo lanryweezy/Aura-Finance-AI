@@ -3,7 +3,6 @@ import React, { useState, useCallback } from 'react';
 interface FormFieldProps {
   label: string;
   name: string;
-  id?: string;
   type?: string;
   value: any;
   onChange: (value: any) => void;
@@ -17,56 +16,47 @@ interface FormFieldProps {
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
-  label, name, id, type = 'text', value, onChange, error, required, placeholder, options, prefix, suffix, disabled
-}) => {
-  const inputId = id || `form-field-${name}`;
-  return (
-    <div className="space-y-1">
-      <label htmlFor={inputId} className="text-xs font-bold text-gray-500 dark:text-gray-400">
-        {label} {required && <span className="text-red-400">*</span>}
-      </label>
-      <div className="relative">
-        {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{prefix}</span>}
-        {type === 'select' ? (
-          <select
-            id={inputId}
-            name={name}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            disabled={disabled}
-            className={`w-full px-4 py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
-          >
-            {options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-          </select>
-        ) : type === 'textarea' ? (
-          <textarea
-            id={inputId}
-            name={name}
-            value={value}
-            onChange={e => onChange(e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={3}
-            className={`w-full px-4 py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all resize-none ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
-          />
-        ) : (
-          <input
-            id={inputId}
-            name={name}
-            type={type}
-            value={value}
-            onChange={e => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
-            placeholder={placeholder}
-            disabled={disabled}
-            className={`w-full ${prefix ? 'pl-8' : 'px-4'} ${suffix ? 'pr-12' : ''} py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
-          />
-        )}
-        {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{suffix}</span>}
-      </div>
-      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+  label, name, type = 'text', value, onChange, error, required, placeholder, options, prefix, suffix, disabled
+}) => (
+  <div className="space-y-1">
+    <label className="text-xs font-bold text-gray-500 dark:text-gray-400">
+      {label} {required && <span className="text-red-400">*</span>}
+    </label>
+    <div className="relative">
+      {prefix && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{prefix}</span>}
+      {type === 'select' ? (
+        <select
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          disabled={disabled}
+          className={`w-full px-4 py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
+        >
+          {options?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
+      ) : type === 'textarea' ? (
+        <textarea
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          rows={3}
+          className={`w-full px-4 py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all resize-none ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={e => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
+          placeholder={placeholder}
+          disabled={disabled}
+          className={`w-full ${prefix ? 'pl-8' : 'px-4'} ${suffix ? 'pr-12' : ''} py-2.5 bg-dark-primary border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all ${error ? 'border-red-500' : 'border-white/10'} ${disabled ? 'opacity-50' : ''}`}
+        />
+      )}
+      {suffix && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">{suffix}</span>}
     </div>
-  );
-};
+    {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+  </div>
+);
 
 interface FormError {
   field: string;

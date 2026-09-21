@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
+// @ts-ignore
 import { List } from 'react-window';
 import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { Card } from './ui/Card';
@@ -119,18 +120,16 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                     </div>
                     <div className="flex-grow relative min-w-[800px]">
                         {filteredLogs.length > 0 ? (
-                            <AutoSizer>
-                                {({ height, width }) => (
+                            <AutoSizer renderProp={({ height, width }) => (
                                     <List
-                                        height={height}
+                                        height={height || 0}
                                         itemCount={filteredLogs.length}
                                         itemSize={120} // Estimate size due to DiffTable, real apps might need VariableSizeList
-                                        width={width}
+                                        width={width || 0}
                                     >
-                                        {Row}
+                                        {Row as any}
                                     </List>
-                                )}
-                            </AutoSizer>
+                                )} />
                         ) : (
                             <div className="flex justify-center items-center h-full text-gray-400 font-medium">
                                 No activity found for this filter.

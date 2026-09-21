@@ -90,16 +90,16 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
             </div>
             <div className="mt-6 flex flex-wrap items-center gap-4 p-5 bg-aura-gray-50 dark:bg-dark-tertiary border border-gray-100 dark:border-gray-800 rounded-2xl shadow-inner">
                  <div className="flex-1 min-w-[180px]">
-                    <label htmlFor="start-date" className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Start Date</label>
-                    <input id="start-date" type="date" value={formatDateForInput(reportPeriod.start)} onChange={(e) => handleDateChange('start', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Start Date</label>
+                    <input type="date" value={formatDateForInput(reportPeriod.start)} onChange={(e) => handleDateChange('start', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
                 </div>
                 <div className="flex-1 min-w-[180px]">
-                    <label htmlFor="end-date" className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
-                    <input id="end-date" type="date" value={formatDateForInput(reportPeriod.end)} onChange={(e) => handleDateChange('end', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">End Date</label>
+                    <input type="date" value={formatDateForInput(reportPeriod.end)} onChange={(e) => handleDateChange('end', e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm" />
                 </div>
                 <div className="flex-1 min-w-[180px]">
-                    <label htmlFor="presets" className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Presets</label>
-                    <select id="presets" onChange={(e) => handlePresetChange(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Presets</label>
+                    <select onChange={(e) => handlePresetChange(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
                         <option>Custom Range</option>
                         <option value="this_month">This Month</option>
                         <option value="last_month">Last Month</option>
@@ -108,8 +108,8 @@ export const ReportHeader: React.FC<ReportHeaderProps> = ({
                     </select>
                 </div>
                 <div className="flex-1 min-w-[180px]">
-                    <label htmlFor="project" className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Project</label>
-                    <select id="project" value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
+                    <label className="text-xs font-bold uppercase tracking-wider text-aura-gray-500 dark:text-gray-400 mb-2 block">Project</label>
+                    <select value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)} className="w-full bg-white dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 text-aura-gray-900 dark:text-white focus:ring-2 focus:ring-brand-cyan transition-all outline-none shadow-sm">
                         <option value="all">All Projects</option>
                         {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
