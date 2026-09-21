@@ -102,10 +102,25 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         const endDate = new Date(period.end);
         endDate.setHours(23, 59, 59, 999);
 
-        result.invoices = invoices.filter(inv => {
+        // ⚡ Bolt Optimization: Single-pass loop for invoices to calculate totalSales, incomeSubjectToWht, and filter.
+        let incomeSubjectToWht = 0;
+        let totalSales = 0;
+        const periodInvoices = [];
+
+        for (let i = 0; i < invoices.length; i++) {
+            const inv = invoices[i];
             const issueDate = new Date(inv.issueDate);
-            return inv.status !== 'Draft' && issueDate >= startDate && issueDate <= endDate;
-        });
+            if (inv.status !== 'Draft' && issueDate >= startDate && issueDate <= endDate) {
+                periodInvoices.push(inv);
+                totalSales += inv.amount;
+                if (inv.whtApplied) {
+                    incomeSubjectToWht += inv.amount;
+                }
+            }
+        }
+
+        result.invoices = periodInvoices;
+        result.totalSales = totalSales;
 
         const periodTransactions = transactions.filter(t => {
              const txDate = new Date(t.date);
