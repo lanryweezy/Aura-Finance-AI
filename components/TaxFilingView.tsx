@@ -129,8 +129,6 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
 
         // ⚡ Bolt Optimization: Single pass for invoices to calculate totalSales and incomeSubjectToWht
         // avoiding chained .filter().reduce() which creates intermediate arrays.
-        let totalSales = 0;
-        let incomeSubjectToWht = 0;
 
         for (let i = 0; i < result.invoices.length; i++) {
             const inv = result.invoices[i];
