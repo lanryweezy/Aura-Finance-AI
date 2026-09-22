@@ -6,7 +6,7 @@ import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import { Chat, Type, FunctionDeclaration } from "@google/genai";
 import { Bill, Invoice } from '../types';
-import { withTimeout, aiClient, API_KEY } from '../services/aiConfig';
+import { aiClient, API_KEY, withTimeout } from '../services/aiConfig';
 
 interface AIChatProps {
   transactions: CategorizedTransaction[];
@@ -60,6 +60,9 @@ const getBillsTool: FunctionDeclaration = {
     name: 'getBills',
     description: 'Fetches the user\'s bills. Call this when the user asks about expenses, vendors, or upcoming payments.',
 };
+
+// 🤖 Astra AI Quality: Use centralized aiClient to ensure consistent configuration, error handling, and API key management
+// Removed: const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY || '' });
 
 const suggestedPrompts = [
     "What is my estimated tax liability?",

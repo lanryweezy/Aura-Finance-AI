@@ -10,8 +10,6 @@ import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
 import { useAppStore } from '../store/useAppStore';
 import { Icons } from './ui/Icons';
-import { List } from 'react-window';
-import { AutoSizer } from 'react-virtualized-auto-sizer';
 import { AdvancedFilter } from './ui/AdvancedFilter';
 import { exportToCSV } from '../services/exportService';
 
@@ -68,7 +66,6 @@ const CategoryBadge = React.memo<{ category: string; onClick?: () => void; isInt
 });
 
 const TransactionRow = React.memo<{
-    style?: React.CSSProperties;
   transaction: CategorizedTransaction;
   formatAmount: (val: number) => string;
   getProjectName: (id?: string) => string | undefined;
@@ -446,12 +443,12 @@ export const TransactionsView = React.memo<TransactionsViewProps>(({ transaction
           <AutoSizer>
             {({ height, width }) => (
               <List
-                height={height}
+                height={height as number}
                 itemCount={filteredTransactions.length}
                 itemSize={65}
-                width={width}
+                width={width as number}
               >
-                {Row}
+                {Row as any}
               </List>
             )}
           </AutoSizer>
