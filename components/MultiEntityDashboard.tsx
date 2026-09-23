@@ -26,23 +26,22 @@ export const MultiEntityDashboard: React.FC = () => {
     };
   }, [transactions, invoices, bills, selectedEntityId]);
 
-  // ⚡ Bolt Optimization: Pre-aggregate transaction and invoice counts by entityId
-  // This turns O(E * T) and O(E * I) complexity inside the map loop into a single O(T + I) pass.
   const { entityTxCounts, entityInvCounts } = useMemo(() => {
-    const txCounts: Record<string, number> = {};
-    const invCounts: Record<string, number> = {};
+    const txCounts = new Map<string, number>();
+    const invCounts = new Map<string, number>();
 
+    // ⚡ Bolt Optimization: Pre-aggregate entity counts in a single O(N) pass
     for (let i = 0; i < transactions.length; i++) {
       const eid = transactions[i].entityId;
       if (eid) {
-        txCounts[eid] = (txCounts[eid] || 0) + 1;
+        txCounts.set(eid, (txCounts.get(eid) || 0) + 1);
       }
     }
 
     for (let i = 0; i < invoices.length; i++) {
       const eid = invoices[i].entityId;
       if (eid) {
-        invCounts[eid] = (invCounts[eid] || 0) + 1;
+        invCounts.set(eid, (invCounts.get(eid) || 0) + 1);
       }
     }
 
@@ -142,8 +141,9 @@ export const MultiEntityDashboard: React.FC = () => {
           </thead>
           <tbody>
             {entities.map(entity => {
-              const txCount = entityTxCounts[entity.id] || 0;
-              const invCount = entityInvCounts[entity.id] || 0;
+              // ⚡ Bolt Optimization: Replace O(E*N) nested filters with O(1) map lookups for counts
+              const txCount = entityTxCounts.get(entity.id) || 0;
+              const invCount = entityInvCounts.get(entity.id) || 0;
               return (
                 <tr
                   key={entity.id}
