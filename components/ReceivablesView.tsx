@@ -311,13 +311,26 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
   const [previewInvoice, setPreviewInvoice] = useState<Invoice | null>(null);
 
   const filteredInvoices = useMemo(() => {
+    // ⚡ Bolt Optimization: Hoist invariant calculations outside the filter loop
+    const filterCustomer = filters.customer ? filters.customer.toLowerCase() : null;
+    const filterStatus = filters.status || null;
+    const filterAmountMin = filters.amount_min ? Number(filters.amount_min) : null;
+    const filterAmountMax = filters.amount_max ? Number(filters.amount_max) : null;
+    const filterStartDate = filters.start_date ? new Date(filters.start_date).getTime() : null;
+    const filterEndDate = filters.end_date ? new Date(filters.end_date).getTime() : null;
+
     return invoices.filter(inv => {
-      if (filters.customer && !inv.customer.toLowerCase().includes(filters.customer.toLowerCase())) return false;
-      if (filters.status && inv.status !== filters.status) return false;
-      if (filters.amount_min && inv.total < Number(filters.amount_min)) return false;
-      if (filters.amount_max && inv.total > Number(filters.amount_max)) return false;
-      if (filters.start_date && new Date(inv.issueDate) < new Date(filters.start_date)) return false;
-      if (filters.end_date && new Date(inv.issueDate) > new Date(filters.end_date)) return false;
+      if (filterCustomer && !inv.customer.toLowerCase().includes(filterCustomer)) return false;
+      if (filterStatus && inv.status !== filterStatus) return false;
+      if (filterAmountMin !== null && inv.total < filterAmountMin) return false;
+      if (filterAmountMax !== null && inv.total > filterAmountMax) return false;
+
+      // Lazy evaluation of row-specific derivations only if filter is active
+      if (filterStartDate !== null || filterEndDate !== null) {
+          const invDate = new Date(inv.issueDate).getTime();
+          if (filterStartDate !== null && invDate < filterStartDate) return false;
+          if (filterEndDate !== null && invDate > filterEndDate) return false;
+      }
       return true;
     });
   }, [invoices, filters]);
