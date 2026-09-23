@@ -71,49 +71,60 @@ export const aiAutoCategoryService = {
     const uncategorized = transactions.filter(t => t.category === 'Uncategorized' || !t.category);
     if (uncategorized.length === 0) return [];
 
-    try {
-      const prompt = `Transactions to categorize:
-${JSON.stringify(uncategorized.map(t => ({ id: t.id, narration: t.narration, amount: t.amount, type: t.type })))}`;
+    const CHUNK_SIZE = 50;
+    const allResults: AutoCategoryResult[] = [];
 
-      const response = await withTimeout(aiClient.models.generateContent({
-        model: 'gemini-2.0-flash',
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        config: {
-          // AI Quality: Extracted persona and formatting constraints to systemInstruction
-          // to prevent prompt injection and ensure structural adherence
-          systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions into one of these categories: ${categories.join(', ')}. For each transaction, provide the suggested category, confidence (0-1), and brief reasoning.`,
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: 'array',
-            items: {
-              type: 'object',
-              properties: {
-                transactionId: { type: 'string' },
-                suggestedCategory: { type: 'string' },
-                confidence: { type: 'number' },
-                reasoning: { type: 'string' },
+    // AI Quality: Process arrays in sequential chunks to prevent token limits
+    // and context window exhaustion, ensuring complete data processing.
+    for (let i = 0; i < uncategorized.length; i += CHUNK_SIZE) {
+      const chunk = uncategorized.slice(i, i + CHUNK_SIZE);
+      try {
+        const prompt = `Transactions to categorize:
+${JSON.stringify(chunk.map(t => ({ id: t.id, narration: t.narration, amount: t.amount, type: t.type })))}`;
+
+        const response = await withTimeout(aiClient.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: [{ role: 'user', parts: [{ text: prompt }] }],
+          config: {
+            // AI Quality: Extracted persona and formatting constraints to systemInstruction
+            // to prevent prompt injection and ensure structural adherence
+            systemInstruction: `You are an expert accountant for a Nigerian business. Categorize these transactions into one of these categories: ${categories.join(', ')}. For each transaction, provide the suggested category, confidence (0-1), and brief reasoning.`,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  transactionId: { type: 'string' },
+                  suggestedCategory: { type: 'string' },
+                  confidence: { type: 'number' },
+                  reasoning: { type: 'string' },
+                },
               },
             },
           },
-        },
-      }), 15000);
+        }), 15000);
 
-      await usageService.trackUsage('ai_insight');
-      const results = safeParseJSON<any>(response.text.trim());
+        await usageService.trackUsage('ai_insight');
+        const results = safeParseJSON<any>(response.text.trim());
 
-      // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-      if (!Array.isArray(results) || (results.length > 0 && (!results[0] || typeof results[0] !== 'object'))) {
-        throw new Error('AI output is not an array or contains invalid objects');
+        // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
+        if (!Array.isArray(results) || (results.length > 0 && (!results[0] || typeof results[0] !== 'object'))) {
+          throw new Error('AI output is not an array or contains invalid objects');
+        }
+
+        allResults.push(...results.map((r: any) => ({
+          ...r,
+          originalCategory: 'Uncategorized',
+        })));
+      } catch (error) {
+        monitoringService.trackError('AI_AUTO_CATEGORY', error as Error);
+        // AI Quality: Map failures to safe fallback for specific chunk rather than aborting batch
+        allResults.push(...aiAutoCategoryService.categorizeByRules(chunk));
       }
-
-      return results.map((r: any) => ({
-        ...r,
-        originalCategory: 'Uncategorized',
-      }));
-    } catch (error) {
-      monitoringService.trackError('AI_AUTO_CATEGORY', error as Error);
-      return aiAutoCategoryService.categorizeByRules(transactions);
     }
+
+    return allResults;
   },
 
   // Auto-apply high-confidence categorizations
