@@ -122,12 +122,12 @@ export const AuditTrailView: React.FC<AuditTrailViewProps> = ({ logs }) => {
                             <AutoSizer>
                                 {({ height, width }) => (
                                     <List
-                                        height={height}
+                                        height={height as number}
                                         itemCount={filteredLogs.length}
                                         itemSize={120} // Estimate size due to DiffTable, real apps might need VariableSizeList
-                                        width={width}
+                                        width={width as number}
                                     >
-                                        {Row}
+                                        {Row as any}
                                     </List>
                                 )}
                             </AutoSizer>
