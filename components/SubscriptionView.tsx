@@ -43,9 +43,9 @@ export const SubscriptionView: React.FC = () => {
         };
 
         if (gateway === 'Paystack') {
-            billingService.initializePaystack(plan, 'demo@aura.ai', callback);
+            billingService.initializePaystack(plan, 'demo@aura.ai', callback, () => setIsLoading(null));
         } else {
-            billingService.initializeFlutterwave(plan, 'demo@aura.ai', callback);
+            billingService.initializeFlutterwave(plan, 'demo@aura.ai', callback, () => setIsLoading(null));
         }
     };
 
