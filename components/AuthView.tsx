@@ -129,8 +129,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                         {requires2FA ? (
                             <form onSubmit={handleVerify2FA} className="space-y-6">
                                 <div>
-                                    <label className="text-xs font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest">Verification Code</label>
+                                    <label htmlFor="verificationCode" className="text-xs font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest">Verification Code</label>
                                     <input
+                                        id="verificationCode"
                                         type="text"
                                         value={twoFactorCode}
                                         onChange={(e) => setTwoFactorCode(e.target.value)}
@@ -216,8 +217,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                             {!isLogin && (
                                 <>
                                     <div>
-                                        <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                                        <label htmlFor="fullName" className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                                         <input 
+                                            id="fullName"
                                             type="text" 
                                             value={fullName}
                                             onChange={(e) => setFullName(e.target.value)}
@@ -227,8 +229,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Company Name</label>
+                                        <label htmlFor="companyName" className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Company Name</label>
                                         <input 
+                                            id="companyName"
                                             type="text" 
                                             value={companyName}
                                             onChange={(e) => setCompanyName(e.target.value)}
@@ -241,8 +244,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                             )}
 
                             <div>
-                                <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label htmlFor="email" className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <input 
+                                    id="email"
                                     type="email" 
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -253,8 +257,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                                <label htmlFor="password" className="text-[10px] font-black text-aura-gray-400 dark:text-gray-400 uppercase tracking-widest ml-1">Password</label>
                                 <input 
+                                    id="password"
                                     type="password" 
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
