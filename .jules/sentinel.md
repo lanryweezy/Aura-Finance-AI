@@ -24,6 +24,10 @@
 **Learning:** Native export implementations that do not properly sanitize input create security risks for end-users when exporting and opening financial reports or schedules.
 **Prevention:** Always implement logic to mitigate CSV formula injection by prefixing cell values starting with `=`, `+`, `-`, `@`, `\t`, or `\r` with a single quote (`'`), AND mitigate structure breaking by escaping double quotes (`""`) and wrapping the field in double quotes if it contains commas, newlines, or quotes. Use the centralized `escapeCSV` utility from `services/securityUtils.ts` for all CSV data exports.
 
+## 2026-09-18 - Insecure Randomness in Security Tokens
+**Vulnerability:** Generating security-sensitive identifiers (like team invitation tokens in `teamCollaborationService.ts`) using `Math.random()` creates predictable tokens, leading to potential brute-force or token guessing attacks.
+**Learning:** `Math.random()` is not cryptographically secure and should never be used for secrets, tokens, or any value relied upon for authentication or authorization.
+**Prevention:** Always use the Web Crypto API (`crypto.getRandomValues`) for generating security tokens. The centralized utility `generateSecureToken` in `services/securityUtils.ts` should be used to ensure tokens are unpredictable and safe from guessing attacks.
 ## 2026-09-20 - Insecure Randomness via Math.random()
 **Vulnerability:** Generating security-sensitive tokens (such as team invitations) using `Math.random()` provides predictable, non-cryptographically secure values that can be brute-forced or guessed by attackers.
 **Learning:** `Math.random()` is not meant for security contexts because its underlying algorithm (typically PRNG) lacks sufficient entropy and predictability guarantees.
