@@ -127,6 +127,9 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     const systemInstruction = `${selectedAgent.instruction}
     You have tools to fetch financial data. You should proactively analyze the user's situation and offer actionable advice.
     Be concise, helpful. Do not invent data; always use the provided tools to get real information.`;
+    // 🤖 Astra AI Quality: Use the centralized aiClient instead of directly instantiating GoogleGenAI
+    // This ensures consistent API key handling, timeout wrappers, and prevents duplicate initialization.
+    if(aiClient && API_KEY) {
 
     if(aiClient && API_KEY) {
         chatInstance.current = aiClient.chats.create({

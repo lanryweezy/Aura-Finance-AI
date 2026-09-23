@@ -52,6 +52,9 @@
 ## 2026-09-12 - Standardize Structured Contents Array for Single Prompts
 **Learning:** Passing a raw string to the `contents` parameter of `generateContent` works for simple prompts but is brittle and bypasses the SDK's structural expectations, increasing the risk of unpredictable parsing by the AI model.
 **Action:** Always format the `contents` payload as a structured array (`[{ role: 'user', parts: [{ text: prompt }] }]`) even for simple, single-turn prompts to enforce structural consistency.
+## 2026-09-17 - Centralize AI Client Instance and API Keys
+**Learning:** Directly initializing `GoogleGenAI` inside individual components using `process.env.API_KEY` leads to fragile, inconsistent behavior across the app, prevents centralized timeout and error handling wrappers from acting on these requests, and breaks if bundlers (like Vite vs Webpack) handle environment variables differently.
+**Action:** Never instantiate `new GoogleGenAI()` directly inside a component. Always import and use the centralized `aiClient` and `API_KEY` exported from `services/aiConfig.ts`. Validate the client is available (e.g., `if (aiClient && API_KEY)`) before interacting with it.
 
 ## 2026-10-24 - Enforce Centralized AI Client Usage in Components
 **Learning:** Instantiating `new GoogleGenAI()` directly within React components (e.g., `AIChat.tsx`) using raw environment variables bypasses centralized AI quality controls, such as standardized timeout wrappers (`withTimeout`), fallback logic, and environment variable validation, leading to brittle and inconsistent AI behavior across the application.
