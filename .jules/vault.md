@@ -18,3 +18,6 @@
 ## 2025-05-15 - Fixed Assets Disposal Date Integrity
 **Learning:** Fixed assets can have a `disposal_date` that is logically before their `purchase_date` if not constrained, leading to impossible timelines.
 **Action:** Added a CHECK constraint `disposal_date >= purchase_date` to enforce logical temporal ordering for fixed asset disposal.
+## 2024-05-30 - Missing Foreign Key Constraints on User Tables (Remaining)
+**Learning:** Tables storing references to users (`projects.manager`, `closing_periods.closed_by`, `corporate_cards.assigned_to`, `approval_requests.requested_by`, `expenses.submitted_by`, `expenses.approved_by`, `stock_movements.created_by`, `partial_payments.recorded_by`, `credit_notes.issued_by`, `leave_requests.approved_by`) lacked database-level `FOREIGN KEY` constraints linking them to the `users(id)` column. This could lead to orphaned records or the insertion of records referencing non-existent users if a user was deleted.
+**Action:** Added migration (011) to safely enforce `FOREIGN KEY` relationships with `ON DELETE SET NULL NOT VALID` or `ON DELETE CASCADE NOT VALID` (depending on the criticality of the relationship) to prevent locking or downtime while enforcing data consistency.

@@ -206,7 +206,8 @@ export const getPayrollInsights = async (payrollHistory: PayrollRun[]): Promise<
   if (!aiClient || !API_KEY) return "AI payroll analysis suggests restructuring bonuses to optimize for tax efficiency.";
   if (await checkRateLimit('ai_insight')) return "Plan limit reached for AI insights.";
 
-  const prompt = `Analyze payroll history: ${JSON.stringify(payrollHistory)}`;
+  // AI Quality: To prevent unbounded context growth and token limit exhaustion, slice large datasets before invoking the model.
+  const prompt = `Analyze payroll history: ${JSON.stringify(payrollHistory.slice(0, 12))}`;
 
   try {
     monitoringService.trackAIUsage('payroll_insight', prompt);
