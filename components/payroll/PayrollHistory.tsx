@@ -16,12 +16,23 @@ export const PayrollHistory: React.FC<PayrollHistoryProps> = ({ runs, onViewDeta
     const [filters, setFilters] = useState<Record<string, any>>({});
 
     const filteredRuns = useMemo(() => {
+        // ⚡ Bolt Optimization: Hoist invariant calculations outside the filter loop
+        const filterPeriod = filters.period ? filters.period.toLowerCase() : null;
+        const filterAmountMin = filters.amount_min ? Number(filters.amount_min) : null;
+        const filterAmountMax = filters.amount_max ? Number(filters.amount_max) : null;
+        const filterStartDate = filters.start_date ? new Date(filters.start_date).getTime() : null;
+        const filterEndDate = filters.end_date ? new Date(filters.end_date).getTime() : null;
+
         return runs.filter(run => {
-            if (filters.period && !run.period.toLowerCase().includes(filters.period.toLowerCase())) return false;
-            if (filters.amount_min && run.summary.totalNet < Number(filters.amount_min)) return false;
-            if (filters.amount_max && run.summary.totalNet > Number(filters.amount_max)) return false;
-            if (filters.start_date && new Date(run.runDate) < new Date(filters.start_date)) return false;
-            if (filters.end_date && new Date(run.runDate) > new Date(filters.end_date)) return false;
+            if (filterPeriod && !run.period.toLowerCase().includes(filterPeriod)) return false;
+            if (filterAmountMin !== null && run.summary.totalNet < filterAmountMin) return false;
+            if (filterAmountMax !== null && run.summary.totalNet > filterAmountMax) return false;
+
+            if (filterStartDate !== null || filterEndDate !== null) {
+                const runDate = new Date(run.runDate).getTime();
+                if (filterStartDate !== null && runDate < filterStartDate) return false;
+                if (filterEndDate !== null && runDate > filterEndDate) return false;
+            }
             return true;
         });
     }, [runs, filters]);
