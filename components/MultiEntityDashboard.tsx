@@ -26,36 +26,27 @@ export const MultiEntityDashboard: React.FC = () => {
     };
   }, [transactions, invoices, bills, selectedEntityId]);
 
-  const entityStats = useMemo(() => {
-    // ⚡ Bolt Optimization: Replace O(E * (T + I)) nested .filter() in render map
-    // with O(T + I) single-pass pre-aggregation.
-    const stats = new Map<string, { txCount: number; invCount: number }>();
+  const { entityTxCounts, entityInvCounts } = useMemo(() => {
+    const txCounts = new Map<string, number>();
+    const invCounts = new Map<string, number>();
 
-    // Initialize stats for all known entities to ensure they have default values
-    for (let i = 0; i < entities.length; i++) {
-        stats.set(entities[i].id, { txCount: 0, invCount: 0 });
-    }
-
+    // ⚡ Bolt Optimization: Pre-aggregate entity counts in a single O(N) pass
     for (let i = 0; i < transactions.length; i++) {
-        const entityId = transactions[i].entityId;
-        if (entityId) {
-            const current = stats.get(entityId);
-            if (current) current.txCount++;
-            else stats.set(entityId, { txCount: 1, invCount: 0 });
-        }
+      const eid = transactions[i].entityId;
+      if (eid) {
+        txCounts.set(eid, (txCounts.get(eid) || 0) + 1);
+      }
     }
 
     for (let i = 0; i < invoices.length; i++) {
-        const entityId = invoices[i].entityId;
-        if (entityId) {
-            const current = stats.get(entityId);
-            if (current) current.invCount++;
-            else stats.set(entityId, { txCount: 0, invCount: 1 });
-        }
+      const eid = invoices[i].entityId;
+      if (eid) {
+        invCounts.set(eid, (invCounts.get(eid) || 0) + 1);
+      }
     }
 
-    return stats;
-  }, [entities, transactions, invoices]);
+    return { entityTxCounts: txCounts, entityInvCounts: invCounts };
+  }, [transactions, invoices]);
 
   const { totalRevenue, totalExpenses, outstandingReceivables, outstandingPayables } = useMemo(() => {
     let revenue = 0;
@@ -150,7 +141,9 @@ export const MultiEntityDashboard: React.FC = () => {
           </thead>
           <tbody>
             {entities.map(entity => {
-              const stats = entityStats.get(entity.id) || { txCount: 0, invCount: 0 };
+              // ⚡ Bolt Optimization: Replace O(E*N) nested filters with O(1) map lookups for counts
+              const txCount = entityTxCounts.get(entity.id) || 0;
+              const invCount = entityInvCounts.get(entity.id) || 0;
               return (
                 <tr
                   key={entity.id}
@@ -160,8 +153,8 @@ export const MultiEntityDashboard: React.FC = () => {
                   <td className="p-4 font-bold text-sm">{entity.name}</td>
                   <td className="p-4 text-right text-xs text-gray-500">{entity.type}</td>
                   <td className="p-4 text-right text-xs text-gray-500">{entity.currency}</td>
-                  <td className="p-4 text-right text-sm">{stats.txCount}</td>
-                  <td className="p-4 text-right text-sm">{stats.invCount}</td>
+                  <td className="p-4 text-right text-sm">{txCount}</td>
+                  <td className="p-4 text-right text-sm">{invCount}</td>
                 </tr>
               );
             })}
