@@ -20,3 +20,13 @@
 ## 2024-03-24 - [Avoid recalculating invariants inside filter arrays on every render]
 **Learning:** Calculating derived values (like `toLowerCase()`, string parsings to Number, or `new Date()`) inside a `.filter` block on every render loop scales poorly on long arrays, resulting in slow renders due to repeated processing and object instantiations.
 **Action:** Lift static conversions (`searchTerm.toLowerCase()`, `new Date(filters.start_date).getTime()`) out of the loop up to the nearest `useMemo` scope, while ensuring any conditional, row-specific logic within the filter remains lazily evaluated only when necessary.
+## 2024-03-24 - [Avoid O(N*T) redundant filtering inside list rendering]
+**Learning:** Repeating `array.filter(...).map(...)` for multiple fixed categories inside a render loop scales at O(N*T) (where N is items and T is categories), causing unnecessary full array scans on every render.
+**Action:** Pre-compute a lookup dictionary (e.g., `Record<string, Item[]>`) in a single O(N) pass using `useMemo`, then iterate through the dictionary keys for rendering.
+
+## 2024-05-18 - [Avoid O(E*(T+I)) nested `.filter()` in map during render]
+**Learning:** In `MultiEntityDashboard.tsx`, computing transaction and invoice counts by calling `.filter()` inside the `entities.map()` render loop caused an O(E * (T + I)) complexity, resulting in performance bottlenecks as entities, transactions, and invoices scale.
+**Action:** Lift array computations into a memoized pre-pass. Use `useMemo` with a single O(T + I) pass to construct a `Map` of aggregated counts, allowing O(1) map lookups during render. This turns O(E * (T + I)) complexity into O(T + I).
+## 2024-05-18 - [Avoid O(E*N) nested filters inside render map loops]
+**Learning:** Calling `.filter()` on the entire `transactions` and `invoices` array inside an `.map()` loop (e.g. over `entities`) causes a performance bottleneck of O(E * N), recreating arrays and traversing full collections on every iteration during render.
+**Action:** Lift array computations out of `.map()` loops. Pre-compute entity metrics using a single O(N) pass across the data arrays wrapped in a `useMemo` hook, store results in a lookup `Map`, and use O(1) map lookups during render to change O(E * N) time complexity into O(E + N).
