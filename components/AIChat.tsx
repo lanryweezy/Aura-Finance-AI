@@ -130,8 +130,6 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
     // 🤖 Astra AI Quality: Use the centralized aiClient instead of directly instantiating GoogleGenAI
     // This ensures consistent API key handling, timeout wrappers, and prevents duplicate initialization.
     if(aiClient && API_KEY) {
-
-    if(aiClient && API_KEY) {
         chatInstance.current = aiClient.chats.create({
             model: 'gemini-2.0-flash',
             config: {

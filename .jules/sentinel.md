@@ -40,3 +40,8 @@
 **Vulnerability:** Using `Math.random()` to generate security-sensitive tokens, such as team invitation tokens (`inv_${Date.now()}_${Math.random().toString(36).slice(2)}`), is insecure. `Math.random()` is not cryptographically secure and can be predictable, potentially allowing an attacker to guess invitation tokens and gain unauthorized access.
 **Learning:** Standard pseudo-random number generators (PRNGs) like `Math.random()` should never be used for security purposes, session IDs, or tokens that grant access.
 **Prevention:** Always use cryptographically secure random number generators (CSPRNGs), such as `crypto.getRandomValues()` in the browser environment, when generating security-sensitive tokens. Created and utilize `generateSecureToken` in `services/securityUtils.ts` for this purpose.
+
+## 2026-12-05 - Insecure Randomness in Token Generation
+**Vulnerability:** Using `Math.random()` to generate security-sensitive tokens, such as references in billing or IDs in spend policy (`Math.random()`), is insecure. `Math.random()` is not cryptographically secure and can be predictable, potentially allowing an attacker to guess transaction IDs and gain unauthorized access or cause collisions.
+**Learning:** Standard pseudo-random number generators (PRNGs) like `Math.random()` should never be used for security purposes, session IDs, or tokens that grant access. It's also important to ensure single implementations of security utilities exist to prevent confusion.
+**Prevention:** Always use cryptographically secure random number generators (CSPRNGs), such as `crypto.getRandomValues()` in the browser environment, when generating security-sensitive tokens. Used `generateSecureToken` in `services/securityUtils.ts` for this purpose.
