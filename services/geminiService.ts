@@ -168,8 +168,10 @@ export const getFinancialInsights = async (
 
   const context = {
     transactions: transactions.slice(0, 50),
-    pendingBills: bills.filter(b => b.status !== 'Paid'),
-    pendingInvoices: invoices.filter(i => i.status !== 'Paid'),
+    // AI Quality: To prevent unbounded context growth and token limit exhaustion,
+    // slice large datasets (like pending bills and invoices) before invoking the model.
+    pendingBills: bills.filter(b => b.status !== 'Paid').slice(0, 10),
+    pendingInvoices: invoices.filter(i => i.status !== 'Paid').slice(0, 10),
     recentPayroll: payroll.slice(0, 3)
   };
 
