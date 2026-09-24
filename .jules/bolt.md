@@ -31,3 +31,6 @@
 ## 2024-05-18 - [Avoid O(E*N) nested filters inside render map loops]
 **Learning:** Calling `.filter()` on the entire `transactions` and `invoices` array inside an `.map()` loop (e.g. over `entities`) causes a performance bottleneck of O(E * N), recreating arrays and traversing full collections on every iteration during render.
 **Action:** Lift array computations out of `.map()` loops. Pre-compute entity metrics using a single O(N) pass across the data arrays wrapped in a `useMemo` hook, store results in a lookup `Map`, and use O(1) map lookups during render to change O(E * N) time complexity into O(E + N).
+## 2025-02-28 - [Consolidate Array Filtering and Aggregation]
+**Learning:** Performing multiple independent `.filter()` and `.length` passes over the same array inside a React component (e.g., in `ApprovalWorkflowsView.tsx` where it was filtering for `filtered` list and `pendingCount` separately) creates unnecessary O(2N) overhead.
+**Action:** Always combine the filtering for rendered lists and the reduction for aggregate counts into a single-pass loop (or `.reduce`) wrapped in `useMemo`, allowing `O(N)` instead of `O(K*N)`.
