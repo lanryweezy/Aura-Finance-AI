@@ -43,8 +43,17 @@ export const ApprovalWorkflowsView: React.FC = () => {
     if (updated) setRequests(prev => prev.map(r => r.id === id ? updated : r));
   };
 
-  const filtered = requests.filter(r => filter === 'all' || r.status === filter);
-  const pendingCount = requests.filter(r => r.status === 'pending').length;
+  // ⚡ Bolt Optimization: Use a single pass to compute both filtered requests and pending count,
+  // replacing two separate O(N) .filter() calls. Wrapped in useMemo to avoid recalculation on every render.
+  const { filtered, pendingCount } = React.useMemo(() => {
+    const result = { filtered: [] as ApprovalRequest[], pendingCount: 0 };
+    for (let i = 0; i < requests.length; i++) {
+      const req = requests[i];
+      if (req.status === 'pending') result.pendingCount++;
+      if (filter === 'all' || req.status === filter) result.filtered.push(req);
+    }
+    return result;
+  }, [requests, filter]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading approvals...</div>;
 
