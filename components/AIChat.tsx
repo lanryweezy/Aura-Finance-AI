@@ -184,7 +184,13 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
       let fullResponseText = '';
       let functionCallMade = false;
 
-      for await (const chunk of responseStream) {
+      // AI Quality: Consume stream with a per-chunk idle timeout rather than a total timeout
+      // to protect against stalled models without prematurely aborting valid, long responses.
+      const iterator = responseStream[Symbol.asyncIterator]();
+      while (true) {
+          const { value: chunk, done } = await withTimeout(iterator.next(), 10_000);
+          if (done) break;
+
           if (chunk.functionCalls && chunk.functionCalls.length > 0) {
               functionCallMade = true;
               const call = chunk.functionCalls[0];
@@ -260,7 +266,10 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
               }] as any), 10_000);
 
               // Process the *new* stream after the function call
-              for await (const nextChunk of responseStream) {
+              const innerIterator = responseStream[Symbol.asyncIterator]();
+              while (true) {
+                   const { value: nextChunk, done: innerDone } = await withTimeout(innerIterator.next(), 10_000);
+                   if (innerDone) break;
                    if (nextChunk.text) {
                       fullResponseText += nextChunk.text;
                       setMessages(prev => prev.map(msg =>
