@@ -5,12 +5,16 @@ import type { CorporateCard, CardTransaction } from '../types';
 function generateCardNumber(): string {
   const prefix = '4'; // Visa
   let num = prefix;
-  for (let i = 0; i < 15; i++) num += Math.floor(Math.random() * 10);
+  const array = new Uint8Array(15);
+  crypto.getRandomValues(array);
+  for (let i = 0; i < 15; i++) num += (array[i] % 10);
   return num;
 }
 
 function generateCVV(): string {
-  return String(Math.floor(100 + Math.random() * 900));
+  const array = new Uint32Array(1);
+  crypto.getRandomValues(array);
+  return String(100 + (array[0] % 900));
 }
 
 function generateExpiry(): string {
