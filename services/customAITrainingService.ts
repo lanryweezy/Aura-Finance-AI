@@ -142,7 +142,7 @@ export const customAITrainingService = {
 
     const categories = [...new Set(transactions.map(t => t.category))];
     const topCategory = categories.reduce((best, cat) => {
-      const total = transactions.filter(t => t.category === cat).reduce((s, t) => s + t.amount, 0);
+      const total = transactions.reduce((s, t) => (t.category === cat) ? s + t.amount : s, 0);
       return total > best.total ? { category: cat, total } : best;
     }, { category: '', total: 0 });
 

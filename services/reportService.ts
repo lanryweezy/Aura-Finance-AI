@@ -160,8 +160,8 @@ export const reportService = {
         const expenses = bills.reduce((sum, bill) => sum + bill.amount, 0);
 
         const cashAndBank = transactions.length > 0 ? (transactions[0].balance || 0) : 0;
-        const accountsReceivable = invoices.filter(i => i.status !== 'Paid').reduce((sum, i) => sum + i.total, 0);
-        const accountsPayable = bills.filter(b => b.status !== 'Paid').reduce((sum, b) => sum + b.amount, 0);
+        const accountsReceivable = invoices.reduce((sum, i) => (i.status !== 'Paid') ? sum + i.total : sum, 0);
+        const accountsPayable = bills.reduce((sum, b) => (b.status !== 'Paid') ? sum + b.amount : sum, 0);
         const inventoryValue = inventory.reduce((sum, item) => sum + (item.quantity * item.costPrice), 0);
 
         const totalAssets = cashAndBank + accountsReceivable + inventoryValue;

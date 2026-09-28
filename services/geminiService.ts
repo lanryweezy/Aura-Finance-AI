@@ -135,13 +135,13 @@ export const getFinancialInsights = async (
         const insights: FinancialInsight[] = [];
 
         // Burn rate check
-        const recentExpenses = transactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+        const recentExpenses = transactions.reduce((s, t) => (t.type === 'debit') ? s + t.amount : s, 0);
         if (recentExpenses > 1000000) {
             insights.push({ title: 'High Burn Rate', description: 'Your monthly expenses have increased by 15%. Consider reviewing subscription costs.', priority: 'Medium' });
         }
 
         // Receivables check
-        const pending = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
+        const pending = invoices.reduce((s, i) => (i.status !== 'Paid') ? s + i.total : s, 0);
         if (pending > 500000) {
             insights.push({ title: 'Revenue at Risk', description: `You have ${pending.toLocaleString()} in outstanding invoices. Send reminders to improve cash flow.`, priority: 'High' });
         }

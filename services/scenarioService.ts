@@ -25,8 +25,8 @@ export function runScenarios(
   const threeMonthsAgo = new Date(now.getTime() - 90 * 86400000);
   const recent = transactions.filter(t => new Date(t.date) >= threeMonthsAgo);
 
-  const avgMonthlyIncome = recent.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0) / 3;
-  const avgMonthlyExpenses = recent.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0) / 3;
+  const avgMonthlyIncome = recent.reduce((s, t) => (t.type === 'credit') ? s + t.amount : s, 0) / 3;
+  const avgMonthlyExpenses = recent.reduce((s, t) => (t.type === 'debit') ? s + t.amount : s, 0) / 3;
   const currentBalance = transactions.length > 0 ? (transactions[0].balance || 5000000) : 5000000;
 
   return scenarios.map(scenario => {

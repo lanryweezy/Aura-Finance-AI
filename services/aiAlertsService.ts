@@ -25,8 +25,8 @@ function analyzeTransactions(transactions: CategorizedTransaction[]): FinancialI
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000);
   const recent = transactions.filter(t => new Date(t.date) >= thirtyDaysAgo);
 
-  const totalIncome = recent.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = recent.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+  const totalIncome = recent.reduce((s, t) => (t.type === 'credit') ? s + t.amount : s, 0);
+  const totalExpenses = recent.reduce((s, t) => (t.type === 'debit') ? s + t.amount : s, 0);
   const burnRate = totalExpenses;
 
   if (burnRate > 1000000) {

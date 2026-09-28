@@ -65,7 +65,7 @@ export const expenseService = {
       thisMonthTotal: thisMonth.reduce((s, e) => s + e.amount, 0),
       pending: expenses.filter(e => e.status === 'submitted').length,
       approved: expenses.filter(e => e.status === 'approved').length,
-      reimbursed: expenses.filter(e => e.status === 'reimbursed').reduce((s, e) => s + e.amount, 0),
+      reimbursed: expenses.reduce((s, e) => (e.status === 'reimbursed') ? s + e.amount : s, 0),
     };
   },
 };

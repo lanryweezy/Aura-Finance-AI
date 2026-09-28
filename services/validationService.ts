@@ -95,8 +95,8 @@ export function validateJournalEntry(data: {
   const errors: string[] = [];
   if (!data.narration || data.narration.trim().length === 0) errors.push('Narration is required');
   if (!data.lines || data.lines.length < 2) errors.push('At least 2 lines required (debit + credit)');
-  const debits = data.lines?.filter((l: any) => l.type === 'debit').reduce((s: number, l: any) => s + l.amount, 0) || 0;
-  const credits = data.lines?.filter((l: any) => l.type === 'credit').reduce((s: number, l: any) => s + l.amount, 0) || 0;
+  const debits = data.lines?.reduce((s: number, l: any) => (l.type === 'debit') ? s + l.amount : s, 0) || 0;
+  const credits = data.lines?.reduce((s: number, l: any) => (l.type === 'credit') ? s + l.amount : s, 0) || 0;
   if (Math.abs(debits - credits) > 0.01) errors.push('Debits and credits must be equal');
   return { valid: errors.length === 0, errors };
 }

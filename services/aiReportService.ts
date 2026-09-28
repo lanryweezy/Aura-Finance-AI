@@ -29,12 +29,12 @@ export async function generateMonthlyReport(
   const now = new Date();
   const period = `${now.toLocaleString('default', { month: 'long' })} ${now.getFullYear()}`;
 
-  const totalRevenue = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+  const totalRevenue = transactions.reduce((s, t) => (t.type === 'credit') ? s + t.amount : s, 0);
+  const totalExpenses = transactions.reduce((s, t) => (t.type === 'debit') ? s + t.amount : s, 0);
   const netProfit = totalRevenue - totalExpenses;
   const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
-  const overdueReceivables = invoices.filter(i => i.status !== 'Paid').reduce((s, i) => s + i.total, 0);
-  const overduePayables = bills.filter(b => b.status !== 'Paid').reduce((s, b) => s + b.amount, 0);
+  const overdueReceivables = invoices.reduce((s, i) => (i.status !== 'Paid') ? s + i.total : s, 0);
+  const overduePayables = bills.reduce((s, b) => (b.status !== 'Paid') ? s + b.amount : s, 0);
 
   const kpis = {
     totalRevenue,

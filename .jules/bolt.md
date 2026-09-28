@@ -34,3 +34,6 @@
 ## 2025-02-28 - [Consolidate Array Filtering and Aggregation]
 **Learning:** Performing multiple independent `.filter()` and `.length` passes over the same array inside a React component (e.g., in `ApprovalWorkflowsView.tsx` where it was filtering for `filtered` list and `pendingCount` separately) creates unnecessary O(2N) overhead.
 **Action:** Always combine the filtering for rendered lists and the reduction for aggregate counts into a single-pass loop (or `.reduce`) wrapped in `useMemo`, allowing `O(N)` instead of `O(K*N)`.
+## 2025-03-09 - [Avoid intermediate array allocations in services]
+**Learning:** Chained `.filter().reduce()` in services creates intermediate arrays in memory and traverses the array twice (O(2N)). While previously optimized in UI components, doing this in high-traffic service layer functions (like AI reporting or duplicate detection) creates unnecessary garbage collection pressure for large datasets.
+**Action:** Replace `arr.filter(cond).reduce((sum, item) => sum + val, 0)` with a single-pass `arr.reduce((sum, item) => cond ? sum + val : sum, 0)` to reduce memory allocations.

@@ -148,7 +148,7 @@ export const duplicateDetectionService = {
   // Calculate potential savings
   calculateSavings: (subscriptions: SubscriptionDetection[]): { totalAnnual: number; duplicateAnnual: number; recommendations: string[] } => {
     const totalAnnual = subscriptions.reduce((s, sub) => s + sub.estimatedAnnualCost, 0);
-    const duplicateAnnual = subscriptions.filter(s => s.isDuplicate).reduce((s, sub) => s + sub.estimatedAnnualCost, 0);
+    const duplicateAnnual = subscriptions.reduce((s, sub) => (sub.isDuplicate) ? (s + sub.estimatedAnnualCost) : s, 0);
     const recommendations: string[] = [];
 
     if (duplicateAnnual > 0) {
