@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { Employee, PayrollAdjustment } from '../../types';
 import { calculateDeductions } from '../../services/taxCalculatorService';
 import { useCurrency } from '../ui/CurrencyProvider';
@@ -50,22 +50,20 @@ export const RunPayrollWizard: React.FC<RunPayrollWizardProps> = ({ isOpen, onCl
         onClose();
     };
     
-    const summary = employees.map(emp => {
-        const adj = adjustments[emp.id] || { bonus: 0, deduction: 0 };
-        const calcs = calculateDeductions(emp.grossSalary, adj.bonus, adj.deduction);
-        return {
-            ...calcs,
-            name: emp.name,
-            bonus: adj.bonus,
-            oneTimeDeduction: adj.deduction
-        }
-    }).reduce((acc, item) => {
-        acc.totalGross += item.grossSalary;
-        acc.totalBonuses += item.bonus;
-        acc.totalOneTimeDeductions += item.oneTimeDeduction;
-        acc.totalNet += item.netSalary;
-        return acc;
-    }, { totalGross: 0, totalBonuses: 0, totalOneTimeDeductions: 0, totalNet: 0});
+    // ⚡ Bolt Optimization: Replace O(2N) chained map().reduce() with O(N) single-pass reduce wrapped in useMemo.
+    // Avoids creating an intermediate array and prevents recalculation on non-relevant state changes.
+    const summary = useMemo(() => {
+        return employees.reduce((acc, emp) => {
+            const adj = adjustments[emp.id] || { bonus: 0, deduction: 0 };
+            const calcs = calculateDeductions(emp.grossSalary, adj.bonus, adj.deduction);
+
+            acc.totalGross += calcs.grossSalary;
+            acc.totalBonuses += adj.bonus;
+            acc.totalOneTimeDeductions += adj.deduction;
+            acc.totalNet += calcs.netSalary;
+            return acc;
+        }, { totalGross: 0, totalBonuses: 0, totalOneTimeDeductions: 0, totalNet: 0});
+    }, [employees, adjustments]);
 
     const renderStep = () => {
         switch (step) {
