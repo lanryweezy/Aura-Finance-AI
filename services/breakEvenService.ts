@@ -19,8 +19,8 @@ export function calculateBreakEven(
   const threeMonthsAgo = new Date(now.getTime() - 90 * 86400000);
   const recent = transactions.filter(t => new Date(t.date) >= threeMonthsAgo);
 
-  const totalIncome = recent.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
-  const totalExpenses = recent.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
+  const totalIncome = recent.reduce((s, t) => (t.type === 'credit') ? s + t.amount : s, 0);
+  const totalExpenses = recent.reduce((s, t) => (t.type === 'debit') ? s + t.amount : s, 0);
 
   const avgMonthlyRevenue = monthlyRevenue || Math.round(totalIncome / 3);
   const avgMonthlyExpenses = Math.round(totalExpenses / 3);

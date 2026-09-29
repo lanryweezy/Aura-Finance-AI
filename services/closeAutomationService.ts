@@ -106,8 +106,8 @@ export const closeAutomationService = {
     });
     const unbalanced = periodJEs.filter((je: any) => {
       const lines = je.lines || [];
-      const debits = lines.filter((l: any) => l.type === 'debit').reduce((s: number, l: any) => s + l.amount, 0);
-      const credits = lines.filter((l: any) => l.type === 'credit').reduce((s: number, l: any) => s + l.amount, 0);
+      const debits = lines.reduce((s: number, l: any) => (l.type === 'debit') ? s + l.amount : s, 0);
+      const credits = lines.reduce((s: number, l: any) => (l.type === 'credit') ? s + l.amount : s, 0);
       return Math.abs(debits - credits) > 0.01;
     });
     checks.push({
