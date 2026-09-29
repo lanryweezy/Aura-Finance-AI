@@ -434,11 +434,30 @@ export interface ReportData {
 }
 
 // ============== CORPORATE CARDS ==============
+
+export type CardOwnerType = 'EMPLOYEE' | 'DEPARTMENT' | 'PROJECT' | 'VENDOR' | 'SYSTEM' | 'AI_AGENT';
+
+export type CardType =
+  | 'DEPARTMENT_CARD'
+  | 'EMPLOYEE_CARD'
+  | 'PROJECT_CARD'
+  | 'SOFTWARE_CARD'
+  | 'MARKETING_CARD'
+  | 'PROCUREMENT_CARD'
+  | 'TRAVEL_CARD'
+  | 'OPERATIONS_CARD'
+  | 'EXECUTIVE_CARD'
+  | 'TEMPORARY_CARD'
+  | 'SINGLE_PURPOSE_CARD'
+  | 'AI_AGENT_CARD';
+
+export type CardStatus = 'REQUESTED' | 'APPROVED' | 'CREATED' | 'ACTIVATED' | 'ACTIVE' | 'FROZEN' | 'UNFROZEN' | 'EXPIRED' | 'CANCELLED';
+
 export interface CorporateCard {
   id: string;
   name: string;
   type: 'virtual' | 'physical';
-  status: 'active' | 'frozen' | 'cancelled';
+  status: 'active' | 'frozen' | 'cancelled' | CardStatus;
   last4: string;
   spendLimit: number;
   spentAmount: number;
@@ -449,6 +468,23 @@ export interface CorporateCard {
   isActive: boolean;
   entityId?: string;
   createdAt: string;
+
+  // New fields
+  provider?: string;
+  providerCardId?: string;
+  ownerType?: CardOwnerType;
+  ownerId?: string;
+  departmentId?: string;
+  employeeId?: string;
+  projectId?: string;
+  purpose?: string;
+  cardType?: CardType;
+  frequencyLimit?: string;
+  budgetId?: string;
+  costCenterId?: string;
+  accountingCategory?: string;
+  expiryDate?: string;
+  metadata?: any;
 }
 
 export interface CardCategoryControl {

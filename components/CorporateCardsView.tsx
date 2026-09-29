@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cardService } from '../services/cardService';
-import type { CorporateCard } from '../types';
+import type { CorporateCard, CardOwnerType, CardType } from '../types';
 
 const statusColors: Record<string, string> = {
   active: 'bg-green-500/20 text-green-400 border-green-500/30',
@@ -12,7 +12,7 @@ export const CorporateCardsView: React.FC = () => {
   const [cards, setCards] = useState<CorporateCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [newCard, setNewCard] = useState<{ name: string; type: 'virtual' | 'physical'; spendLimit: number }>({ name: '', type: 'virtual', spendLimit: 500000 });
+  const [newCard, setNewCard] = useState<{ name: string; type: 'virtual' | 'physical'; spendLimit: number; provider: string; ownerType: CardOwnerType; cardType: CardType }>({ name: '', type: 'virtual', spendLimit: 500000, provider: 'anchor', ownerType: 'EMPLOYEE', cardType: 'EMPLOYEE_CARD' });
 
   useEffect(() => {
     cardService.fetchCards().then(setCards).finally(() => setLoading(false));
@@ -23,7 +23,7 @@ export const CorporateCardsView: React.FC = () => {
     const card = await cardService.createCard(newCard);
     setCards(prev => [card, ...prev]);
     setShowCreate(false);
-    setNewCard({ name: '', type: 'virtual', spendLimit: 500000 });
+    setNewCard({ name: '', type: 'virtual', spendLimit: 500000, provider: 'anchor', ownerType: 'EMPLOYEE', cardType: 'EMPLOYEE_CARD' });
   };
 
   const handleFreeze = async (id: string) => {
@@ -153,6 +153,44 @@ export const CorporateCardsView: React.FC = () => {
                 Physical
               </button>
             </div>
+            <select
+              value={newCard.provider}
+              onChange={e => setNewCard(p => ({ ...p, provider: e.target.value }))}
+              className="w-full px-4 py-2.5 bg-dark-primary border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+            >
+              <option value="anchor">Anchor</option>
+              <option value="maplerad">Maplerad</option>
+            </select>
+            <select
+              value={newCard.ownerType}
+              onChange={e => setNewCard(p => ({ ...p, ownerType: e.target.value as any }))}
+              className="w-full px-4 py-2.5 bg-dark-primary border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+            >
+              <option value="EMPLOYEE">Employee</option>
+              <option value="DEPARTMENT">Department</option>
+              <option value="PROJECT">Project</option>
+              <option value="VENDOR">Vendor</option>
+              <option value="SYSTEM">System</option>
+              <option value="AI_AGENT">AI Agent</option>
+            </select>
+            <select
+              value={newCard.cardType}
+              onChange={e => setNewCard(p => ({ ...p, cardType: e.target.value as any }))}
+              className="w-full px-4 py-2.5 bg-dark-primary border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-cyan"
+            >
+              <option value="EMPLOYEE_CARD">Employee Card</option>
+              <option value="DEPARTMENT_CARD">Department Card</option>
+              <option value="PROJECT_CARD">Project Card</option>
+              <option value="SOFTWARE_CARD">Software Card</option>
+              <option value="MARKETING_CARD">Marketing Card</option>
+              <option value="PROCUREMENT_CARD">Procurement Card</option>
+              <option value="TRAVEL_CARD">Travel Card</option>
+              <option value="OPERATIONS_CARD">Operations Card</option>
+              <option value="EXECUTIVE_CARD">Executive Card</option>
+              <option value="TEMPORARY_CARD">Temporary Card</option>
+              <option value="SINGLE_PURPOSE_CARD">Single Purpose Card</option>
+              <option value="AI_AGENT_CARD">AI Agent Card</option>
+            </select>
             <input
               type="number"
               placeholder="Spend limit (₦)"
