@@ -69,6 +69,7 @@ const BulkPaymentsView = lazy(() => import('./components/BulkPaymentsView').then
 const ReconciliationView = lazy(() => import('./components/ReconciliationView').then(m => ({ default: m.ReconciliationView })));
 const VendorPortalView = lazy(() => import('./components/VendorPortalView').then(m => ({ default: m.VendorPortalView })));
 const LegalView = lazy(() => import('./components/LegalView').then(m => ({ default: m.LegalView })));
+const AnchorIntegration = lazy(() => import('./components/AnchorIntegration').then(m => ({ default: m.AnchorIntegration })));
 
 export default function App(): React.ReactNode {
   const { showToast } = useToast();
@@ -259,6 +260,7 @@ export default function App(): React.ReactNode {
       bulkPayments: <BulkPaymentsView />,
       reconciliation: <ReconciliationView />,
       vendorPortal: <VendorPortalView />,
+      anchor: <AnchorIntegration />,
       fixedAssets: <FixedAssetsView assets={assets.fixedAssets} onAddAsset={assets.handleAdd} onDisposeAsset={assets.handleDispose} />,
       recurring: <RecurringTransactionsView invoices={invoices.invoices} bills={bills.bills} />,
       yearEnd: <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />,
