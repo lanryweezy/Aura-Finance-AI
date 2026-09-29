@@ -53,6 +53,7 @@
     "@types/react": "^19.2.14",
     "@types/react-virtualized-auto-sizer": "^1.0.4",
     "@types/react-window": "^1.8.8",
+    "@vercel/node": "^16.0.2",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.27",
     "jsdom": "^29.0.1",

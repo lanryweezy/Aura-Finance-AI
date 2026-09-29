@@ -13,6 +13,8 @@ const OPTIONAL_KEYS = [
   'VITE_MONO_SECRET',
   'VITE_SENTRY_DSN',
   'VITE_ML_API_URL',
+  'VITE_ANCHOR_API_KEY',
+  'VITE_ANCHOR_ENVIRONMENT',
 ] as const;
 
 interface EnvStatus {
@@ -63,6 +65,14 @@ export function getSupabaseConfig() {
     anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
     configured: !!(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY
       && !import.meta.env.VITE_SUPABASE_URL.includes('your-project')),
+  };
+}
+
+export function getAnchorConfig() {
+  return {
+    apiKey: import.meta.env.VITE_ANCHOR_API_KEY || '',
+    environment: import.meta.env.VITE_ANCHOR_ENVIRONMENT || 'sandbox',
+    configured: !!(import.meta.env.VITE_ANCHOR_API_KEY && !import.meta.env.VITE_ANCHOR_API_KEY.includes('your-')),
   };
 }
 
