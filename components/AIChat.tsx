@@ -184,9 +184,17 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
       let fullResponseText = '';
       let functionCallMade = false;
 
-      for await (const chunk of responseStream) {
-          if (chunk.functionCalls && chunk.functionCalls.length > 0) {
-              functionCallMade = true;
+      // 🤖 Astra AI Quality: Implement per-chunk idle timeout by manually iterating.
+      // This protects against stalled models without prematurely aborting valid long responses.
+      const iterator = responseStream[Symbol.asyncIterator]();
+      try {
+          while (true) {
+              const result = await withTimeout(iterator.next(), 10_000);
+              if (result.done) break;
+              const chunk = result.value;
+
+              if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+                  functionCallMade = true;
               const call = chunk.functionCalls[0];
               let toolResult = {};
 
@@ -259,22 +267,35 @@ export const AIChat: React.FC<AIChatProps> = ({ transactions, bills, invoices })
                   }
               }] as any), 10_000);
 
-              // Process the *new* stream after the function call
-              for await (const nextChunk of responseStream) {
-                   if (nextChunk.text) {
-                      fullResponseText += nextChunk.text;
-                      setMessages(prev => prev.map(msg =>
-                          msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
-                      ));
-                   }
+                  // Process the *new* stream after the function call
+                  // 🤖 Astra AI Quality: Implement per-chunk idle timeout for the tool response stream too.
+                  const nextIterator = responseStream[Symbol.asyncIterator]();
+                  try {
+                      while (true) {
+                          const nextResult = await withTimeout(nextIterator.next(), 10_000);
+                          if (nextResult.done) break;
+                          const nextChunk = nextResult.value;
+
+                           if (nextChunk.text) {
+                              fullResponseText += nextChunk.text;
+                              setMessages(prev => prev.map(msg =>
+                                  msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
+                              ));
+                           }
+                      }
+                  } finally {
+                      if (nextIterator.return) await nextIterator.return(undefined);
+                  }
+                  break; // exit outer loop since we've handled the rest in the inner loop
+              } else if (chunk.text) {
+                  fullResponseText += chunk.text;
+                  setMessages(prev => prev.map(msg =>
+                      msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
+                  ));
               }
-              break; // exit outer loop since we've handled the rest in the inner loop
-          } else if (chunk.text) {
-              fullResponseText += chunk.text;
-              setMessages(prev => prev.map(msg =>
-                  msg.id === modelMessageId ? { ...msg, text: fullResponseText } : msg
-              ));
           }
+      } finally {
+          if (iterator.return) await iterator.return(undefined);
       }
 
     } catch (error) {
