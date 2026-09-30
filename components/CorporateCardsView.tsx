@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { cardService } from '../services/cardService';
 import type { CorporateCard } from '../types';
 
@@ -36,8 +36,19 @@ export const CorporateCardsView: React.FC = () => {
     setCards(prev => prev.map(c => c.id === id ? { ...c, status: 'active' as const } : c));
   };
 
-  const totalLimit = cards.reduce((s, c) => s + c.spendLimit, 0);
-  const totalSpent = cards.reduce((s, c) => s + c.spentAmount, 0);
+  // ⚡ Bolt Optimization: Calculate all card metrics in a single pass O(N) instead of O(3N)
+  const { totalLimit, totalSpent, activeCount } = useMemo(() => {
+    let limit = 0;
+    let spent = 0;
+    let active = 0;
+    for (let i = 0; i < cards.length; i++) {
+      const c = cards[i];
+      limit += c.spendLimit;
+      spent += c.spentAmount;
+      if (c.status === 'active') active++;
+    }
+    return { totalLimit: limit, totalSpent: spent, activeCount: active };
+  }, [cards]);
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading cards...</div>;
 
@@ -64,7 +75,7 @@ export const CorporateCardsView: React.FC = () => {
         </div>
         <div className="bg-white dark:bg-dark-secondary border border-gray-100 dark:border-white/10 rounded-xl p-4">
           <p className="text-xs text-gray-500">Active</p>
-          <p className="text-2xl font-black mt-1 text-green-400">{cards.filter(c => c.status === 'active').length}</p>
+          <p className="text-2xl font-black mt-1 text-green-400">{activeCount}</p>
         </div>
         <div className="bg-white dark:bg-dark-secondary border border-gray-100 dark:border-white/10 rounded-xl p-4">
           <p className="text-xs text-gray-500">Total Limit</p>

@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { useCurrency } from './ui/CurrencyProvider';
 import type { FixedAsset } from '../types';
@@ -24,6 +24,20 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
         setIsModalOpen(false);
     };
 
+    // ⚡ Bolt Optimization: Calculate all asset metrics in a single pass O(N) instead of O(3N) in render loop
+    const { totalAssetValue, totalAccumulatedDepreciation, netBookValue } = useMemo(() => {
+        let value = 0;
+        let dep = 0;
+        let net = 0;
+        for (let i = 0; i < assets.length; i++) {
+            const a = assets[i];
+            value += a.purchaseCost;
+            dep += a.accumulatedDepreciation;
+            net += a.bookValue;
+        }
+        return { totalAssetValue: value, totalAccumulatedDepreciation: dep, netBookValue: net };
+    }, [assets]);
+
     return (
         <div className="space-y-8">
             <div className="flex justify-between items-center">
@@ -44,19 +58,19 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
                 <Card className="p-6 border-blue-500/10 bg-blue-500/5 shadow-sm">
                     <h4 className="text-sm font-bold text-blue-500 dark:text-blue-400 uppercase tracking-wider mb-2">Total Asset Value</h4>
                     <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
-                        {formatAmount(assets.reduce((sum, a) => sum + a.purchaseCost, 0))}
+                        {formatAmount(totalAssetValue)}
                     </p>
                 </Card>
                 <Card className="p-6 border-purple-500/10 bg-purple-500/5 shadow-sm">
                     <h4 className="text-sm font-bold text-purple-500 dark:text-purple-400 uppercase tracking-wider mb-2">Accumulated Depreciation</h4>
                     <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
-                        {formatAmount(assets.reduce((sum, a) => sum + a.accumulatedDepreciation, 0))}
+                        {formatAmount(totalAccumulatedDepreciation)}
                     </p>
                 </Card>
                 <Card className="p-6 border-brand-cyan/10 bg-brand-cyan/5 shadow-sm">
                     <h4 className="text-sm font-bold text-brand-cyan uppercase tracking-wider mb-2">Net Book Value</h4>
                     <p className="text-3xl font-black text-aura-gray-900 dark:text-white font-mono">
-                        {formatAmount(assets.reduce((sum, a) => sum + a.bookValue, 0))}
+                        {formatAmount(netBookValue)}
                     </p>
                 </Card>
             </div>
