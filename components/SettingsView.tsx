@@ -76,8 +76,9 @@ const SecuritySettings: React.FC = () => {
                 <SectionHeader title="Access Restriction" description="Restrict access to specific corporate IP addresses." />
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Whitelisted IP Addresses (comma separated)</label>
+                        <label htmlFor="ip-whitelist" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Whitelisted IP Addresses (comma separated)</label>
                         <input
+                            id="ip-whitelist"
                             type="text"
                             value={ipWhitelist}
                             onChange={(e) => setIpWhitelist(e.target.value)}
@@ -86,8 +87,9 @@ const SecuritySettings: React.FC = () => {
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Session Inactivity Timeout (Minutes)</label>
+                        <label htmlFor="session-timeout" className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Session Inactivity Timeout (Minutes)</label>
                         <input
+                            id="session-timeout"
                             type="number"
                             value={timeout}
                             onChange={(e) => setTimeoutVal(parseInt(e.target.value))}
@@ -319,26 +321,26 @@ export const SettingsView: React.FC = () => {
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Company Name</label>
-                                    <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                                    <label htmlFor="company-name" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Company Name</label>
+                                    <input id="company-name" type="text" value={companyName} onChange={e => setCompanyName(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">TIN</label>
-                                    <input type="text" value={tin} onChange={e => setTin(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold shadow-sm" />
+                                    <label htmlFor="company-tin" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">TIN</label>
+                                    <input id="company-tin" type="text" value={tin} onChange={e => setTin(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-mono font-bold shadow-sm" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Business Address</label>
-                                <input type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                                <label htmlFor="company-address" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Business Address</label>
+                                <input id="company-address" type="text" value={address} onChange={e => setAddress(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Contact Email</label>
-                                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                                    <label htmlFor="company-email" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Contact Email</label>
+                                    <input id="company-email" type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
-                                    <input type="tel" placeholder="+234..." className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
+                                    <label htmlFor="company-phone" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Phone Number</label>
+                                    <input id="company-phone" type="tel" placeholder="+234..." className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan transition-all font-medium shadow-sm" />
                                 </div>
                             </div>
                         </div>
@@ -348,8 +350,8 @@ export const SettingsView: React.FC = () => {
                         <SectionHeader title="Regional Settings" description="Localization and currency preferences." />
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Base Currency</label>
-                                <select disabled className="w-full bg-aura-gray-100 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium shadow-inner">
+                                <label htmlFor="base-currency" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Base Currency</label>
+                                <select id="base-currency" disabled className="w-full bg-aura-gray-100 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium shadow-inner">
                                     <option>Nigerian Naira (NGN)</option>
                                     <option>US Dollar (USD)</option>
                                     <option>British Pound (GBP)</option>
@@ -357,23 +359,23 @@ export const SettingsView: React.FC = () => {
                                 <p className="text-[10px] text-gray-400 mt-2 font-medium italic">Base currency is set by your organization's region.</p>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Time Zone</label>
-                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
+                                <label htmlFor="time-zone" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Time Zone</label>
+                                <select id="time-zone" className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>West Africa Time (WAT) - Lagos</option>
                                     <option>Greenwich Mean Time (GMT)</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date Format</label>
-                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
+                                <label htmlFor="date-format" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Date Format</label>
+                                <select id="date-format" className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>DD/MM/YYYY</option>
                                     <option>MM/DD/YYYY</option>
                                     <option>YYYY-MM-DD</option>
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Financial Year Start</label>
-                                <select className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
+                                <label htmlFor="financial-year" className="block text-xs font-bold text-aura-gray-500 dark:text-gray-400 mb-1.5 uppercase tracking-wider">Financial Year Start</label>
+                                <select id="financial-year" className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand-cyan font-medium shadow-sm">
                                     <option>January</option>
                                     <option>April</option>
                                     <option>July</option>
