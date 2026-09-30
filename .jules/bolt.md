@@ -37,3 +37,6 @@
 ## 2025-03-09 - [Avoid intermediate array allocations in services]
 **Learning:** Chained `.filter().reduce()` in services creates intermediate arrays in memory and traverses the array twice (O(2N)). While previously optimized in UI components, doing this in high-traffic service layer functions (like AI reporting or duplicate detection) creates unnecessary garbage collection pressure for large datasets.
 **Action:** Replace `arr.filter(cond).reduce((sum, item) => sum + val, 0)` with a single-pass `arr.reduce((sum, item) => cond ? sum + val : sum, 0)` to reduce memory allocations.
+## 2025-03-09 - [Consolidate redundant single-metric `.reduce()` arrays passes into one loop]
+**Learning:** Performing multiple independent `.reduce()` or `.filter().length` passes over the same array inside a React component (e.g., in `CorporateCardsView.tsx` where it separately mapped for total limit, total spent, and active count) creates unnecessary O(3N) overhead.
+**Action:** Always combine the filtering and reduction for aggregate counts into a single-pass `for` loop (or `.reduce()`) wrapped in `useMemo`, allowing `O(N)` instead of `O(K*N)`.
