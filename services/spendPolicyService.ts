@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
 import type { CorporateCard } from '../types';
+import { generateSecureToken } from './securityUtils';
 
 export interface SpendPolicy {
   id: string;
@@ -103,7 +104,7 @@ export const spendPolicyService = {
       // Check amount limit
       if (amount > policy.maxAmount) {
         violations.push({
-          id: `v_${Date.now()}_${Math.random()}`,
+          id: `v_${Date.now()}_${generateSecureToken(8)}`,
           cardId, transactionAmount: amount, merchant, category,
           violationType: 'amount_exceeded',
           message: `Amount ₦${amount.toLocaleString()} exceeds policy limit of ₦${policy.maxAmount.toLocaleString()}`,
@@ -114,7 +115,7 @@ export const spendPolicyService = {
       // Check blocked categories
       if (policy.blockedCategories.some(c => category.toLowerCase().includes(c))) {
         violations.push({
-          id: `v_${Date.now()}_${Math.random()}`,
+          id: `v_${Date.now()}_${generateSecureToken(8)}`,
           cardId, transactionAmount: amount, merchant, category,
           violationType: 'blocked_category',
           message: `Category "${category}" is blocked by policy "${policy.name}"`,
@@ -125,7 +126,7 @@ export const spendPolicyService = {
       // Check blocked vendors
       if (policy.blockedVendors.some(v => merchant.toLowerCase().includes(v.toLowerCase()))) {
         violations.push({
-          id: `v_${Date.now()}_${Math.random()}`,
+          id: `v_${Date.now()}_${generateSecureToken(8)}`,
           cardId, transactionAmount: amount, merchant, category,
           violationType: 'blocked_vendor',
           message: `Vendor "${merchant}" is blocked by policy "${policy.name}"`,
@@ -136,7 +137,7 @@ export const spendPolicyService = {
       // Check country
       if (country && policy.allowedCountries.length > 0 && !policy.allowedCountries.includes(country)) {
         violations.push({
-          id: `v_${Date.now()}_${Math.random()}`,
+          id: `v_${Date.now()}_${generateSecureToken(8)}`,
           cardId, transactionAmount: amount, merchant, category,
           violationType: 'blocked_country',
           message: `Country "${country}" is not allowed by policy "${policy.name}"`,
