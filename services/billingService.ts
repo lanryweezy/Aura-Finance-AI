@@ -1,7 +1,6 @@
 import type { SubscriptionTier } from '../types';
 import { supabase } from './supabaseClient';
 import { authService } from './authService';
-import { generateSecureToken } from './securityUtils';
 
 declare const PaystackPop: any;
 declare const FlutterwaveCheckout: any;
@@ -38,7 +37,7 @@ export const billingService = {
       email,
       amount: plan.price * 100,
       currency: 'NGN',
-      ref: 'AURA-' + generateSecureToken(10),
+      ref: 'AURA-' + Math.floor(Math.random() * 1000000000),
       callback: (response: any) => callback(response.reference),
       onClose: onClose || (() => {}),
     });
@@ -52,7 +51,7 @@ export const billingService = {
     }
     FlutterwaveCheckout({
       public_key: import.meta.env.VITE_FLW_KEY || 'FLWPUBK_TEST-placeholder',
-      tx_ref: 'AURA-' + generateSecureToken(10),
+      tx_ref: 'AURA-' + Math.floor(Math.random() * 1000000000),
       amount: plan.price,
       currency: 'NGN',
       payment_options: 'card, banktransfer, ussd',

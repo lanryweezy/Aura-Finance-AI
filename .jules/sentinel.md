@@ -44,7 +44,3 @@
 **Vulnerability:** Using `Math.random()` to generate security-sensitive tokens, such as card numbers and CVV codes, is insecure. `Math.random()` is not cryptographically secure and can be predictable, potentially allowing an attacker to guess the mock values if they were ever used in a critical context.
 **Learning:** Standard pseudo-random number generators (PRNGs) like `Math.random()` should never be used for security purposes, session IDs, or sensitive financial tokens.
 **Prevention:** Always use cryptographically secure random number generators (CSPRNGs), such as `crypto.getRandomValues()` in the browser environment, when generating security-sensitive tokens or mock data.
-## 2026-12-05 - Insecure Randomness in Payment References
-**Vulnerability:** Using `Math.random()` to generate payment references and transaction IDs (e.g., in `services/paystackService.ts`, `services/anchor/anchorTransferService.ts`, and `services/billingService.ts`) is insecure. Predictable tokens can allow attackers to spoof or guess payment references.
-**Learning:** `Math.random()` is not cryptographically secure and must not be used for security-sensitive references, payment identifiers, or policy violation IDs.
-**Prevention:** Use cryptographically secure random number generators (CSPRNGs). Ensure that utilities like `generateSecureToken` from `services/securityUtils.ts` are strictly used for all financial and system references.

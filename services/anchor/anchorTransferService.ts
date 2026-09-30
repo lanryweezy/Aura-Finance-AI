@@ -1,7 +1,6 @@
 import { anchorService } from './anchorService';
 import { supabase } from '../supabaseClient';
 import { AnchorTransfer } from '../../types/anchor';
-import { generateSecureToken } from '../securityUtils';
 
 export const anchorTransferService = {
   createCounterparty: async (accountName: string, accountNumber: string, bankCode: string) => {
@@ -23,7 +22,7 @@ export const anchorTransferService = {
     amount: number, // kobo
     reason: string
   ): Promise<AnchorTransfer> => {
-    const reference = `TRF_${Date.now()}_${generateSecureToken(4)}`;
+    const reference = `TRF_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
 
     const response = await anchorService.callApi('createNipTransfer', {
         data: {
