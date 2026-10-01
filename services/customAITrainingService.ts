@@ -63,7 +63,7 @@ export const customAITrainingService = {
         return { type: 'amount', prediction: Math.round(avgMonthly), confidence: 0.6, reasoning: 'Rate limited, using simple average' };
       }
 
-      const response = await withTimeout(aiClient.models.generateContent({
+      const response = await withTimeout(() => aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: `Predict next month's spending for "${category}" based on these transactions: ${JSON.stringify(categoryTransactions.slice(-10).map(t => ({ amount: t.amount, date: t.date })))}.` }] }],
         config: {

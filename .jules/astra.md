@@ -9,3 +9,7 @@
 ## 2024-05-18 - Sequential Chunking for Relational AI Batch Processing
 **Learning:** When using AI to map or match two datasets (e.g., bills to POs), arbitrarily slicing both arrays to fit token limits hides valid matching targets and silently breaks business logic.
 **Action:** Implement sequential chunking for the primary dataset (e.g., `bills` in chunks of 50) while keeping the secondary relational dataset (e.g., `purchase orders`) fully intact in the context window. Handle AI failures per chunk to gracefully fall back without aborting the entire batch.
+
+## 2024-05-18 - Lazy Execution & Retry Logic in AI Timeouts
+**Learning:** Eagerly evaluating promises before passing them into the `withTimeout` utility causes the AI request to begin immediately, preventing the wrapper from intercepting and retrying transient errors properly, and preventing the actual abortion of the underlying stream.
+**Action:** Use a factory function in the `withTimeout` wrapper (e.g. `withTimeout(() => aiClient...)`) so that the AI request is executed lazily, making it easier to implement retries and proper resource cleanup.
