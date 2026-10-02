@@ -28,7 +28,7 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
   for (let i = 0; i < bills.length; i += CHUNK_SIZE) {
     const chunk = bills.slice(i, i + CHUNK_SIZE);
     try {
-      const response = await withTimeout(aiClient.models.generateContent({
+      const response = await withTimeout(() => aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: `Bills: ${JSON.stringify(chunk.map(b => ({ id: b.id, vendor: b.vendor, amount: b.amount, description: b.description })))}\n\nPOs: ${JSON.stringify(pos.map(p => ({ id: p.id, vendor: p.vendor, total: p.total, lineItems: p.lineItems?.map((l: any) => l.name) })))}` }] }],
         config: {
