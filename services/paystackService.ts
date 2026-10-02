@@ -1,6 +1,7 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
 import { monitoringService } from './monitoringService';
+import { generateSecureToken } from './securityUtils';
 
 declare const PaystackPop: any;
 
@@ -24,7 +25,7 @@ export const paystackService = {
     email: string,
     metadata: Record<string, any> = {}
   ): Promise<{ reference: string; auth_url?: string }> => {
-    const reference = `AURA-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    const reference = `AURA-${Date.now()}-${generateSecureToken(6).toUpperCase()}`;
 
     if (supabase) {
       await supabase.from('payments').insert({
