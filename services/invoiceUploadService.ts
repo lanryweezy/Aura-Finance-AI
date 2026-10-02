@@ -106,7 +106,7 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
       return simulateExtraction(file.name);
     }
 
-    const response = await withTimeout(aiClient.models.generateContent({
+    const response = await withTimeout(() => aiClient.models.generateContent({
       model: 'gemini-2.0-flash',
       contents: [{ role: 'user', parts }],
       config: {
