@@ -37,3 +37,6 @@
 ## 2025-03-09 - [Avoid intermediate array allocations in services]
 **Learning:** Chained `.filter().reduce()` in services creates intermediate arrays in memory and traverses the array twice (O(2N)). While previously optimized in UI components, doing this in high-traffic service layer functions (like AI reporting or duplicate detection) creates unnecessary garbage collection pressure for large datasets.
 **Action:** Replace `arr.filter(cond).reduce((sum, item) => sum + val, 0)` with a single-pass `arr.reduce((sum, item) => cond ? sum + val : sum, 0)` to reduce memory allocations.
+## 2025-03-09 - [Consolidate Array Iterations for Derived State]
+**Learning:** In CorporateCardsView.tsx, independent array iterations using multiple reduces and a filter (to get lengths or sums) cause O(3N) overhead and unnecessary object allocations on each render.
+**Action:** Replace multiple chained array iterations with a single-pass `for` loop wrapped in `useMemo` that concurrently calculates multiple derived metrics in `O(N)` time.
