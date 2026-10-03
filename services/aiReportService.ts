@@ -56,10 +56,12 @@ export async function generateMonthlyReport(
 
   const context = {
     period,
-    transactions: transactions.slice(0, 30),
-    unpaidInvoices: invoices.filter(i => i.status !== 'Paid').slice(0, 10),
-    unpaidBills: bills.filter(b => b.status !== 'Paid').slice(0, 10),
-    recentPayroll: payroll.slice(0, 3),
+    // AI Quality: Map inputs down to only the fields necessary for the report
+    // to save tokens, prevent context window exhaustion, and hide sensitive/noisy data like lineItems.
+    transactions: transactions.slice(0, 30).map(t => ({ amount: t.amount, type: t.type, category: t.category, date: t.date })),
+    unpaidInvoices: invoices.filter(i => i.status !== 'Paid').slice(0, 10).map(i => ({ total: i.total, dueDate: i.dueDate })),
+    unpaidBills: bills.filter(b => b.status !== 'Paid').slice(0, 10).map(b => ({ amount: b.amount, dueDate: b.dueDate })),
+    recentPayroll: payroll.slice(0, 3).map(p => ({ month: p.month, totalGross: p.totalGross, netPay: p.netPay })),
     kpis,
   };
 
