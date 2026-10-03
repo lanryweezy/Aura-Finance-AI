@@ -20,3 +20,6 @@
 ## $(date +%Y-%m-%d) - Proper association of labels and form inputs
 **Learning:** Found an accessibility issue pattern across this app where `components/ui/FormField.tsx` does not associate its `<label>` elements with `<input>`, `<select>`, and `<textarea>` elements via `htmlFor` and `id` properties. This prevented screen readers from associating the label with the input and broke click-to-focus functionality.
 **Action:** When creating reusable form control components, explicitly link `<label>` elements to their interactive controls using `htmlFor` and unique `id`s (potentially generating an ID based on a `name` prop) to ensure robust form accessibility and standard click behavior.
+## $(date +%Y-%m-%d) - Disconnected Labels in Settings Forms
+**Learning:** Identified a widespread accessibility issue where form `<label>` elements were visually placed near inputs/selects in `SettingsView.tsx` but not programmatically linked via `htmlFor` and `id` attributes. This prevented click-to-focus and impaired screen reader announcements.
+**Action:** Always verify that every `<label>` has an `htmlFor` attribute that exactly matches the `id` of its corresponding `<input>` or `<select>` element for proper form accessibility.
