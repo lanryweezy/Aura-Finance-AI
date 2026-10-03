@@ -1,5 +1,7 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
+import { anchorCardProvider } from './providers/anchor/anchorCardProvider';
+import { mapleradCardProvider } from './providers/maplerad/mapleradCardProvider';
 import type { CorporateCard, CardTransaction } from '../types';
 
 function generateCardNumber(): string {
@@ -35,6 +37,21 @@ export const cardService = {
     return (data || []).map(c => ({
       ...c,
       categoryControls: c.category_controls || [],
+      provider: c.provider,
+      providerCardId: c.provider_card_id,
+      ownerType: c.owner_type,
+      ownerId: c.owner_id,
+      departmentId: c.department_id,
+      employeeId: c.employee_id,
+      projectId: c.project_id,
+      purpose: c.purpose,
+      cardType: c.card_type,
+      frequencyLimit: c.frequency_limit,
+      budgetId: c.budget_id,
+      costCenterId: c.cost_center_id,
+      accountingCategory: c.accounting_category,
+      expiryDate: c.expiry_date,
+      metadata: c.metadata,
     })) as CorporateCard[];
   },
 
@@ -45,7 +62,22 @@ export const cardService = {
     assignedTo?: string;
     assignedToName?: string;
     categoryControls?: { category: string; enabled: boolean; limit?: number }[];
+    provider?: string;
+    ownerType?: import('../types').CardOwnerType;
+    ownerId?: string;
+    departmentId?: string;
+    employeeId?: string;
+    projectId?: string;
+    purpose?: string;
+    cardType?: import('../types').CardType;
   }): Promise<CorporateCard> => {
+    let providerResponse = {};
+    if (cardData.provider === 'anchor') {
+      providerResponse = await anchorCardProvider.createCard(cardData);
+    } else if (cardData.provider === 'maplerad') {
+      providerResponse = await mapleradCardProvider.createCard(cardData);
+    }
+
     const card: Partial<CorporateCard> = {
       name: cardData.name,
       type: cardData.type,
@@ -59,6 +91,15 @@ export const cardService = {
       categoryControls: cardData.categoryControls || [],
       isActive: true,
       createdAt: new Date().toISOString(),
+      provider: cardData.provider,
+      ownerType: cardData.ownerType,
+      ownerId: cardData.ownerId,
+      departmentId: cardData.departmentId,
+      employeeId: cardData.employeeId,
+      projectId: cardData.projectId,
+      purpose: cardData.purpose,
+      cardType: cardData.cardType,
+      ...providerResponse,
     };
 
     if (supabase) {
@@ -68,6 +109,15 @@ export const cardService = {
           ...card,
           category_controls: JSON.stringify(card.categoryControls),
           organization_id: db.getOrgId(),
+          provider: card.provider,
+          provider_card_id: card.providerCardId,
+          owner_type: card.ownerType,
+          owner_id: card.ownerId,
+          department_id: card.departmentId,
+          employee_id: card.employeeId,
+          project_id: card.projectId,
+          purpose: card.purpose,
+          card_type: card.cardType,
         })
         .select()
         .single();
