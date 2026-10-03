@@ -111,8 +111,9 @@ export const TeamManagement: React.FC = () => {
                     <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-6">Invite Member</h4>
                     <form onSubmit={handleInvite} className="space-y-5">
                         <div>
-                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Full Name</label>
+                            <label htmlFor="invite-name" className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Full Name</label>
                             <input
+                                id="invite-name"
                                 type="text"
                                 value={inviteName}
                                 onChange={e => setInviteName(e.target.value)}
@@ -122,8 +123,9 @@ export const TeamManagement: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Email Address</label>
+                            <label htmlFor="invite-email" className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Email Address</label>
                             <input
+                                id="invite-email"
                                 type="email"
                                 value={inviteEmail}
                                 onChange={e => setInviteEmail(e.target.value)}
@@ -133,8 +135,9 @@ export const TeamManagement: React.FC = () => {
                             />
                         </div>
                         <div>
-                            <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Role</label>
+                            <label htmlFor="invite-role" className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider">Role</label>
                             <select
+                                id="invite-role"
                                 value={inviteRole}
                                 onChange={e => setInviteRole(e.target.value as UserRole)}
                                 className="w-full bg-aura-gray-50 dark:bg-dark-secondary border border-gray-200 dark:border-gray-700 rounded-xl p-3 text-aura-gray-900 dark:text-white mt-2 text-sm font-bold focus:ring-2 focus:ring-brand-cyan outline-none transition-all shadow-sm"
@@ -279,8 +282,9 @@ export const TeamManagement: React.FC = () => {
                         </div>
                         <div className="space-y-6">
                             <div>
-                                <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-2 block">Role Name</label>
+                                <label htmlFor="role-name" className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-2 block">Role Name</label>
                                 <input
+                                    id="role-name"
                                     type="text"
                                     value={newRoleName}
                                     onChange={e => setNewRoleName(e.target.value)}
@@ -292,9 +296,10 @@ export const TeamManagement: React.FC = () => {
                                 <label className="text-xs text-aura-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-4 block">Select Permissions</label>
                                 <div className="space-y-3 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                     {permissionsList.map(p => (
-                                        <label key={p.key} className="flex items-center justify-between p-3 bg-aura-gray-50/50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:border-brand-purple/50 transition-all cursor-pointer group">
+                                        <label htmlFor={`perm-${p.key}`} key={p.key} className="flex items-center justify-between p-3 bg-aura-gray-50/50 dark:bg-white/5 rounded-xl border border-gray-100 dark:border-white/5 hover:border-brand-purple/50 transition-all cursor-pointer group">
                                             <span className="text-sm font-bold text-aura-gray-600 dark:text-gray-300 group-hover:text-aura-gray-900 dark:group-hover:text-white">{p.name}</span>
                                             <input
+                                                id={`perm-${p.key}`}
                                                 type="checkbox"
                                                 checked={selectedPerms.includes(p.key)}
                                                 onChange={e => {
