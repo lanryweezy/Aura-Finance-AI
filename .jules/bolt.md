@@ -37,3 +37,6 @@
 ## 2025-03-09 - [Avoid intermediate array allocations in services]
 **Learning:** Chained `.filter().reduce()` in services creates intermediate arrays in memory and traverses the array twice (O(2N)). While previously optimized in UI components, doing this in high-traffic service layer functions (like AI reporting or duplicate detection) creates unnecessary garbage collection pressure for large datasets.
 **Action:** Replace `arr.filter(cond).reduce((sum, item) => sum + val, 0)` with a single-pass `arr.reduce((sum, item) => cond ? sum + val : sum, 0)` to reduce memory allocations.
+## 2025-05-15 - [Consolidate redundant .reduce passes inside components]
+**Learning:** Performing multiple `.reduce()` calls on the same array to calculate distinct totals (e.g. `purchaseCost`, `accumulatedDepreciation`, `bookValue`) results in an O(3N) time complexity and redundant processing over the dataset.
+**Action:** Replace multiple `.reduce()` iterations over the same array with a single `for` loop or `.reduce()` inside a `useMemo` block that aggregates all required values concurrently, turning O(3N) into O(N).
