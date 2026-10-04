@@ -24,7 +24,7 @@ export const receiptOcrService = {
 
       const prompt = `Extract data from this receipt.`;
 
-      const response = await withTimeout(aiClient.models.generateContent({
+      const response = await withTimeout(() => aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [imagePart, { text: prompt }] }],
         config: {

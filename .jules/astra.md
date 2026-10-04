@@ -9,3 +9,7 @@
 ## 2024-05-18 - Sequential Chunking for Relational AI Batch Processing
 **Learning:** When using AI to map or match two datasets (e.g., bills to POs), arbitrarily slicing both arrays to fit token limits hides valid matching targets and silently breaks business logic.
 **Action:** Implement sequential chunking for the primary dataset (e.g., `bills` in chunks of 50) while keeping the secondary relational dataset (e.g., `purchase orders`) fully intact in the context window. Handle AI failures per chunk to gracefully fall back without aborting the entire batch.
+
+## 2024-05-19 - Lazy Evaluation for AI Request Resiliency
+**Learning:** All raw external AI model calls wrapped in timeouts (e.g., `withTimeout`) must be passed as factory functions (e.g., `withTimeout(() => aiClient...)`) to ensure lazy execution. Eagerly evaluating promises causes the request to start immediately, which circumvents the timeout wrapper's initialization, prevents it from properly intercepting transient errors (429, 500), and stops proper resource cleanup (e.g., clearing handles in a `finally` block).
+**Action:** Always wrap `aiClient.models.generateContent` inside an arrow function when using it with the custom `withTimeout` wrapper to ensure resilient execution and proper `finally` block cleanup.
