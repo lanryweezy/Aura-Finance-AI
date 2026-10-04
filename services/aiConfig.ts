@@ -9,16 +9,32 @@ if (!API_KEY) {
 export const aiClient = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
 /**
- * Wraps a promise with a timeout, throwing an error if it takes too long.
+ * Wraps a promise factory with a timeout, throwing an error if it takes too long.
  * Essential for AI model calls to prevent unbounded execution and trigger graceful fallbacks.
+ *
+ * AI Quality Improvement:
+ * Accepts a factory function (`() => Promise<T>`) instead of an eagerly evaluated `Promise<T>`.
+ * This ensures the AI request is only started after the timeout wrapper is properly initialized,
+ * preventing race conditions where transient errors (e.g. 429, 500) occur before the timeout
+ * handlers are set up, and allowing for proper resource cleanup via the `finally` block.
  */
-export const withTimeout = <T>(promise: Promise<T>, ms: number = 10000): Promise<T> => {
-    return Promise.race([
-        promise,
-        new Promise<T>((_, reject) =>
-            setTimeout(() => reject(new Error(`AI Request timed out after ${ms}ms`)), ms)
-        )
-    ]);
+export const withTimeout = async <T>(factory: () => Promise<T>, ms: number = 10000): Promise<T> => {
+    let timeoutHandle: ReturnType<typeof setTimeout>;
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutHandle = setTimeout(() => {
+            reject(new Error(`AI Request timed out after ${ms}ms`));
+        }, ms);
+    });
+
+    try {
+        return await Promise.race([
+            factory(),
+            timeoutPromise
+        ]);
+    } finally {
+        clearTimeout(timeoutHandle!);
+    }
 };
 
 /**
