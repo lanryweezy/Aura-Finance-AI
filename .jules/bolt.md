@@ -40,3 +40,4 @@
 ## 2025-03-09 - [Consolidate Array Iterations for Derived State]
 **Learning:** In CorporateCardsView.tsx, independent array iterations using multiple reduces and a filter (to get lengths or sums) cause O(3N) overhead and unnecessary object allocations on each render.
 **Action:** Replace multiple chained array iterations with a single-pass `for` loop wrapped in `useMemo` that concurrently calculates multiple derived metrics in `O(N)` time.
+## 2025-03-09 - [Consolidate filtering and aggregation into a single pass loop]\n**Learning:** In TaxFilingView.tsx, creating an intermediate array via .filter() and then looping over it again causes unnecessary memory allocations and object creation overhead (O(2N)).\n**Action:** Combine the date filtering conditional directly into the subsequent for-loop iteration. This reduces memory allocations by eliminating the intermediate array and completes the work in a single O(N) pass.

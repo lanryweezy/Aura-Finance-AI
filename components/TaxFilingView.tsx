@@ -122,11 +122,6 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         result.invoices = periodInvoices;
         result.totalSales = totalSales;
 
-        const periodTransactions = transactions.filter(t => {
-             const txDate = new Date(t.date);
-             return txDate >= startDate && txDate <= endDate;
-        });
-
         // ⚡ Bolt Optimization: Single pass for invoices to calculate totalSales and incomeSubjectToWht
         // avoiding chained .filter().reduce() which creates intermediate arrays.
 
@@ -139,7 +134,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         }
         result.totalSales = totalSales;
 
-        // ⚡ Bolt Optimization: Replace O(4N) chained filter().reduce() passes over periodTransactions with O(N) single-pass loop.
+        // ⚡ Bolt Optimization: Replace separate .filter() pass with O(N) single-pass loop over all transactions.
         // Reduces memory allocations (no intermediate arrays) and computes revenue, expenses, and tax-subject amounts simultaneously.
         let taxableExpenses = 0;
         let expensesSubjectToWht = 0;
@@ -147,17 +142,20 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         result.revenue = 0;
         result.expenses = 0;
 
-        for (let i = 0; i < periodTransactions.length; i++) {
-            const t = periodTransactions[i];
-            if (t.type === 'credit') {
-                result.revenue += t.amount;
-            } else {
-                result.expenses += t.amount;
-                if (t.category === 'Utilities' || t.category === 'Supplies' || t.category === 'Professional Services') {
-                    taxableExpenses += t.amount;
-                }
-                if (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors') {
-                    expensesSubjectToWht += t.amount;
+        for (let i = 0; i < transactions.length; i++) {
+            const t = transactions[i];
+            const txDate = new Date(t.date);
+            if (txDate >= startDate && txDate <= endDate) {
+                if (t.type === 'credit') {
+                    result.revenue += t.amount;
+                } else {
+                    result.expenses += t.amount;
+                    if (t.category === 'Utilities' || t.category === 'Supplies' || t.category === 'Professional Services') {
+                        taxableExpenses += t.amount;
+                    }
+                    if (t.category === 'Rent' || t.category === 'Professional Services' || t.category === 'Contractors') {
+                        expensesSubjectToWht += t.amount;
+                    }
                 }
             }
         }
