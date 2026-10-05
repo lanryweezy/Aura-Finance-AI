@@ -27,3 +27,7 @@
 ## 2025-05-24 - Missing CHECK constraints for HR/leave tracking tables
 **Learning:** Leave balances in HR tracking tables (e.g. `annual`, `sick`, `remaining`, `used`) often lack CHECK constraints because applications use default values or perform validation only during request time. However, direct imports, buggy manual edits, or application-layer bypassing could inject negative values, causing logic flaws where employees have effectively negative leaves, altering duration and payroll calculations unexpectedly.
 **Action:** Always add non-negative CHECK constraints `CHECK (column >= 0)` when storing balances representing physical constraints (like days of leave, quantities, or allocations). Apply with `NOT VALID` if existing data has a risk of violating the constraint.
+
+## 2023-10-05 - HR Negative values constraints
+**Learning:** HR tables like leave_requests and salary_advances could allow corrupt states via negative days or negative repayment_months if checks were not present.
+**Action:** Created constraints using NOT VALID to safely apply to existing schema without requiring locking scans.
