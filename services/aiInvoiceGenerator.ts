@@ -14,7 +14,7 @@ export interface AIGeneratedInvoice {
 
 export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGeneratedInvoice> {
   if (!aiClient || !API_KEY) {
-    return simulateInvoiceGeneration(prompt);
+    throw new Error('AI client not configured. Cannot generate invoice.');
   }
 
   if (await usageService.isRateLimited('ai_chat')) {
@@ -72,37 +72,4 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
     monitoringService.trackError('AI_ENGINE', error as Error);
     throw new Error('Failed to generate invoice from prompt.');
   }
-}
-
-function simulateInvoiceGeneration(prompt: string): AIGeneratedInvoice {
-  const lower = prompt.toLowerCase();
-  let customer = 'Customer';
-  const lines: string[] = ['for', 'to', 'from', 'client', 'customer'];
-  for (const line of lines) {
-    const match = lower.match(new RegExp(`${line}\\s+(.+?)(?:\\s+for|\\s+amount|\\s+₦|$)`));
-    if (match) { customer = match[1].trim().replace(/^["']|["']$/g, ''); break; }
-  }
-
-  const amountMatch = prompt.match(/₦?\s*([\d,]+(?:\.\d+)?)/);
-  const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 50000;
-  const items = prompt.match(/(?:service|product|item|work|consulting|design|development|delivery)\w*/gi) || ['Professional Service'];
-
-  const lineItems = items.slice(0, 5).map(item => ({
-    name: item.charAt(0).toUpperCase() + item.slice(1),
-    quantity: 1,
-    unitPrice: Math.round(amount / items.length),
-    total: Math.round(amount / items.length),
-  }));
-
-  const subtotal = lineItems.reduce((s, i) => s + i.total, 0);
-  const vat = Math.round(subtotal * 0.075);
-
-  return {
-    customer,
-    description: prompt.slice(0, 100),
-    lineItems,
-    amount: subtotal,
-    vat,
-    total: subtotal + vat,
-  };
 }

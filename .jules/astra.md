@@ -13,3 +13,7 @@
 ## 2024-05-19 - Lazy Evaluation for AI Request Resiliency
 **Learning:** All raw external AI model calls wrapped in timeouts (e.g., `withTimeout`) must be passed as factory functions (e.g., `withTimeout(() => aiClient...)`) to ensure lazy execution. Eagerly evaluating promises causes the request to start immediately, which circumvents the timeout wrapper's initialization, prevents it from properly intercepting transient errors (429, 500), and stops proper resource cleanup (e.g., clearing handles in a `finally` block).
 **Action:** Always wrap `aiClient.models.generateContent` inside an arrow function when using it with the custom `withTimeout` wrapper to ensure resilient execution and proper `finally` block cleanup.
+
+## 2025-02-18 - Stop silently corrupting data with mock AI fallbacks
+**Learning:** Implementing "graceful degradation" by returning simulated business data (e.g., returning a mock object from `simulateInvoiceGeneration`) when the AI fails or is unconfigured violates data integrity. It masks errors and inserts fake data into the user's workflow without their explicit knowledge.
+**Action:** Always fail loudly by throwing an error instead of returning simulated data for critical business objects when an AI generation fails or the client is not configured.
