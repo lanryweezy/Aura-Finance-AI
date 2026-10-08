@@ -31,3 +31,7 @@
 ## 2023-10-05 - HR Negative values constraints
 **Learning:** HR tables like leave_requests and salary_advances could allow corrupt states via negative days or negative repayment_months if checks were not present.
 **Action:** Created constraints using NOT VALID to safely apply to existing schema without requiring locking scans.
+
+## 2024-10-27 - Missing Check Constraints on Totals
+**Learning:** Tables with total columns like `estimates`, `purchase_orders`, `receipt_scans`, and `client_portal_links` lacked check constraints to ensure their total amounts were non-negative. If left unconstrained, these could inadvertently store negative totals, corrupting subsequent invoice calculations or analytical aggregates.
+**Action:** Added `total >= 0` or `total_amount >= 0` check constraints to these tables using `NOT VALID` to prevent invalid states from being introduced.
