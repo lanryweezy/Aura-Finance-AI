@@ -78,7 +78,8 @@ export async function extractInvoiceFromFile(file: File): Promise<InvoiceUploadD
   }
 
   if (!aiClient || !API_KEY) {
-    return simulateExtraction(file.name);
+    // AI Quality Improvement: Throwing an explicit error instead of returning mock data to avoid silently corrupting the user's data.
+    throw new Error('AI client not configured. Cannot extract invoice data.');
   }
 
   try {
@@ -99,11 +100,13 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
         // Digital PDF with extractable text
         parts = [{ text: `Extract invoice data from this text content:\n\n${text.slice(0, 10000)}` }];
       } else {
-        // Scanned PDF — can't read directly, simulate
-        return simulateExtraction(file.name);
+        // Scanned PDF — can't read directly
+        // AI Quality Improvement: Throwing an explicit error instead of returning mock data to avoid silently corrupting the user's data.
+        throw new Error('Scanned PDFs are not supported for text extraction.');
       }
     } else {
-      return simulateExtraction(file.name);
+      // AI Quality Improvement: Throwing an explicit error instead of returning mock data to avoid silently corrupting the user's data.
+      throw new Error('Unsupported file format.');
     }
 
     const response = await withTimeout(() => aiClient.models.generateContent({
@@ -132,25 +135,8 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
     };
   } catch (error) {
     monitoringService.trackError('INVOICE_UPLOAD', error as Error);
-    return simulateExtraction(file.name);
+    // AI Quality Improvement: Throwing an explicit error instead of returning mock data to avoid silently corrupting the user's data.
+    // Setting the original error as the cause to preserve the stack trace context for better debugging
+    throw new Error('Failed to extract invoice data from file.', { cause: error });
   }
-}
-
-function simulateExtraction(fileName: string): InvoiceUploadData {
-  const today = new Date().toISOString().split('T')[0];
-  const due = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
-  return {
-    customer: 'Uploaded Customer',
-    description: `Invoice from ${fileName}`,
-    amount: 100000,
-    vat: 7500,
-    total: 107500,
-    issueDate: today,
-    dueDate: due,
-    currency: 'NGN',
-    reference: `UP-${Date.now().toString(36).toUpperCase()}`,
-    notes: '',
-    lineItems: [{ name: 'Service', description: 'Extracted from upload', quantity: 1, unitPrice: 100000, total: 100000 }],
-    confidence: 0.7,
-  };
 }

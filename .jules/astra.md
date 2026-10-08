@@ -17,3 +17,6 @@
 ## 2025-02-18 - Stop silently corrupting data with mock AI fallbacks
 **Learning:** Implementing "graceful degradation" by returning simulated business data (e.g., returning a mock object from `simulateInvoiceGeneration`) when the AI fails or is unconfigured violates data integrity. It masks errors and inserts fake data into the user's workflow without their explicit knowledge.
 **Action:** Always fail loudly by throwing an error instead of returning simulated data for critical business objects when an AI generation fails or the client is not configured.
+## 2024-05-19 - Stop silently corrupting data with mock AI fallbacks
+**Learning:** Implementing "graceful degradation" by returning simulated business data (e.g., returning a mock object from `simulateExtraction`) when the AI fails or is unconfigured violates data integrity. It masks errors and inserts fake data into the user's workflow without their explicit knowledge.
+**Action:** Always fail loudly by throwing an error instead of returning simulated data for critical business objects when an AI generation fails or the client is not configured.
