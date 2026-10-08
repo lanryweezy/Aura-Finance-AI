@@ -17,3 +17,7 @@
 ## 2025-02-18 - Stop silently corrupting data with mock AI fallbacks
 **Learning:** Implementing "graceful degradation" by returning simulated business data (e.g., returning a mock object from `simulateInvoiceGeneration`) when the AI fails or is unconfigured violates data integrity. It masks errors and inserts fake data into the user's workflow without their explicit knowledge.
 **Action:** Always fail loudly by throwing an error instead of returning simulated data for critical business objects when an AI generation fails or the client is not configured.
+
+## 2025-02-18 - Exponential Backoff for AI Resilience
+**Learning:** Batch AI operations (like categorization or bill matching) are highly susceptible to transient 429 (Too Many Requests) errors. Failing immediately and falling back to rules degrades the user experience by reducing AI coverage.
+**Action:** Always wrap transient-prone AI calls (especially in chunked batch loops) with a `withRetry` exponential backoff handler before applying the `withTimeout` wrapper.

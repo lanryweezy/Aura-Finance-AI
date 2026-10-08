@@ -18,6 +18,24 @@ export const aiClient = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
  * preventing race conditions where transient errors (e.g. 429, 500) occur before the timeout
  * handlers are set up, and allowing for proper resource cleanup via the `finally` block.
  */
+/**
+ * Wraps an AI promise factory with exponential backoff for transient errors (429/500).
+ * AI Quality: Prevents batch operations from failing prematurely due to API rate limits.
+ */
+export const withRetry = async <T>(factory: () => Promise<T>, maxRetries: number = 2, baseDelay: number = 1000): Promise<T> => {
+    let attempt = 0;
+    while (true) {
+        try {
+            return await factory();
+        } catch (error: any) {
+            const isTransient = error?.status === 429 || error?.status >= 500 || error?.message?.toLowerCase().includes('timed out');
+            if (attempt >= maxRetries || !isTransient) throw error;
+            await new Promise(r => setTimeout(r, baseDelay * Math.pow(2, attempt)));
+            attempt++;
+        }
+    }
+};
+
 export const withTimeout = async <T>(factory: () => Promise<T>, ms: number = 10000): Promise<T> => {
     let timeoutHandle: ReturnType<typeof setTimeout>;
 

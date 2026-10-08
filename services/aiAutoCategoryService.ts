@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, withRetry, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import type { CategorizedTransaction } from '../types';
@@ -82,7 +82,7 @@ export const aiAutoCategoryService = {
         const prompt = `Transactions to categorize:
 ${JSON.stringify(chunk.map(t => ({ id: t.id, narration: t.narration, amount: t.amount, type: t.type })))}`;
 
-        const response = await withTimeout(() => aiClient.models.generateContent({
+        const response = await withRetry(() => withTimeout(() => aiClient.models.generateContent({
           model: 'gemini-2.0-flash',
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           config: {
@@ -103,7 +103,7 @@ ${JSON.stringify(chunk.map(t => ({ id: t.id, narration: t.narration, amount: t.a
               },
             },
           },
-        }), 15000);
+        }), 15000));
 
         await usageService.trackUsage('ai_insight');
         const results = safeParseJSON<any>(response.text.trim());
