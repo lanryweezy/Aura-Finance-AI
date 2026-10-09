@@ -1,6 +1,6 @@
 
 import { Type } from "@google/genai";
-import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, withRetry, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import { monitoringService } from './monitoringService';
 import { simulateDelay } from './simulateDelay';
@@ -90,7 +90,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
 
     try {
       monitoringService.log('info', 'AI_ENGINE', `Categorizing chunk ${i / CHUNK_SIZE + 1}`);
-      const response = await withTimeout(() => aiClient.models.generateContent({ model: "gemini-2.0-flash",
+      const response = await withRetry(() => withTimeout(() => aiClient.models.generateContent({ model: "gemini-2.0-flash",
         contents: [{ role: 'user', parts: [{ text: prompt }] }],
         config: {
           // AI Quality: Extracted persona and formatting constraints to systemInstruction
@@ -99,7 +99,7 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
           responseMimeType: "application/json",
           responseSchema: transactionSchema as any,
         },
-      }), 10000);
+      }), 10000));
 
       const jsonText = response.text.trim();
       const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];

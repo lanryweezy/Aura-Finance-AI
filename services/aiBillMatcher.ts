@@ -1,4 +1,4 @@
-import { aiClient, API_KEY, withTimeout, safeParseJSON } from './aiConfig';
+import { aiClient, API_KEY, withTimeout, withRetry, safeParseJSON } from './aiConfig';
 import { usageService } from './usageService';
 import type { Bill, PurchaseOrder } from '../types';
 
@@ -28,7 +28,7 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
   for (let i = 0; i < bills.length; i += CHUNK_SIZE) {
     const chunk = bills.slice(i, i + CHUNK_SIZE);
     try {
-      const response = await withTimeout(() => aiClient.models.generateContent({
+      const response = await withRetry(() => withTimeout(() => aiClient.models.generateContent({
         model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: `Bills: ${JSON.stringify(chunk.map(b => ({ id: b.id, vendor: b.vendor, amount: b.amount, description: b.description })))}\n\nPOs: ${JSON.stringify(pos.map(p => ({ id: p.id, vendor: p.vendor, total: p.total, lineItems: p.lineItems?.map((l: any) => l.name) })))}` }] }],
         config: {
@@ -47,7 +47,7 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
             },
           },
         },
-      }), 15000);
+      }), 15000));
 
       await usageService.trackUsage('ai_insight');
       const result = safeParseJSON(response.text.trim());
