@@ -41,3 +41,10 @@
 **Learning:** In CorporateCardsView.tsx, independent array iterations using multiple reduces and a filter (to get lengths or sums) cause O(3N) overhead and unnecessary object allocations on each render.
 **Action:** Replace multiple chained array iterations with a single-pass `for` loop wrapped in `useMemo` that concurrently calculates multiple derived metrics in `O(N)` time.
 ## 2025-03-09 - [Consolidate filtering and aggregation into a single pass loop]\n**Learning:** In TaxFilingView.tsx, creating an intermediate array via .filter() and then looping over it again causes unnecessary memory allocations and object creation overhead (O(2N)).\n**Action:** Combine the date filtering conditional directly into the subsequent for-loop iteration. This reduces memory allocations by eliminating the intermediate array and completes the work in a single O(N) pass.
+## 2025-03-09 - [Avoid Redundant Array Loops for Pre-Calculated Data]
+**Learning:** Re-looping over an array (e.g. `result.invoices`) just to recalculate metrics (`totalSales`) that were already calculated during the initial data aggregation loop causes unnecessary CPU cycles and can introduce double-counting bugs if not properly reset.
+**Action:** Always accumulate all necessary aggregate metrics (like totals or flags) during the initial O(N) array traversal, and avoid redundant loops over the same elements just for re-calculation.
+
+## 2025-03-09 - [Pre-filter Arrays during Aggregation Loop]
+**Learning:** Chaining `.filter().map()` inside a render loop to filter and display items from a list (e.g., `invoices.filter(i => i.whtApplied).map()`) is inefficient (O(2N) runtime during render).
+**Action:** When performing an initial data aggregation pass, extract sub-collections concurrently by pushing qualifying items into a new array. This reduces render overhead to O(N_filtered) for `.map()`, eliminating the inline `.filter()`.
