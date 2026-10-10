@@ -151,8 +151,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs text-gray-500 uppercase font-bold">Merchant</label>
+                                    <label htmlFor="merchant-name" className="text-xs text-gray-500 uppercase font-bold">Merchant</label>
                                     <input 
+                                        id="merchant-name"
                                         type="text" 
                                         value={scannedData.merchantName} 
                                         onChange={e => handleDataChange('merchantName', e.target.value)}
@@ -160,8 +161,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-500 uppercase font-bold">Date</label>
+                                    <label htmlFor="receipt-date" className="text-xs text-gray-500 uppercase font-bold">Date</label>
                                     <input 
+                                        id="receipt-date"
                                         type="date" 
                                         value={scannedData.date} 
                                         onChange={e => handleDataChange('date', e.target.value)}
@@ -172,8 +174,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                             
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs text-gray-500 uppercase font-bold">Amount</label>
+                                    <label htmlFor="receipt-amount" className="text-xs text-gray-500 uppercase font-bold">Amount</label>
                                     <input 
+                                        id="receipt-amount"
                                         type="number" 
                                         value={scannedData.totalAmount} 
                                         onChange={e => handleDataChange('totalAmount', e.target.value)}
@@ -181,8 +184,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-500 uppercase font-bold">Category</label>
+                                    <label htmlFor="receipt-category" className="text-xs text-gray-500 uppercase font-bold">Category</label>
                                     <select 
+                                        id="receipt-category"
                                         value={scannedData.category}
                                         onChange={e => handleDataChange('category', e.target.value)}
                                         className="w-full bg-dark-secondary border border-gray-700 rounded-lg p-2 text-white text-sm"
@@ -195,8 +199,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({ isOpen
                             </div>
 
                             <div>
-                                <label className="text-xs text-gray-500 uppercase font-bold">Description</label>
+                                <label htmlFor="receipt-description" className="text-xs text-gray-500 uppercase font-bold">Description</label>
                                 <input 
+                                    id="receipt-description"
                                     type="text" 
                                     value={scannedData.description} 
                                     onChange={e => handleDataChange('description', e.target.value)}
