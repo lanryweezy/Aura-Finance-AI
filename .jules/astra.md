@@ -24,3 +24,7 @@
 ## 2025-02-19 - Resilient AI Batch Processing with Exponential Backoff
 **Learning:** Batch AI operations (like categorization or bill matching) are highly susceptible to transient 429/500 errors. Standard timeouts alone (`withTimeout`) only abort the process; they do not automatically retry it, causing entire chunks of data to drop or require manual intervention.
 **Action:** Always wrap transient-prone AI calls in chunked batch loops with a `withRetry` exponential backoff handler before applying the `withTimeout` wrapper (e.g., `withRetry(() => withTimeout(...))`). Ensure the retry mechanism delegates transient failures based on HTTP 429/500/503 errors and timeout messages.
+
+## 2025-10-10 - Strict Numeric Sanitization for AI Financial Outputs
+**Learning:** Trusting raw AI-generated JSON output for financial fields without runtime range and type assertions can lead to silent logic errors (e.g., negative amounts or stringified numbers causing NaN calculations).
+**Action:** Always implement a strict parsing layer (e.g., `Math.max(0, Number(val) || 0)`) after `safeParseJSON` for all numeric fields representing financial amounts or quantities to enforce non-negative boundaries and prevent data corruption downstream.

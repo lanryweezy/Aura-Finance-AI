@@ -72,14 +72,34 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
     }), 15000);
 
     await usageService.trackUsage('ai_chat');
-    const result = safeParseJSON(response.text.trim()) as AIInvoiceData | null;
+    const result = safeParseJSON(response.text.trim()) as any;
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
     if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) {
       throw new Error('AI output is missing required fields or is malformed');
     }
 
-    return result;
+    // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
+    // Enforcing non-negative boundaries and defaults for all financial figures.
+    const sanitizedData: AIInvoiceData = {
+      customer: String(result.customer),
+      description: String(result.description || ''),
+      amount: Math.max(0, Number(result.amount) || 0),
+      vat: Math.max(0, Number(result.vat) || 0),
+      total: Math.max(0, Number(result.total) || 0),
+      notes: String(result.notes || ''),
+      dueDate: String(result.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
+      currency: String(result.currency || 'NGN'),
+      lineItems: result.lineItems.map((item: any) => ({
+        name: String(item.name || 'Item'),
+        description: String(item.description || ''),
+        quantity: Math.max(1, Number(item.quantity) || 1),
+        unitPrice: Math.max(0, Number(item.unitPrice) || 0),
+        total: Math.max(0, Number(item.total) || 0)
+      }))
+    };
+
+    return sanitizedData;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     throw new Error('Failed to generate invoice from prompt.');
