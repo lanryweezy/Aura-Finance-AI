@@ -116,12 +116,12 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Asset Name</label>
-                                    <input type="text" value={newAsset.name} onChange={e => setNewAsset({...newAsset, name: e.target.value})} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
+                                    <label htmlFor="asset-name" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Asset Name</label>
+                                    <input id="asset-name" type="text" value={newAsset.name} onChange={e => setNewAsset({...newAsset, name: e.target.value})} required className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Category</label>
-                                    <select value={newAsset.category} onChange={e => setNewAsset({...newAsset, category: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm">
+                                    <label htmlFor="asset-category" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Category</label>
+                                    <select id="asset-category" value={newAsset.category} onChange={e => setNewAsset({...newAsset, category: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm">
                                         <option>Furniture</option>
                                         <option>Electronics</option>
                                         <option>Vehicles</option>
@@ -131,22 +131,22 @@ export const FixedAssetsView: React.FC<FixedAssetsViewProps> = ({ assets, onAddA
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Date</label>
-                                    <input type="date" value={newAsset.purchaseDate} onChange={e => setNewAsset({...newAsset, purchaseDate: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
+                                    <label htmlFor="purchase-date" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Date</label>
+                                    <input id="purchase-date" type="date" value={newAsset.purchaseDate} onChange={e => setNewAsset({...newAsset, purchaseDate: e.target.value})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Cost</label>
-                                    <input type="number" value={newAsset.purchaseCost} onChange={e => setNewAsset({...newAsset, purchaseCost: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
+                                    <label htmlFor="purchase-cost" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Purchase Cost</label>
+                                    <input id="purchase-cost" type="number" value={newAsset.purchaseCost} onChange={e => setNewAsset({...newAsset, purchaseCost: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Salvage Value</label>
-                                    <input type="number" value={newAsset.salvageValue} onChange={e => setNewAsset({...newAsset, salvageValue: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
+                                    <label htmlFor="salvage-value" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Salvage Value</label>
+                                    <input id="salvage-value" type="number" value={newAsset.salvageValue} onChange={e => setNewAsset({...newAsset, salvageValue: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Useful Life (Years)</label>
-                                    <input type="number" value={newAsset.usefulLifeYears} onChange={e => setNewAsset({...newAsset, usefulLifeYears: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
+                                    <label htmlFor="useful-life" className="text-xs font-bold text-aura-gray-500 uppercase tracking-widest">Useful Life (Years)</label>
+                                    <input id="useful-life" type="number" value={newAsset.usefulLifeYears} onChange={e => setNewAsset({...newAsset, usefulLifeYears: Number(e.target.value)})} className="w-full bg-aura-gray-50 dark:bg-dark-secondary p-3 rounded-xl border border-gray-200 dark:border-gray-700 outline-none font-mono text-aura-gray-900 dark:text-white shadow-sm"/>
                                 </div>
                             </div>
                             <div className="flex justify-end gap-4 pt-6">
