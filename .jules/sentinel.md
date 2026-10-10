@@ -44,3 +44,8 @@
 **Vulnerability:** Using `Math.random()` to generate security-sensitive tokens, such as card numbers and CVV codes, is insecure. `Math.random()` is not cryptographically secure and can be predictable, potentially allowing an attacker to guess the mock values if they were ever used in a critical context.
 **Learning:** Standard pseudo-random number generators (PRNGs) like `Math.random()` should never be used for security purposes, session IDs, or sensitive financial tokens.
 **Prevention:** Always use cryptographically secure random number generators (CSPRNGs), such as `crypto.getRandomValues()` in the browser environment, when generating security-sensitive tokens or mock data.
+
+## 2026-12-05 - Insecure Randomness in NRS IRN Generation
+**Vulnerability:** In `services/nrsSubmissionService.ts`, the Invoice Reference Number (IRN) was generated using `Math.random().toString(36).slice(2, 10)`, which relies on a pseudo-random number generator that is cryptographically insecure and predictable.
+**Learning:** `Math.random()` should never be used to generate security-sensitive identifiers or tokens like IRNs, as their predictability can lead to security vulnerabilities or ID collisions.
+**Prevention:** Always use a cryptographically secure random number generator (CSPRNG). Replaced `Math.random()` with the `generateSecureToken` function (from `services/securityUtils.ts`) which uses `crypto.getRandomValues()`.

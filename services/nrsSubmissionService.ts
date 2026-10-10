@@ -2,6 +2,7 @@ import { nrsApiService, type NRSInvoiceData } from './nrsApiService';
 import { supabase } from './supabaseClient';
 import { db } from './db';
 import { monitoringService } from './monitoringService';
+import { generateSecureToken } from './securityUtils';
 
 export interface NRSStatus {
   stage: 'idle' | 'validating' | 'generating_irn' | 'signing' | 'transmitting' | 'qr_code' | 'complete' | 'error';
@@ -28,7 +29,7 @@ function mapInvoiceToNRS(invoice: any, seller: any): NRSInvoiceData {
   const now = new Date();
   return {
     business_id: seller.organizationId || '',
-    irn: `INV-${invoice.id.slice(-6).toUpperCase()}-${now.getFullYear()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`,
+    irn: `INV-${invoice.id.slice(-6).toUpperCase()}-${now.getFullYear()}-${generateSecureToken(8).toUpperCase()}`,
     issue_date: invoice.issueDate || now.toISOString().split('T')[0],
     issue_time: now.toTimeString().split(' ')[0],
     invoice_type_code: '381', // Standard Tax Invoice
