@@ -60,14 +60,30 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
     }), 15000);
 
     await usageService.trackUsage('ai_chat');
-    const result = safeParseJSON(response.text.trim());
+    const result = safeParseJSON(response.text.trim()) as any;
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!result || typeof result !== 'object' || !(result as any).customer || !Array.isArray((result as any).lineItems)) {
+    if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) {
       throw new Error('AI output is missing required fields or is malformed');
     }
 
-    return result as AIGeneratedInvoice;
+    // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
+    // Enforcing non-negative boundaries and defaults for all financial figures.
+    const sanitizedInvoice: AIGeneratedInvoice = {
+      customer: String(result.customer),
+      description: String(result.description || ''),
+      amount: Math.max(0, Number(result.amount) || 0),
+      vat: Math.max(0, Number(result.vat) || 0),
+      total: Math.max(0, Number(result.total) || 0),
+      lineItems: result.lineItems.map((item: any) => ({
+        name: String(item.name || 'Item'),
+        quantity: Math.max(1, Number(item.quantity) || 1),
+        unitPrice: Math.max(0, Number(item.unitPrice) || 0),
+        total: Math.max(0, Number(item.total) || 0)
+      }))
+    };
+
+    return sanitizedInvoice;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     throw new Error('Failed to generate invoice from prompt.');
