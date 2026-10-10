@@ -290,8 +290,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, 
             </select>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">From Warehouse</label>
-                <select value={transferForm.from} onChange={e => setTransferForm(p => ({ ...p, from: e.target.value }))}
+                <label htmlFor="from-warehouse" className="text-xs text-gray-500 mb-1 block">From Warehouse</label>
+                <select id="from-warehouse" value={transferForm.from} onChange={e => setTransferForm(p => ({ ...p, from: e.target.value }))}
                   className="w-full px-4 py-2.5 bg-dark-primary border border-white/10 rounded-xl text-sm">
                   <option value="">Select</option>
                   <option value="main">Main Warehouse</option>
@@ -300,8 +300,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ items, onAddItem, 
                 </select>
               </div>
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">To Warehouse</label>
-                <select value={transferForm.to} onChange={e => setTransferForm(p => ({ ...p, to: e.target.value }))}
+                <label htmlFor="to-warehouse" className="text-xs text-gray-500 mb-1 block">To Warehouse</label>
+                <select id="to-warehouse" value={transferForm.to} onChange={e => setTransferForm(p => ({ ...p, to: e.target.value }))}
                   className="w-full px-4 py-2.5 bg-dark-primary border border-white/10 rounded-xl text-sm">
                   <option value="">Select</option>
                   <option value="main">Main Warehouse</option>
