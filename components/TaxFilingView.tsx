@@ -74,6 +74,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
     const filteredData = useMemo(() => {
         const result = {
             invoices: [] as Invoice[],
+            whtInvoices: [] as Invoice[],
             totalSales: 0,
             vat: { outputVat: 0, inputVat: 0, netVatPayable: 0 },
             wht: { whtSuffered: 0, whtPayable: 0 },
@@ -106,6 +107,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
         let incomeSubjectToWht = 0;
         let totalSales = 0;
         const periodInvoices = [];
+        const whtInvoices = [];
 
         for (let i = 0; i < invoices.length; i++) {
             const inv = invoices[i];
@@ -115,23 +117,13 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                 totalSales += inv.amount;
                 if (inv.whtApplied) {
                     incomeSubjectToWht += inv.amount;
+                    whtInvoices.push(inv);
                 }
             }
         }
 
         result.invoices = periodInvoices;
-        result.totalSales = totalSales;
-
-        // ⚡ Bolt Optimization: Single pass for invoices to calculate totalSales and incomeSubjectToWht
-        // avoiding chained .filter().reduce() which creates intermediate arrays.
-
-        for (let i = 0; i < result.invoices.length; i++) {
-            const inv = result.invoices[i];
-            totalSales += inv.amount;
-            if (inv.whtApplied) {
-                incomeSubjectToWht += inv.amount;
-            }
-        }
+        result.whtInvoices = whtInvoices;
         result.totalSales = totalSales;
 
         // ⚡ Bolt Optimization: Replace separate .filter() pass with O(N) single-pass loop over all transactions.
@@ -433,7 +425,7 @@ export const TaxFilingView: React.FC<{ transactions: CategorizedTransaction[] }>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-800">
-                                    {filteredData.invoices.filter(i => i.whtApplied).map(inv => (
+                                    {filteredData.whtInvoices.map(inv => (
                                         <tr key={inv.id}>
                                             <td className="p-4 text-gray-300">{inv.customer}</td>
                                             <td className="p-4 text-gray-400 text-sm">Income Credit</td>
