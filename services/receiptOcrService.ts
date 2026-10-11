@@ -56,7 +56,21 @@ export const receiptOcrService = {
         throw new Error('AI output is missing required fields or is malformed');
       }
 
-      return { ...result, id: `scan_${Date.now()}`, imageUrl, status: 'scanned', createdAt: new Date().toISOString() } as ReceiptScan;
+      const rawLineItems = Array.isArray(result.lineItems) ? result.lineItems : [];
+
+      // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
+      // Enforcing non-negative boundaries and defaults for all financial figures.
+      const sanitizedResult = {
+        ...result,
+        totalAmount: Math.max(0, Number(result.totalAmount) || 0),
+        vat: Math.max(0, Number(result.vat) || 0),
+        lineItems: rawLineItems.map((item: any) => ({
+          ...item,
+          amount: Math.max(0, Number(item.amount) || 0)
+        }))
+      };
+
+      return { ...sanitizedResult, id: `scan_${Date.now()}`, imageUrl, status: 'scanned', createdAt: new Date().toISOString() } as ReceiptScan;
     } catch (error) {
       monitoringService.trackError('OCR_ENGINE', error as Error);
       return simulateOcr(imageUrl);
