@@ -48,3 +48,6 @@
 ## 2025-03-09 - [Pre-filter Arrays during Aggregation Loop]
 **Learning:** Chaining `.filter().map()` inside a render loop to filter and display items from a list (e.g., `invoices.filter(i => i.whtApplied).map()`) is inefficient (O(2N) runtime during render).
 **Action:** When performing an initial data aggregation pass, extract sub-collections concurrently by pushing qualifying items into a new array. This reduces render overhead to O(N_filtered) for `.map()`, eliminating the inline `.filter()`.
+## 2026-10-11 - [Consolidate redundant reduce passes in render blocks]
+**Learning:** In `FixedAssetsView.tsx`, calling multiple `assets.reduce()` passes directly in the render function to calculate independent UI metrics scales linearly with the number of metrics (O(3N) instead of O(N)) and reruns unnecessarily on unrelated state changes.
+**Action:** Wrap independent aggregations for a single dataset in one `useMemo` block using a single `for` loop to achieve O(N) execution and avoid recalculation on unrelated re-renders.
