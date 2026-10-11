@@ -128,10 +128,22 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
       throw new Error('AI output is missing required fields or is malformed');
     }
 
+    const rawLineItems = Array.isArray(result.lineItems) ? result.lineItems : [];
+
+    // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
+    // Enforcing non-negative boundaries and defaults for all financial figures.
     return {
       ...result,
+      amount: Math.max(0, Number(result.amount) || 0),
+      vat: Math.max(0, Number(result.vat) || 0),
+      total: Math.max(0, Number(result.total) || 0),
       confidence: 0.9,
-      lineItems: Array.isArray(result.lineItems) ? result.lineItems : [],
+      lineItems: rawLineItems.map((item: any) => ({
+        ...item,
+        quantity: Math.max(1, Number(item.quantity) || 1),
+        unitPrice: Math.max(0, Number(item.unitPrice) || 0),
+        total: Math.max(0, Number(item.total) || 0)
+      })),
     };
   } catch (error) {
     monitoringService.trackError('INVOICE_UPLOAD', error as Error);

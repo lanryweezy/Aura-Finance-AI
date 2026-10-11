@@ -98,8 +98,15 @@ export const ocrService = {
             }), 10000);
 
             const jsonText = response.text.trim();
-            const data = safeParseJSON(jsonText) as ReceiptData;
-            if (!data || typeof data !== "object" || !data.merchantName || typeof data.totalAmount !== "number" || !data.date) throw new Error("AI output is missing required fields");
+            const rawData = safeParseJSON(jsonText) as any;
+            if (!rawData || typeof rawData !== "object" || !rawData.merchantName || typeof rawData.totalAmount !== "number" || !rawData.date) throw new Error("AI output is missing required fields");
+
+            // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
+            // Enforcing non-negative boundaries and defaults for all financial figures.
+            const data: ReceiptData = {
+                ...rawData,
+                totalAmount: Math.max(0, Number(rawData.totalAmount) || 0)
+            };
 
             await usageService.trackUsage('ocr_scan');
 

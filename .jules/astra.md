@@ -28,3 +28,6 @@
 ## 2025-10-10 - Strict Numeric Sanitization for AI Financial Outputs
 **Learning:** Trusting raw AI-generated JSON output for financial fields without runtime range and type assertions can lead to silent logic errors (e.g., negative amounts or stringified numbers causing NaN calculations).
 **Action:** Always implement a strict parsing layer (e.g., `Math.max(0, Number(val) || 0)`) after `safeParseJSON` for all numeric fields representing financial amounts or quantities to enforce non-negative boundaries and prevent data corruption downstream.
+## 2025-10-10 - Strict Numeric Sanitization for AI Financial Outputs
+**Learning:** Trusting raw AI-generated JSON output for financial fields without runtime range and type assertions can lead to silent logic errors (e.g., negative amounts or stringified numbers causing NaN calculations).
+**Action:** Always implement a strict parsing layer (e.g., `Math.max(0, Number(val) || 0)`) after `safeParseJSON` for all numeric fields representing financial amounts or quantities to enforce non-negative boundaries and prevent data corruption downstream.
