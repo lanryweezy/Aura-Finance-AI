@@ -31,3 +31,7 @@
 ## 2025-10-10 - Strict Numeric Sanitization for AI Financial Outputs
 **Learning:** Trusting raw AI-generated JSON output for financial fields without runtime range and type assertions can lead to silent logic errors (e.g., negative amounts or stringified numbers causing NaN calculations).
 **Action:** Always implement a strict parsing layer (e.g., `Math.max(0, Number(val) || 0)`) after `safeParseJSON` for all numeric fields representing financial amounts or quantities to enforce non-negative boundaries and prevent data corruption downstream.
+
+## 2025-10-15 - Never Trust AI with Source Data Integrity
+**Learning:** Returning entire original objects (e.g., `RawTransaction`) in the AI schema and mapping them directly to the app state trusts the AI to accurately reconstruct and echo back non-inferred data (amounts, dates). This is brittle, uses unnecessary output tokens, and can silently corrupt data if the model hallucinates or truncates numbers.
+**Action:** Always restrict the AI output schema strictly to the fields it must infer/predict (e.g., `id`, `category`), and use a mapping layer in code to apply the predicted properties back to the original source object via a unique ID.

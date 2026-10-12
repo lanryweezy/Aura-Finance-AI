@@ -69,17 +69,12 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
       type: Type.OBJECT,
       properties: {
         id: { type: Type.STRING },
-        amount: { type: Type.NUMBER },
-        type: { type: Type.STRING },
-        date: { type: Type.STRING },
-        narration: { type: Type.STRING },
-        balance: { type: Type.NUMBER, nullable: true },
         category: { 
           type: Type.STRING,
           description: `Categorize the transaction into one of the following: ${categoryList.join(', ')}.`
         },
       },
-      required: ["id", "amount", "type", "date", "narration", "category"],
+      required: ["id", "category"],
     },
   };
 
@@ -102,14 +97,17 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
       }), 10000));
 
       const jsonText = response.text.trim();
-      const batchResult = safeParseJSON(jsonText) as CategorizedTransaction[];
+      const batchResult = safeParseJSON(jsonText) as { id: string, category: string }[];
       // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
       if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
 
-      batchResult.forEach(t => {
+      const categoryMap = new Map(batchResult.map(res => [res.id, res.category]));
+
+      chunk.forEach(t => {
+          const category = categoryMap.get(t.id) || 'Uncategorized';
           const cacheKey = `${t.narration}_${t.amount}_${t.type}`;
-          categorizationCache.set(cacheKey, t.category);
-          results.push(t);
+          categorizationCache.set(cacheKey, category);
+          results.push({ ...t, category });
       });
     } catch (error) {
       monitoringService.trackError('AI_ENGINE', error as Error);
