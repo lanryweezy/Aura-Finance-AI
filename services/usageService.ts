@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { authService } from './authService';
+import { referralService } from './referralService';
 
 export type UsageType = 'ai_insight' | 'ai_chat' | 'ocr_scan' | 'bank_sync' | 'invoices_sent' | 'txn_volume';
 
@@ -68,14 +69,27 @@ export const usageService = {
     const org = authService.getCurrentUser()?.org;
     const plan = org?.plan || 'Free';
     const currentUsage = await usageService.getTenantUsage(type);
-    const limit = TIER_LIMITS[plan]?.[type] || 0;
+    let limit = TIER_LIMITS[plan]?.[type] || 0;
+
+    // Add bonus credits for AI Chat if available
+    if (type === 'ai_chat' && org) {
+      const bonusCredits = await referralService.getBonusAiCredits(org.id);
+      limit += bonusCredits;
+    }
+
     return currentUsage >= limit;
   },
 
   getUsageStats: async () => {
     const org = authService.getCurrentUser()?.org;
     const plan = org?.plan || 'Free';
-    const limits = TIER_LIMITS[plan];
+    const limits = { ...TIER_LIMITS[plan] };
+
+    // Add bonus credits
+    if (org) {
+      const bonusCredits = await referralService.getBonusAiCredits(org.id);
+      limits.ai_chat += bonusCredits;
+    }
     const usage = getLocalUsage();
 
     return [
