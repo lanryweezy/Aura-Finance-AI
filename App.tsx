@@ -12,6 +12,7 @@ import { Spinner } from './components/ui/Spinner';
 import { DashboardSkeleton, TableSkeleton } from './components/ui/Skeleton';
 import { OnboardingTour } from './components/ui/OnboardingTour';
 import { CommandPalette } from './components/ui/CommandPalette';
+import { ReferralsView } from './components/ReferralsView';
 import { UpgradeOverlay } from './components/ui/UpgradeOverlay';
 import { useToast } from './components/ui/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -264,6 +265,7 @@ export default function App(): React.ReactNode {
       fixedAssets: <FixedAssetsView assets={assets.fixedAssets} onAddAsset={assets.handleAdd} onDisposeAsset={assets.handleDispose} />,
       recurring: <RecurringTransactionsView invoices={invoices.invoices} bills={bills.bills} />,
       yearEnd: <YearEndClosingView history={closingHistory} onCloseYear={handleCloseYear} />,
+      referrals: <ReferralsView />,
       privacy: <LegalView type="privacy" />,
       terms: <LegalView type="terms" />,
       blog: <div />, about: <div />, careers: <div />, contact: <div />, security: <div />,

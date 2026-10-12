@@ -33,6 +33,7 @@ const prefetchView = (view: string) => {
       case 'subscription': import('./SubscriptionView'); break;
       case 'chat': import('./AIChat'); break;
       case 'contacts': import('./ContactsView'); break;
+      case 'referrals': import('./ReferralsView'); break;
     }
 };
 

@@ -1,5 +1,6 @@
 import type { User, Organization } from '../types';
 import { supabase } from './supabaseClient';
+import { referralService } from './referralService';
 
 const STORAGE_KEY_USER = 'aura_user';
 const STORAGE_KEY_ORG = 'aura_org';
@@ -62,6 +63,12 @@ async function upsertUserAndOrg(email: string, name: string): Promise<{ user: Us
   const org: Organization = { id: orgId, name: name + "'s Business", plan: 'Free' };
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
   localStorage.setItem(STORAGE_KEY_ORG, JSON.stringify(org));
+
+  // Process potential referral
+  setTimeout(() => {
+    referralService.processReferralSignup(user.id, org.id);
+  }, 100);
+
   return { user, org };
 }
 

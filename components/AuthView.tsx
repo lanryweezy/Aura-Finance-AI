@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { referralService } from '../services/referralService';
 import type { User, Organization } from '../types';
 import { useToast } from './ui/Toast';
 
@@ -13,6 +14,22 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
     const { showToast } = useToast();
     const [isLogin, setIsLogin] = useState(initialIsLogin);
     const [isLoading, setIsLoading] = useState(false);
+    const [referralCode, setReferralCode] = useState<string | null>(null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) {
+            referralService.recordAttribution(ref);
+            setReferralCode(ref);
+            setIsLogin(false);
+        } else {
+            const storedCode = referralService.getAttributionCode();
+            if (storedCode) {
+                setReferralCode(storedCode);
+            }
+        }
+    }, []);
     const [requires2FA, setRequires2FA] = useState(false);
     const [twoFactorCode, setTwoFactorCode] = useState('');
     
@@ -212,6 +229,18 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
                                 <span className="px-4 bg-white dark:bg-dark-secondary text-gray-400">Or use email</span>
                             </div>
                         </div>
+
+                        {referralCode && !isLogin && (
+                            <div className="mb-6 p-4 bg-brand-cyan/10 border border-brand-cyan/30 rounded-xl flex items-start gap-3">
+                                <div className="p-2 bg-brand-cyan rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-aura-gray-900 dark:text-white">You've been invited!</h4>
+                                    <p className="text-xs text-aura-gray-600 dark:text-gray-400 mt-1">Create your account to get started and claim your welcome bonus credits.</p>
+                                </div>
+                            </div>
+                        )}
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {!isLogin && (
