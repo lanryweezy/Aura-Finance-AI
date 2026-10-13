@@ -47,8 +47,10 @@ export interface ReferralSummary {
 const generateReferralCode = (): string => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let code = '';
+  const array = new Uint32Array(8);
+  crypto.getRandomValues(array);
   for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+    code += chars.charAt(array[i] % chars.length);
   }
   return code;
 };

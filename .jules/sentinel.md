@@ -49,3 +49,7 @@
 **Vulnerability:** In `services/nrsSubmissionService.ts`, the Invoice Reference Number (IRN) was generated using `Math.random().toString(36).slice(2, 10)`, which relies on a pseudo-random number generator that is cryptographically insecure and predictable.
 **Learning:** `Math.random()` should never be used to generate security-sensitive identifiers or tokens like IRNs, as their predictability can lead to security vulnerabilities or ID collisions.
 **Prevention:** Always use a cryptographically secure random number generator (CSPRNG). Replaced `Math.random()` with the `generateSecureToken` function (from `services/securityUtils.ts`) which uses `crypto.getRandomValues()`.
+## 2026-12-05 - Insecure Randomness in Referral Code Generation
+**Vulnerability:** Generating security-sensitive identifiers (like referral codes in `referralService.ts`) using `Math.random()` creates predictable tokens, leading to potential brute-force or token guessing attacks.
+**Learning:** `Math.random()` is not cryptographically secure and should never be used for secrets, tokens, or any value relied upon for authentication or authorization.
+**Prevention:** Always use the Web Crypto API (`crypto.getRandomValues`) for generating security tokens. Replaced the `Math.random()` approach with a `crypto.getRandomValues()` implementation to ensure tokens are unpredictable and safe from guessing attacks.
