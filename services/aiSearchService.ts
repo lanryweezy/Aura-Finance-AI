@@ -82,6 +82,17 @@ Limit to 10 results. Only return actual matches.`,
       throw new Error('AI output is not an array or contains invalid objects');
     }
 
+    // AI Quality: Strict runtime validation of expected output schema.
+    // Ensure all required fields exist and the type enum is valid.
+    // If not, fail loudly so the catch block handles graceful fallback.
+    const validTypes = ['transaction', 'invoice', 'bill', 'contact', 'insight'];
+
+    for (const item of result) {
+      if (!item.type || !validTypes.includes(item.type) || !item.id || !item.title) {
+        throw new Error('AI output is missing required fields or has invalid types');
+      }
+    }
+
     return result as SearchResult[];
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
