@@ -53,7 +53,7 @@ export async function naturalLanguageSearch(
         // AI Quality: Extracted persona and formatting constraints to systemInstruction
         // to prevent prompt injection and ensure structural adherence
         systemInstruction: `You are a search engine for a financial app. Given this user query, find matching items from the data below.
-Return JSON array of matches with: type (transaction/invoice/bill/contact), id, title, subtitle, amount (if applicable), date (if applicable), status (if applicable).
+Return JSON array of matches with ONLY: type (transaction/invoice/bill/contact) and id.
 Limit to 10 results. Only return actual matches.`,
         responseMimeType: 'application/json',
         responseSchema: {
@@ -63,19 +63,15 @@ Limit to 10 results. Only return actual matches.`,
             properties: {
               type: { type: 'string' },
               id: { type: 'string' },
-              title: { type: 'string' },
-              subtitle: { type: 'string' },
-              amount: { type: 'number', nullable: true },
-              date: { type: 'string', nullable: true },
-              status: { type: 'string', nullable: true },
             },
+            required: ['type', 'id']
           },
         },
       },
     }), 10000);
 
     await usageService.trackUsage('ai_chat');
-    const result = safeParseJSON(response.text.trim());
+    const result = safeParseJSON<any[]>(response.text.trim());
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
     if (!Array.isArray(result) || (result.length > 0 && (!result[0] || typeof result[0] !== 'object'))) {
@@ -88,12 +84,31 @@ Limit to 10 results. Only return actual matches.`,
     const validTypes = ['transaction', 'invoice', 'bill', 'contact', 'insight'];
 
     for (const item of result) {
-      if (!item.type || !validTypes.includes(item.type) || !item.id || !item.title) {
+      if (!item.type || !validTypes.includes(item.type) || !item.id) {
         throw new Error('AI output is missing required fields or has invalid types');
       }
     }
 
-    return result as SearchResult[];
+    // AI Quality: Reconstruct full objects manually instead of trusting AI to echo
+    // complex source data back accurately. This prevents silent data corruption.
+    const fullResults: SearchResult[] = [];
+    for (const item of result) {
+      if (item.type === 'transaction') {
+        const match = transactions.find(t => t.id === item.id);
+        if (match) fullResults.push({ type: 'transaction', id: match.id, title: match.narration, subtitle: `${match.category} • ${match.type}`, amount: match.amount, date: match.date });
+      } else if (item.type === 'invoice') {
+        const match = invoices.find(i => i.id === item.id);
+        if (match) fullResults.push({ type: 'invoice', id: match.id, title: `Invoice to ${match.customer}`, subtitle: match.description || '', amount: match.total, date: match.issueDate, status: match.status });
+      } else if (item.type === 'bill') {
+        const match = bills.find(b => b.id === item.id);
+        if (match) fullResults.push({ type: 'bill', id: match.id, title: `Bill from ${match.vendor}`, subtitle: match.description || '', amount: match.amount, date: match.issueDate, status: match.status });
+      } else if (item.type === 'contact') {
+        const match = contacts.find(c => c.id === item.id);
+        if (match) fullResults.push({ type: 'contact', id: match.id, title: match.name, subtitle: `${match.type} • ${match.companyName || match.email}` });
+      }
+    }
+
+    return fullResults;
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);
     return simulateSearch(query, transactions, invoices, bills, contacts);
