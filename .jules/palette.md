@@ -12,3 +12,7 @@
 ## 2024-05-18 - Form Fields Missing explicit id associations
 **Learning:** In dynamically generated forms like `FixedAssetsView.tsx` where new elements might not be tied to an underlying explicit database model yet, `htmlFor` and `id` linking for standard form inputs (text, number, date, select) are frequently omitted, degrading screen reader accessibility.
 **Action:** Always verify that every standard `<label>` explicitly associates with its `<input>`/`<select>` using the `htmlFor` and `id` attributes.
+
+## 2024-05-20 - Receipt Scanner Modal Accessibility
+**Learning:** Found multiple instances where the Receipt Scanner Modal lacked proper `htmlFor` attributes on the `<label>` elements linking them to corresponding `<input>` using the `id` attributes. This is a critical accessibility issue for screen readers and makes the target area smaller for pointer-based navigation.
+**Action:** When working on complex interactive form elements like modals that collect AI output, verify standard `<label>` and `<input>`/`<select>` associations exist via `htmlFor` and `id` tags.
