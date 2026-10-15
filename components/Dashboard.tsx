@@ -214,18 +214,23 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
     const { formatAmount } = useCurrency();
 
     const taxCalculations = useMemo(() => {
-        const summary = transactions.reduce((acc, t) => {
-            if (t.type === 'credit') acc.income += t.amount;
-            else acc.expenses += t.amount;
-            return acc;
-        }, { income: 0, expenses: 0 });
+        // ⚡ Bolt Optimization: Replace transactions.reduce with a standard for loop to avoid array callback overhead
+        let income = 0;
+        let expenses = 0;
+        for (let i = 0; i < transactions.length; i++) {
+            if (transactions[i].type === 'credit') {
+                income += transactions[i].amount;
+            } else {
+                expenses += transactions[i].amount;
+            }
+        }
 
         const daysInYear = 365;
         const firstTxDate = transactions.length > 0 ? new Date(transactions[transactions.length - 1].date) : new Date();
         const lastTxDate = transactions.length > 0 ? new Date(transactions[0].date) : new Date();
         const daysOfData = Math.max(1, (lastTxDate.getTime() - firstTxDate.getTime()) / (1000 * 3600 * 24));
-        const annualizedTurnover = (summary.income / daysOfData) * daysInYear;
-        const assessableProfit = summary.income - summary.expenses;
+        const annualizedTurnover = (income / daysOfData) * daysInYear;
+        const assessableProfit = income - expenses;
 
         let estimatedCIT = 0;
         let citRate = 0;
@@ -240,18 +245,23 @@ const TaxLiabilityEstimator = React.memo<{ transactions: CategorizedTransaction[
         const estimatedTET = assessableProfit > 0 ? assessableProfit * 0.03 : 0;
         
         const WHT_RATE = 0.05;
-        const invoiceTaxes = invoices.reduce((acc, inv) => {
+
+        // ⚡ Bolt Optimization: Replace invoices.reduce with a standard for loop
+        let vatPayable = 0;
+        let whtReceivable = 0;
+        for (let i = 0; i < invoices.length; i++) {
+            const inv = invoices[i];
             if (inv.status !== 'Draft') {
-                acc.vatPayable += inv.vat;
+                vatPayable += inv.vat;
                 if (inv.whtApplied) {
-                    acc.whtReceivable += inv.amount * WHT_RATE;
+                    whtReceivable += inv.amount * WHT_RATE;
                 }
             }
-            return acc;
-        }, { vatPayable: 0, whtReceivable: 0 });
+        }
 
         return {
-            ...invoiceTaxes,
+            vatPayable,
+            whtReceivable,
             estimatedCIT: Math.max(0, estimatedCIT),
             estimatedTET: Math.max(0, estimatedTET),
             citRate
