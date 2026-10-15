@@ -257,6 +257,7 @@ export const FinancialReportsView: React.FC<FinancialReportsViewProps> = ({
                                     navigator.clipboard.writeText(sharedLink);
                                     showToast('Copied to clipboard', 'success');
                                 }}
+                                aria-label="Copy secure shareable link to clipboard"
                                 className="bg-brand-cyan text-black font-black px-6 rounded-xl hover:bg-brand-cyan/80 transition-all active:scale-95 shadow-md shadow-brand-cyan/20"
                             >
                                 COPY
