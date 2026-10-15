@@ -53,8 +53,14 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
       const result = safeParseJSON(response.text.trim());
 
       // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-      if (!Array.isArray(result) || (result.length > 0 && (!result[0] || typeof result[0] !== 'object'))) {
-        throw new Error('AI output is not an array or contains invalid objects');
+      if (!Array.isArray(result)) {
+        throw new Error('AI output is not an array');
+      }
+
+      for (const item of result) {
+        if (!item || typeof item !== 'object' || !item.billId || !item.poId || typeof item.confidence !== 'number') {
+          throw new Error('AI output is missing required fields or has invalid types');
+        }
       }
 
       allMatches.push(...(result as BillMatch[]));
