@@ -16,3 +16,7 @@
 ## 2024-05-20 - Receipt Scanner Modal Accessibility
 **Learning:** Found multiple instances where the Receipt Scanner Modal lacked proper `htmlFor` attributes on the `<label>` elements linking them to corresponding `<input>` using the `id` attributes. This is a critical accessibility issue for screen readers and makes the target area smaller for pointer-based navigation.
 **Action:** When working on complex interactive form elements like modals that collect AI output, verify standard `<label>` and `<input>`/`<select>` associations exist via `htmlFor` and `id` tags.
+
+## 2025-03-05 - Missing ARIA Labels on Inline Action Buttons
+**Learning:** In highly interactive components with inline actions like copy to clipboard or share, icon-only or generic text buttons (like "COPY") often lack an `aria-label`, leaving screen reader users without context about what is being copied.
+**Action:** Always verify that buttons performing utility actions like copying to clipboard, sharing, or closing modals have explicit and descriptive `aria-label` attributes.
