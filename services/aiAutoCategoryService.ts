@@ -109,8 +109,14 @@ ${JSON.stringify(chunk.map(t => ({ id: t.id, narration: t.narration, amount: t.a
         const results = safeParseJSON<any>(response.text.trim());
 
         // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-        if (!Array.isArray(results) || (results.length > 0 && (!results[0] || typeof results[0] !== 'object'))) {
-          throw new Error('AI output is not an array or contains invalid objects');
+        if (!Array.isArray(results)) {
+          throw new Error('AI output is not an array');
+        }
+
+        for (const r of results) {
+          if (!r || typeof r !== 'object' || !r.transactionId || !r.suggestedCategory || typeof r.confidence !== 'number') {
+            throw new Error('AI output is missing required fields or has invalid types');
+          }
         }
 
         allResults.push(...results.map((r: any) => ({

@@ -99,7 +99,13 @@ export const categorizeTransactions = async (transactions: RawTransaction[], cat
       const jsonText = response.text.trim();
       const batchResult = safeParseJSON(jsonText) as { id: string, category: string }[];
       // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-      if (!Array.isArray(batchResult) || (batchResult.length > 0 && (!batchResult[0] || typeof batchResult[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
+      if (!Array.isArray(batchResult)) throw new Error("AI output is not an array");
+
+      for (const res of batchResult) {
+        if (!res || typeof res !== 'object' || !res.id || !res.category) {
+          throw new Error("AI output is missing required fields or has invalid types");
+        }
+      }
 
       const categoryMap = new Map(batchResult.map(res => [res.id, res.category]));
 
@@ -193,7 +199,13 @@ export const getFinancialInsights = async (
     const jsonText = response.text.trim();
     const insights = safeParseJSON(jsonText) as FinancialInsight[];
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!Array.isArray(insights) || (insights.length > 0 && (!insights[0] || typeof insights[0] !== 'object'))) throw new Error("AI output is not an array or contains invalid objects");
+    if (!Array.isArray(insights)) throw new Error("AI output is not an array");
+
+    for (const insight of insights) {
+      if (!insight || typeof insight !== 'object' || !insight.title || !insight.description || !insight.priority) {
+        throw new Error("AI output is missing required fields or has invalid types");
+      }
+    }
     return insights;
 
   } catch (error) {

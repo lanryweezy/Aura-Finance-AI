@@ -41,3 +41,7 @@
 ## 2025-10-18 - Restrict Output Schema to Prevent Source Data Corruption
 **Learning:** Returning entire original objects (like `title`, `subtitle`, `amount`, `date`) in the AI JSON output schema and mapping them directly to the app state trusts the AI to accurately reconstruct and echo back non-inferred data. This is brittle, wastes output tokens, and can silently corrupt data if the model hallucinated amounts, truncated text, or reformatted dates.
 **Action:** Always restrict the AI output schema strictly to the fields it must infer/predict (e.g., `id`, `type`), and use a mapping loop in code to look up the source objects via a unique ID to populate the final payload.
+
+## 2024-05-19 - Strict Element-by-Element Validation for AI Arrays
+**Learning:** Checking only the first element of an AI-generated array (`result.length > 0 && typeof result[0] === 'object'`) is insufficient. If the model returns an array where the first element is valid but subsequent elements are hallucinated strings or missing required fields, it will cause silent UI crashes or partial data corruption downstream when the app iterates over the list.
+**Action:** Always iterate through the entire AI-generated array using a `for...of` loop and validate the presence of required fields and types for *every* element before accepting the payload. Fail loudly by throwing an error if any element is malformed.
