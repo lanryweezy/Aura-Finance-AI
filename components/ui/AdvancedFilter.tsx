@@ -59,9 +59,10 @@ export const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ options, onFilte
                 <div className="mt-4 p-6 bg-dark-tertiary border border-white/10 rounded-2xl grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 animate-in slide-in-from-top-2 duration-300 shadow-2xl">
                     {options.map((opt) => (
                         <div key={opt.field} className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{opt.label}</label>
+                            <label htmlFor={opt.type === 'number-range' ? undefined : `filter-${opt.field}`} className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{opt.label}</label>
                             {opt.type === 'select' ? (
                                 <select
+                                    id={`filter-${opt.field}`}
                                     value={filters[opt.field] || ''}
                                     onChange={(e) => handleFilterChange(opt.field, e.target.value)}
                                     className="w-full bg-dark-primary border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-brand-cyan outline-none"
@@ -71,6 +72,7 @@ export const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ options, onFilte
                                 </select>
                             ) : opt.type === 'date' ? (
                                 <input
+                                    id={`filter-${opt.field}`}
                                     type="date"
                                     value={filters[opt.field] || ''}
                                     onChange={(e) => handleFilterChange(opt.field, e.target.value)}
@@ -79,6 +81,8 @@ export const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ options, onFilte
                             ) : opt.type === 'number-range' ? (
                                 <div className="flex items-center gap-2">
                                     <input
+                                        id={`filter-${opt.field}_min`}
+                                        aria-label={`${opt.label} Minimum`}
                                         type="number"
                                         placeholder="Min"
                                         value={filters[`${opt.field}_min`] || ''}
@@ -86,6 +90,8 @@ export const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ options, onFilte
                                         className="w-1/2 bg-dark-primary border border-gray-700 rounded-lg p-2 text-sm text-white focus:ring-1 focus:ring-brand-cyan outline-none"
                                     />
                                     <input
+                                        id={`filter-${opt.field}_max`}
+                                        aria-label={`${opt.label} Maximum`}
                                         type="number"
                                         placeholder="Max"
                                         value={filters[`${opt.field}_max`] || ''}
@@ -95,6 +101,7 @@ export const AdvancedFilter: React.FC<AdvancedFilterProps> = ({ options, onFilte
                                 </div>
                             ) : (
                                 <input
+                                    id={`filter-${opt.field}`}
                                     type="text"
                                     placeholder={`Search ${opt.label.toLowerCase()}...`}
                                     value={filters[opt.field] || ''}

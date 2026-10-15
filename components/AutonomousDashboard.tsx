@@ -65,8 +65,8 @@ export const AutonomousDashboard: React.FC = () => {
       {/* Config toggles */}
       <div className="grid grid-cols-2 gap-2 mb-4">
         {Object.entries(config).filter(([k]) => k !== 'autoPayThreshold' && k !== 'requireApprovalAbove').map(([key, value]) => (
-          <label key={key} className="flex items-center gap-2 text-xs cursor-pointer">
-            <input type="checkbox" checked={value as boolean}
+          <label key={key} htmlFor={`config-${key}`} className="flex items-center gap-2 text-xs cursor-pointer">
+            <input type="checkbox" id={`config-${key}`} checked={value as boolean}
               onChange={() => setConfig(prev => ({ ...prev, [key]: !prev[key as keyof AutonomousConfig] }))}
               className="w-3 h-3 rounded" />
             <span className="text-gray-500">{key.replace(/([A-Z])/g, ' $1').toLowerCase()}</span>

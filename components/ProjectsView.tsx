@@ -33,8 +33,9 @@ const NewProjectModal: React.FC<{
                 <h3 className="text-xl font-bold text-aura-gray-900 dark:text-white mb-6">Create New Project</h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label className="text-sm text-aura-gray-500 dark:text-gray-400 mb-1 block uppercase tracking-widest font-black text-[10px]">Project Name</label>
+                        <label htmlFor="project-name" className="text-sm text-aura-gray-500 dark:text-gray-400 mb-1 block uppercase tracking-widest font-black text-[10px]">Project Name</label>
                         <input 
+                            id="project-name"
                             type="text" 
                             placeholder="e.g. Q4 Marketing Campaign" 
                             value={name} 
