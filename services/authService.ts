@@ -1,6 +1,7 @@
 import type { User, Organization } from '../types';
 import { supabase } from './supabaseClient';
 import { referralService } from './referralService';
+import { validatePassword } from './securityUtils';
 
 const STORAGE_KEY_USER = 'aura_user';
 const STORAGE_KEY_ORG = 'aura_org';
@@ -164,6 +165,11 @@ export const authService = {
   },
 
   signup: async (name: string, email: string, password: string, _companyName: string): Promise<{ user: User; org: Organization }> => {
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      throw new Error(`Weak password: ${validation.errors.join('. ')}`);
+    }
+
     if (!supabase) return authService.loginMock(email);
 
     const { error } = await supabase.auth.signUp({ email, password });

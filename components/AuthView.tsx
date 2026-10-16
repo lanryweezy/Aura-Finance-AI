@@ -4,6 +4,7 @@ import { authService } from '../services/authService';
 import { referralService } from '../services/referralService';
 import type { User, Organization } from '../types';
 import { useToast } from './ui/Toast';
+import { validatePassword } from '../services/securityUtils';
 
 interface AuthViewProps {
     onLogin: (user: User, org: Organization) => void;
@@ -41,6 +42,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onLogin, initialIsLogin = tr
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!isLogin) {
+            const passwordValidation = validatePassword(password);
+            if (!passwordValidation.valid) {
+                showToast(passwordValidation.errors.join('. '), 'error');
+                return;
+            }
+        }
+
         setIsLoading(true);
         try {
             if (isLogin) {
