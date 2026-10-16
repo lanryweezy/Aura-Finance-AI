@@ -45,3 +45,7 @@
 ## 2024-05-19 - Strict Element-by-Element Validation for AI Arrays
 **Learning:** Checking only the first element of an AI-generated array (`result.length > 0 && typeof result[0] === 'object'`) is insufficient. If the model returns an array where the first element is valid but subsequent elements are hallucinated strings or missing required fields, it will cause silent UI crashes or partial data corruption downstream when the app iterates over the list.
 **Action:** Always iterate through the entire AI-generated array using a `for...of` loop and validate the presence of required fields and types for *every* element before accepting the payload. Fail loudly by throwing an error if any element is malformed.
+
+## 2024-05-18 - Deep validation of AI generated arrays
+**Learning:** Validating only the first element of an AI-generated JSON array (e.g., `!result[0] || typeof result[0] !== 'object'`) can lead to unexpected `TypeError`s or silent data corruption downstream if the model produces a mixed array (e.g., some objects, some nulls or strings). The model may fail mid-generation and produce invalid subsequent items.
+**Action:** Always implement comprehensive deep validation when consuming AI-generated JSON arrays. Iterate through the entire array using a `for...of` loop and explicitly validate that *every* element is a valid object containing all required fields and correct types before trusting the data. If any element is malformed, throw an explicit error to fail loudly and trigger graceful fallback mechanisms.

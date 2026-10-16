@@ -74,17 +74,18 @@ Limit to 10 results. Only return actual matches.`,
     const result = safeParseJSON<any[]>(response.text.trim());
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!Array.isArray(result) || (result.length > 0 && (!result[0] || typeof result[0] !== 'object'))) {
-      throw new Error('AI output is not an array or contains invalid objects');
+    if (!Array.isArray(result)) {
+      throw new Error('AI output is not an array');
     }
 
     // AI Quality: Strict runtime validation of expected output schema.
-    // Ensure all required fields exist and the type enum is valid.
+    // Ensure all required fields exist, the item is an object, and the type enum is valid.
+    // Iterate through the entire array, not just checking the first item.
     // If not, fail loudly so the catch block handles graceful fallback.
     const validTypes = ['transaction', 'invoice', 'bill', 'contact', 'insight'];
 
     for (const item of result) {
-      if (!item.type || !validTypes.includes(item.type) || !item.id) {
+      if (!item || typeof item !== 'object' || !item.type || !validTypes.includes(item.type) || !item.id) {
         throw new Error('AI output is missing required fields or has invalid types');
       }
     }
