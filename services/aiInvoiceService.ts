@@ -79,6 +79,14 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
       throw new Error('AI output is missing required fields or is malformed');
     }
 
+    // 🤖 Astra AI Quality: Implement deep validation for AI-generated arrays
+    // Explicitly validate every element to fail loudly on malformed items rather than silently defaulting them.
+    for (const item of result.lineItems) {
+      if (!item || typeof item !== 'object' || !item.name || typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' || typeof item.total !== 'number') {
+        throw new Error('AI output line item is missing required fields or has invalid types');
+      }
+    }
+
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
     // Enforcing non-negative boundaries and defaults for all financial figures.
     const sanitizedData: AIInvoiceData = {
@@ -91,11 +99,11 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
       dueDate: String(result.dueDate || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]),
       currency: String(result.currency || 'NGN'),
       lineItems: result.lineItems.map((item: any) => ({
-        name: String(item.name || 'Item'),
+        name: String(item.name),
         description: String(item.description || ''),
-        quantity: Math.max(1, Number(item.quantity) || 1),
-        unitPrice: Math.max(0, Number(item.unitPrice) || 0),
-        total: Math.max(0, Number(item.total) || 0)
+        quantity: Math.max(1, Number(item.quantity)),
+        unitPrice: Math.max(0, Number(item.unitPrice)),
+        total: Math.max(0, Number(item.total))
       }))
     };
 
