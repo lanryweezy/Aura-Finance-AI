@@ -130,6 +130,14 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
 
     const rawLineItems = Array.isArray(result.lineItems) ? result.lineItems : [];
 
+    // AI Quality: Deep validation of AI generated arrays. Validate every element
+    // to prevent silent UI crashes if the model returns mixed or malformed arrays.
+    for (const item of rawLineItems) {
+      if (!item || typeof item !== 'object') {
+        throw new Error('AI output array contains invalid elements');
+      }
+    }
+
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
     // Enforcing non-negative boundaries and defaults for all financial figures.
     return {
