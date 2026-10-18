@@ -79,6 +79,14 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIInvoi
       throw new Error('AI output is missing required fields or is malformed');
     }
 
+    // AI Quality: Deep validation of AI generated arrays. Validate every element
+    // to prevent silent UI crashes if the model returns mixed or malformed arrays.
+    for (const item of result.lineItems) {
+      if (!item || typeof item !== 'object') {
+        throw new Error('AI output array contains invalid elements');
+      }
+    }
+
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
     // Enforcing non-negative boundaries and defaults for all financial figures.
     const sanitizedData: AIInvoiceData = {
