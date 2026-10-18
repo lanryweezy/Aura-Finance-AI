@@ -89,10 +89,21 @@ server.registerTool("get_summary", {
 }, async () => {
   const invoices = await query('invoices');
   const bills = await query('bills');
-  const totalRevenue = invoices.filter((i: any) => i.status === 'Paid').reduce((s: number, i: any) => s + (i.total || 0), 0);
-  const totalExpenses = bills.filter((b: any) => b.status === 'Paid').reduce((s: number, b: any) => s + (b.amount || 0), 0);
-  const pendingReceivables = invoices.filter((i: any) => i.status !== 'Paid').reduce((s: number, i: any) => s + (i.total || 0), 0);
-  const pendingPayables = bills.filter((b: any) => b.status !== 'Paid').reduce((s: number, b: any) => s + (b.amount || 0), 0);
+
+  // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .filter().reduce()
+  const { totalRevenue, pendingReceivables } = invoices.reduce((acc: any, i: any) => {
+    if (i.status === 'Paid') acc.totalRevenue += (i.total || 0);
+    else acc.pendingReceivables += (i.total || 0);
+    return acc;
+  }, { totalRevenue: 0, pendingReceivables: 0 });
+
+  // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .filter().reduce()
+  const { totalExpenses, pendingPayables } = bills.reduce((acc: any, b: any) => {
+    if (b.status === 'Paid') acc.totalExpenses += (b.amount || 0);
+    else acc.pendingPayables += (b.amount || 0);
+    return acc;
+  }, { totalExpenses: 0, pendingPayables: 0 });
+
   return { content: [{ type: "text", text: JSON.stringify({ totalRevenue, totalExpenses, netProfit: totalRevenue - totalExpenses, pendingReceivables, pendingPayables }, null, 2) }] };
 });
 

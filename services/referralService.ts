@@ -450,7 +450,8 @@ export const referralService = {
          const mockLedgerStr = localStorage.getItem('aura_mock_ai_ledger');
          const mockLedger = mockLedgerStr ? JSON.parse(mockLedgerStr) : [];
          // Simple mock logic: get credits for this user since org mapping might be complex in mock
-         return mockLedger.filter((l: any) => l.userId === userOrg.user.id).reduce((s: number, l: any) => s + l.credits, 0);
+         // ⚡ Bolt Optimization: Single-pass .reduce() replaces chained .filter().reduce()
+         return mockLedger.reduce((s: number, l: any) => l.userId === userOrg.user.id ? s + l.credits : s, 0);
      }
   }
 };
