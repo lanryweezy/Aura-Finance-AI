@@ -130,6 +130,14 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
 
     const rawLineItems = Array.isArray(result.lineItems) ? result.lineItems : [];
 
+    // 🤖 Astra AI Quality: Implement deep validation for AI-generated arrays
+    // Explicitly validate every element to fail loudly on malformed items rather than silently defaulting them.
+    for (const item of rawLineItems) {
+      if (!item || typeof item !== 'object' || typeof item.name !== 'string') {
+        throw new Error('AI output line item is missing required fields or has invalid types');
+      }
+    }
+
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
     // Enforcing non-negative boundaries and defaults for all financial figures.
     return {
