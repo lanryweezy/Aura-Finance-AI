@@ -63,16 +63,22 @@ export async function generateInvoiceFromPrompt(prompt: string): Promise<AIGener
     const result = safeParseJSON(response.text.trim()) as any;
 
     // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-    if (!result || typeof result !== 'object' || !result.customer || !Array.isArray(result.lineItems)) {
+    if (!result || typeof result !== 'object' || typeof result.customer !== 'string' || !Array.isArray(result.lineItems)) {
       throw new Error('AI output is missing required fields or is malformed');
     }
 
     // 🤖 Astra AI Quality: Implement deep validation for AI-generated arrays
     // Explicitly validate every element to fail loudly on malformed items rather than silently defaulting them.
+    const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
     for (const item of result.lineItems) {
-      if (!item || typeof item !== 'object' || !item.name || typeof item.quantity !== 'number' || typeof item.unitPrice !== 'number' || typeof item.total !== 'number') {
+      // AI Quality: Allow empty strings and explicitly validate coercible numbers to prevent false positives
+      if (!item || typeof item !== 'object' || typeof item.name !== 'string' || isInvalidNum(item.quantity) || isInvalidNum(item.unitPrice) || isInvalidNum(item.total)) {
         throw new Error('AI output line item is missing required fields or has invalid types');
       }
+      // AI Quality: Coerce strings to numbers to maintain strict type boundaries and prevent downstream crashes
+      item.quantity = Number(item.quantity);
+      item.unitPrice = Number(item.unitPrice);
+      item.total = Number(item.total);
     }
 
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
