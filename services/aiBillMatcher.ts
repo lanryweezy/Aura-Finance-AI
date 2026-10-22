@@ -57,10 +57,12 @@ export async function matchBillsToPOs(bills: Bill[], pos: PurchaseOrder[]): Prom
         throw new Error('AI output is not an array');
       }
 
+      const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
       for (const item of result) {
-        if (!item || typeof item !== 'object' || !item.billId || !item.poId || typeof item.confidence !== 'number') {
+        if (!item || typeof item !== 'object' || !item.billId || !item.poId || isInvalidNum(item.confidence)) {
           throw new Error('AI output is missing required fields or has invalid types');
         }
+        item.confidence = Number(item.confidence);
       }
 
       allMatches.push(...(result as BillMatch[]));

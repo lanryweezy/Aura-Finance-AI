@@ -52,18 +52,22 @@ export const receiptOcrService = {
       const result = safeParseJSON<any>(response.text.trim());
 
       // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-      if (!result || typeof result !== 'object' || !result.merchantName || typeof result.totalAmount !== 'number' || !result.date) {
+      const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
+
+      if (!result || typeof result !== 'object' || !result.merchantName || isInvalidNum(result.totalAmount) || !result.date) {
         throw new Error('AI output is missing required fields or is malformed');
       }
+      result.totalAmount = Number(result.totalAmount);
 
       const rawLineItems = Array.isArray(result.lineItems) ? result.lineItems : [];
 
       // 🤖 Astra AI Quality: Implement deep validation for AI-generated arrays
       // Explicitly validate every element to fail loudly on malformed items rather than silently defaulting them.
       for (const item of rawLineItems) {
-        if (!item || typeof item !== 'object' || typeof item.description !== 'string') {
+        if (!item || typeof item !== 'object' || typeof item.description !== 'string' || isInvalidNum(item.amount)) {
           throw new Error('AI output line item is missing required fields or has invalid types');
         }
+        item.amount = Number(item.amount);
       }
 
       // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors

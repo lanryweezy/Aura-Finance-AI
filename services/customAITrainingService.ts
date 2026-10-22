@@ -80,9 +80,12 @@ export const customAITrainingService = {
       const result = safeParseJSON<any>(response.text.trim());
 
       // AI Quality: Validate expected JSON structure to prevent silent UI crashes on malformed output
-      if (!result || typeof result !== 'object' || typeof result.prediction !== 'number' || typeof result.reasoning !== 'string') {
+      const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
+
+      if (!result || typeof result !== 'object' || isInvalidNum(result.prediction) || typeof result.reasoning !== 'string') {
         throw new Error('AI output is missing required fields or is malformed');
       }
+      result.prediction = Number(result.prediction);
 
       return { type: 'amount', prediction: result.prediction, confidence: 0.85, reasoning: result.reasoning };
     } catch {

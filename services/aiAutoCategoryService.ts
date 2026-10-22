@@ -113,10 +113,12 @@ ${JSON.stringify(chunk.map(t => ({ id: t.id, narration: t.narration, amount: t.a
           throw new Error('AI output is not an array');
         }
 
+        const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
         for (const r of results) {
-          if (!r || typeof r !== 'object' || !r.transactionId || !r.suggestedCategory || typeof r.confidence !== 'number') {
+          if (!r || typeof r !== 'object' || !r.transactionId || !r.suggestedCategory || isInvalidNum(r.confidence)) {
             throw new Error('AI output is missing required fields or has invalid types');
           }
+          r.confidence = Number(r.confidence);
         }
 
         allResults.push(...results.map((r: any) => ({
