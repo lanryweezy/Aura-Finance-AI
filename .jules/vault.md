@@ -38,3 +38,7 @@
 ## 2025-05-30 - Domain Timestamps vs System Timestamps
 **Learning:** Adding chronological `CHECK` constraints (e.g., `>= created_at`) on domain/business event timestamps (such as `paid_at` on payments, `issued_at` on credit notes, or `submitted_at` on records) conflates system time with business time. Historical records are often back-dated and entered into the system *after* they occurred in the real world, making it perfectly valid for a business event timestamp to precede the system's `created_at` insert time. Enforcing this check breaks the ability to log historical data.
 **Action:** When enforcing temporal logic against `created_at`, ONLY apply it to system-generated lifecycle timestamps (like `viewed_at`, `last_active`, `last_synced`) that are impossible to occur before the object exists in the system. Intentionally EXCLUDE domain event timestamps.
+
+## 2025-05-30 - Missing Check Constraints on Tax and AI Confidence Scores
+**Learning:** Tables storing values that have mathematical properties, such as tax filings (revenue and expenses should not be negative) and AI confidence scores (which represent a probability and must be bounded between 0 and 1), lacked database-level CHECK constraints. Without these bounds, invalid data could silently corrupt aggregate calculations or downstream logic.
+**Action:** Added migration to introduce CHECK constraints enforcing non-negativity for total_revenue and total_expenses in tax filings, and a range constraint `[0, 1]` for the confidence score in receipt_scans.
