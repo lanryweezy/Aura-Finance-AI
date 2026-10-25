@@ -38,3 +38,6 @@
 ## 2025-05-30 - Domain Timestamps vs System Timestamps
 **Learning:** Adding chronological `CHECK` constraints (e.g., `>= created_at`) on domain/business event timestamps (such as `paid_at` on payments, `issued_at` on credit notes, or `submitted_at` on records) conflates system time with business time. Historical records are often back-dated and entered into the system *after* they occurred in the real world, making it perfectly valid for a business event timestamp to precede the system's `created_at` insert time. Enforcing this check breaks the ability to log historical data.
 **Action:** When enforcing temporal logic against `created_at`, ONLY apply it to system-generated lifecycle timestamps (like `viewed_at`, `last_active`, `last_synced`) that are impossible to occur before the object exists in the system. Intentionally EXCLUDE domain event timestamps.
+## 2025-05-30 - Missing Check Constraints on AI Confidence Scores
+**Learning:** AI `confidence` scores or probabilities (e.g., in `receipt_scans`) were defined as numeric without bounds, allowing values outside the valid 0 to 1 range which could corrupt downstream probability-based logic.
+**Action:** Added a `CHECK (confidence >= 0 AND confidence <= 1)` constraint to all AI confidence score columns (like `receipt_scans.confidence`) to guarantee data integrity at the database layer.
