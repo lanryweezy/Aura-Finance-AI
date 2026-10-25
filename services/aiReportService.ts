@@ -102,6 +102,18 @@ export async function generateMonthlyReport(
       throw new Error('AI output is missing required fields or is malformed');
     }
 
+    // 🤖 Astra AI Quality: Implement deep validation for AI-generated arrays
+    // Explicitly validate every element to fail loudly on malformed items rather than silently defaulting them.
+    for (const item of result.highlights) {
+      if (typeof item !== 'string') throw new Error('AI output array contains non-string elements');
+    }
+    for (const item of result.risks) {
+      if (typeof item !== 'string') throw new Error('AI output array contains non-string elements');
+    }
+    for (const item of result.recommendations) {
+      if (typeof item !== 'string') throw new Error('AI output array contains non-string elements');
+    }
+
     return { period, ...result, kpis };
   } catch (error) {
     monitoringService.trackError('AI_ENGINE', error as Error);

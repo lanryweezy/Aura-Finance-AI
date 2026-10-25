@@ -59,3 +59,7 @@
 ## 2026-10-18 - Coerce numeric fields during JSON array validation
 **Learning:** While we must allow AI outputs to contain numbers encoded as strings (to prevent false-positive validation crashes), we cannot simply allow these string types to silently leak into the application, as doing so violates type boundaries and risks downstream exceptions.
 **Action:** When relaxing validation checks to allow coercible strings (`isInvalidNum(val)`), explicitly mutate and coerce the AI generated JSON properties to strict numbers (`item.quantity = Number(item.quantity)`) before the loop finishes to maintain strict application type boundaries.
+
+## 2026-10-19 - Avoid Spread Operator on Unvalidated AI Arrays
+**Learning:** Using the spread operator (`...`) on raw AI-generated array fields (like `[...result.highlights]`) before explicitly verifying they are actually arrays (e.g., via `Array.isArray()`) is unsafe. If the model hallucinates a non-iterable object instead of an array, spreading it will throw an uncatchable `TypeError` (`result.highlights is not iterable`), which bypasses custom validation error handling and causes an unexpected crash.
+**Action:** Never use the spread operator on AI-generated fields during the initial validation step. Always explicitly validate the shape of the data using `Array.isArray()` and iterate over each array independently using a standard loop to ensure safe validation.
