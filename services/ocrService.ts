@@ -99,7 +99,14 @@ export const ocrService = {
 
             const jsonText = response.text.trim();
             const rawData = safeParseJSON(jsonText) as any;
-            if (!rawData || typeof rawData !== "object" || !rawData.merchantName || typeof rawData.totalAmount !== "number" || !rawData.date) throw new Error("AI output is missing required fields");
+
+            // AI Quality: Explicitly validate coercible numbers to prevent false positives when LLM returns strings
+            const isInvalidNum = (val: any) => typeof val !== 'number' && (typeof val !== 'string' || val.trim() === '' || isNaN(Number(val)));
+
+            if (!rawData || typeof rawData !== "object" || !rawData.merchantName || isInvalidNum(rawData.totalAmount) || !rawData.date) throw new Error("AI output is missing required fields");
+
+            // AI Quality: Coerce strings to numbers to maintain strict type boundaries and prevent downstream crashes
+            rawData.totalAmount = Number(rawData.totalAmount);
 
             // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
             // Enforcing non-negative boundaries and defaults for all financial figures.
