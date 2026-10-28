@@ -137,6 +137,11 @@ Be precise with numbers. If a field is not found, use reasonable defaults (empty
       if (!item || typeof item !== 'object' || typeof item.name !== 'string' || isInvalidNum(item.quantity) || isInvalidNum(item.unitPrice) || isInvalidNum(item.total)) {
         throw new Error('AI output line item is missing required fields or has invalid types');
       }
+
+      // AI Quality: Coerce strings to numbers to maintain strict type boundaries and prevent downstream crashes
+      item.quantity = Number(item.quantity);
+      item.unitPrice = Number(item.unitPrice);
+      item.total = Number(item.total);
     }
 
     // AI Quality: Sanitize and validate model-returned numeric values to prevent logic errors
