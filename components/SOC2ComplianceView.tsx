@@ -41,13 +41,34 @@ export const SOC2_CONTROLS: SOC2Control[] = [
 ];
 
 export const SOC2ComplianceView: React.FC = () => {
-  const implemented = SOC2_CONTROLS.filter(c => c.status === 'implemented').length;
-  const partial = SOC2_CONTROLS.filter(c => c.status === 'partial').length;
-  const planned = SOC2_CONTROLS.filter(c => c.status === 'planned').length;
+  // ⚡ Bolt Optimization: Replace multiple .filter().length passes and inline render .filter()
+  // with a single O(N) useMemo pass that computes counts and groups controls by category.
+  const { implemented, partial, planned, controlsByCategory } = React.useMemo(() => {
+    return SOC2_CONTROLS.reduce((acc, control) => {
+      // Aggregate counts
+      if (control.status === 'implemented') acc.implemented++;
+      else if (control.status === 'partial') acc.partial++;
+      else if (control.status === 'planned') acc.planned++;
+
+      // Group by category
+      if (!acc.controlsByCategory[control.category]) {
+        acc.controlsByCategory[control.category] = [];
+      }
+      acc.controlsByCategory[control.category].push(control);
+
+      return acc;
+    }, {
+      implemented: 0,
+      partial: 0,
+      planned: 0,
+      controlsByCategory: {} as Record<string, SOC2Control[]>
+    });
+  }, []);
+
   const total = SOC2_CONTROLS.length;
   const score = Math.round((implemented / total) * 100);
 
-  const categories = [...new Set(SOC2_CONTROLS.map(c => c.category))];
+  const categories = Object.keys(controlsByCategory);
 
   return (
     <div className="space-y-6">
@@ -88,7 +109,7 @@ export const SOC2ComplianceView: React.FC = () => {
         <div key={category} className="bg-white dark:bg-dark-secondary border border-gray-100 dark:border-white/10 rounded-2xl p-5">
           <h3 className="font-bold mb-3">{category}</h3>
           <div className="space-y-2">
-            {SOC2_CONTROLS.filter(c => c.category === category).map(control => (
+            {controlsByCategory[category].map(control => (
               <div key={control.id} className="flex items-center gap-3 text-sm">
                 <span className={`w-2 h-2 rounded-full ${
                   control.status === 'implemented' ? 'bg-green-400' :
