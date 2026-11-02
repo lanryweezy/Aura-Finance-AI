@@ -53,3 +53,7 @@
 **Vulnerability:** Generating security-sensitive identifiers (like referral codes in `referralService.ts`) using `Math.random()` creates predictable tokens, leading to potential brute-force or token guessing attacks.
 **Learning:** `Math.random()` is not cryptographically secure and should never be used for secrets, tokens, or any value relied upon for authentication or authorization.
 **Prevention:** Always use the Web Crypto API (`crypto.getRandomValues`) for generating security tokens. Replaced the `Math.random()` approach with a `crypto.getRandomValues()` implementation to ensure tokens are unpredictable and safe from guessing attacks.
+## 2026-12-05 - Insecure Randomness in Toast Generation
+**Vulnerability:** Using `Math.random()` to generate unique identifiers for UI components like Toasts (`Math.random().toString(36).substring(2, 9)`) or imported invoice line items (`li_${Date.now()}_${Math.random()}`) is insecure and can lead to predictability and collisions.
+**Learning:** `Math.random()` should never be used to generate identifiers, even for non-critical UI elements, as it relies on a pseudo-random number generator that is cryptographically insecure.
+**Prevention:** Always use a cryptographically secure random number generator (CSPRNG). Replaced `Math.random()` with the `generateSecureToken` function (from `services/securityUtils.ts`) which uses `crypto.getRandomValues()`.

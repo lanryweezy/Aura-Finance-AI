@@ -15,6 +15,7 @@ import { AdvancedFilter } from './ui/AdvancedFilter';
 import type { Invoice, LineItem, InventoryItem } from '../types';
 import { useToast } from './ui/Toast';
 import { useCurrency } from './ui/CurrencyProvider';
+import { generateSecureToken } from '../services/securityUtils';
 
 interface ReceivablesViewProps {
     invoices: Invoice[];
@@ -584,7 +585,7 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
             total: data.total,
             dueDate: new Date(data.dueDate).toISOString(),
             whtApplied: false,
-            lineItems: data.lineItems.map(li => ({ ...li, id: `li_${Date.now()}_${Math.random()}` })),
+            lineItems: data.lineItems.map(li => ({ ...li, id: `li_${Date.now()}_${generateSecureToken(8)}` })),
           });
         }}
       />
