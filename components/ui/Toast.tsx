@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, createContext, useContext } from 'react';
+import { generateSecureToken } from '../../services/securityUtils';
 
 type ToastType = 'success' | 'error' | 'info' | 'warning';
 
@@ -19,7 +20,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const [toasts, setToasts] = useState<Toast[]>([]);
 
     const showToast = (message: string, type: ToastType = 'info') => {
-        const id = Math.random().toString(36).substring(2, 9);
+        const id = generateSecureToken(7);
         setToasts((prev) => [...prev, { id, message, type }]);
         setTimeout(() => {
             setToasts((prev) => prev.filter((t) => t.id !== id));
