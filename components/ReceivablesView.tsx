@@ -518,12 +518,14 @@ export const ReceivablesView: React.FC<ReceivablesViewProps> = ({ invoices, onAd
                             <button 
                                 onClick={() => { setEmailRecipient(invoice); setIsEmailModalOpen(true); }}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-400/50 hover:bg-blue-50 dark:hover:bg-blue-400/20 transition-all active:scale-95"
+                                aria-label="Send invoice via email"
                             >
                                 Email
                             </button>
                             <button 
                                 onClick={async () => { const link = await clientPortalService.generateLink(invoice); const url = clientPortalService.getShareableUrl(link.token); await navigator.clipboard.writeText(url); alert('Portal link copied!'); }}
                                 className="text-[11px] font-bold py-1.5 px-3 rounded-lg border text-orange-600 dark:text-orange-300 border-orange-200 dark:border-orange-400/50 hover:bg-orange-50 dark:hover:bg-orange-400/20 transition-all active:scale-95"
+                                aria-label="Copy portal link to clipboard"
                             >
                                 Portal
                             </button>
