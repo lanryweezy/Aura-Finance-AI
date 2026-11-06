@@ -6,6 +6,7 @@
 import { supabase } from './supabaseClient';
 import { db } from './db';
 import { monitoringService } from './monitoringService';
+import { generateSecureToken } from './securityUtils';
 
 export interface ImportResult {
   success: number;
@@ -91,7 +92,7 @@ export async function importQuickBooks(data: any[]): Promise<ImportResult> {
   for (const item of data) {
     try {
       const mapped = {
-        id: item.Id || `qb_${Date.now()}_${Math.random()}`,
+        id: item.Id || `qb_${Date.now()}_${generateSecureToken(8)}`,
         amount: Math.abs(item.Amount || 0),
         type: (item.Amount || 0) >= 0 ? 'credit' : 'debit',
         date: item.Date || new Date().toISOString(),
@@ -123,7 +124,7 @@ export async function importXero(data: any[]): Promise<ImportResult> {
   for (const item of data) {
     try {
       const mapped = {
-        id: item.InvoiceID || `xero_${Date.now()}_${Math.random()}`,
+        id: item.InvoiceID || `xero_${Date.now()}_${generateSecureToken(8)}`,
         customer: item.Contact?.Name || 'Xero Import',
         amount: item.SubTotal || 0,
         vat: item.TotalTax || 0,
@@ -178,7 +179,7 @@ export async function importBankStatement(file: File): Promise<ImportResult> {
       const isCredit = amount > 0 || row.type?.toLowerCase() === 'credit';
 
       const mapped = {
-        id: `bank_${Date.now()}_${Math.random()}`,
+        id: `bank_${Date.now()}_${generateSecureToken(8)}`,
         amount: Math.abs(amount),
         type: isCredit ? 'credit' : 'debit',
         date: row.date || row.transaction_date || new Date().toISOString(),
