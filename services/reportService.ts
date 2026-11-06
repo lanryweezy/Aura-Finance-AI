@@ -38,10 +38,35 @@ export const calculateReportData = (
     const transactionsBefore = getTransactionsBeforePeriod(allTransactions, period);
 
     // ======== P&L Calculation ========
-    const revenue = periodTransactions
-        .filter(t => t.type === 'credit' && t.category.toLowerCase().includes('revenue'))
-        .reduce((sum, t) => sum + t.amount, 0);
-    
+    // ⚡ Bolt Optimization: Replace multiple .filter().reduce() passes with a single O(N) loop
+    let revenue = 0;
+    const expensesByCategory: Record<string, number> = {};
+    let operatingExpensesForCashFlow = 0;
+    let ownersDraw = 0;
+    let capitalInjections = 0;
+
+    for (const t of periodTransactions) {
+        if (t.type === 'credit' && t.category.toLowerCase().includes('revenue')) {
+            revenue += t.amount;
+        }
+
+        if (t.type === 'debit' && !t.category.startsWith('COGS')) {
+            if (!["Owner's Draw", "Inter-account Transfer", "Loan Principal"].includes(t.category)) {
+                expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+
+                if (t.category !== 'Capital Injection') {
+                    operatingExpensesForCashFlow += t.amount;
+                }
+            }
+        }
+
+        if (t.category === "Owner's Draw") {
+            ownersDraw += t.amount;
+        } else if (t.category === 'Capital Injection') {
+            capitalInjections += t.amount;
+        }
+    }
+
     // Calculate COGS from invoices in the period that contain inventory items
     const cogs = allInvoices
         .filter(inv => inv.status === 'Paid' && new Date(inv.issueDate) >= period.start && new Date(inv.issueDate) <= period.end)
@@ -57,13 +82,6 @@ export const calculateReportData = (
         }, 0);
 
     const grossProfit = revenue - cogs;
-
-    const expensesByCategory = periodTransactions
-        .filter(t => t.type === 'debit' && !["Owner's Draw", "Inter-account Transfer", "Loan Principal"].includes(t.category) && !t.category.startsWith('COGS'))
-        .reduce((acc, t) => {
-            acc[t.category] = (acc[t.category] || 0) + t.amount;
-            return acc;
-        }, {} as Record<string, number>);
 
     // Simplification: Prorate payroll if period is not a full year.
     const monthsInPeriod = (period.end.getFullYear() - period.start.getFullYear()) * 12 + (period.end.getMonth() - period.start.getMonth()) + 1;
@@ -112,20 +130,7 @@ export const calculateReportData = (
     const beginningCash = beginningBalanceTransaction?.balance ?? 0;
     
     // Direct Method for Operating Cash Flow
-    const cashFromOperating = periodTransactions
-        .filter(t => t.type === 'credit' && t.category.toLowerCase().includes('revenue'))
-        .reduce((sum, t) => sum + t.amount, 0)
-        - periodTransactions
-        .filter(t => t.type === 'debit' && !["Owner's Draw", "Inter-account Transfer", "Loan Principal", "Capital Injection"].includes(t.category) && !t.category.startsWith('COGS'))
-        .reduce((sum, t) => sum + t.amount, 0);
-
-    const ownersDraw = periodTransactions
-        .filter(t => t.category === "Owner's Draw")
-        .reduce((sum, t) => sum + t.amount, 0);
-    
-    const capitalInjections = periodTransactions
-        .filter(t => t.category === 'Capital Injection')
-        .reduce((sum, t) => sum + t.amount, 0);
+    const cashFromOperating = revenue - operatingExpensesForCashFlow;
 
     const cashFromFinancing = capitalInjections - ownersDraw;
     
