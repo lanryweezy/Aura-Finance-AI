@@ -1,4 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { anchorWebhookService } from '../services/anchorWebhookService';
 
 // Server-side environment variables (NEVER expose to Vite/frontend)
 const ANCHOR_API_KEY = process.env.ANCHOR_API_KEY || '';
@@ -66,13 +67,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       if (action === 'webhook') {
           // Process webhook securely
-          // In a real implementation this would verify the signature
           const signature = req.headers['x-anchor-signature'];
           if (!signature) {
              return res.status(401).json({ error: 'Missing signature' });
           }
-          console.log("Received Anchor webhook:", req.body);
-          return res.status(200).json({ status: 'received' });
+
+          try {
+             const sigString = Array.isArray(signature) ? signature[0] : signature;
+             const result = await anchorWebhookService.processEvent(JSON.stringify(req.body), sigString);
+             return res.status(200).json(result);
+          } catch (err: any) {
+             console.error('Webhook processing error:', err);
+             return res.status(400).json({ error: err.message });
+          }
       }
 
       return res.status(400).json({ error: 'Unknown action' });
