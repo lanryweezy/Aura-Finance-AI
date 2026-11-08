@@ -42,3 +42,11 @@
 ## 2025-05-30 - Missing Check Constraints on Tax and AI Confidence Scores
 **Learning:** Tables storing values that have mathematical properties, such as tax filings (revenue and expenses should not be negative) and AI confidence scores (which represent a probability and must be bounded between 0 and 1), lacked database-level CHECK constraints. Without these bounds, invalid data could silently corrupt aggregate calculations or downstream logic.
 **Action:** Added migration to introduce CHECK constraints enforcing non-negativity for total_revenue and total_expenses in tax filings, and a range constraint `[0, 1]` for the confidence score in receipt_scans.
+
+## 2024-11-08 - Down migrations format for Supabase
+**Learning:** Supabase executes all `.sql` files in `supabase/migrations/` in alphabetical order, so placing a down migration in a separate file (like `[name]_down.sql`) causes it to run immediately and revert the up migration.
+**Action:** Always embed the down migration as commented SQL inside the main up migration file. Do not create separate `_down.sql` files.
+
+## 2024-11-08 - Validating constraints with NOT VALID
+**Learning:** When using `NOT VALID` to add a constraint without locking, existing data remains unchecked, leaving a potential integrity gap.
+**Action:** To fully close the integrity gap, follow the `ADD CONSTRAINT ... NOT VALID` statement with a `VALIDATE CONSTRAINT` statement (e.g., `ALTER TABLE table_name VALIDATE CONSTRAINT constraint_name`) to verify existing data while minimizing lock contention.
